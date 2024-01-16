@@ -165,9 +165,24 @@ const sampleData: SampleDataType = [];
 ```
 
 ### 2.4. Generic
-- 작성중
+
+Generic은 타입을 인자로 받아 타입을 반환하는 함수입니다.\
+예시를 통해 더욱 자세히 알아보겠습니다.
+```typescript
+// 아래 함수는 입력받은 값을 원소로 하는 배열을 생성합니다.
+// 물론 실제 개발에선 이런 함수를 짤 일이 없겠죠!
+function makeArray<T>(value: T): T[] {
+  return [value];
+}
+
+// 실행할 때는 이렇게 실행합니다.
+makeArray<string>('Hello World!'); // ['Hello World!']
+makeArray<number>(123); // [123]
+```
 
 ### 2.5. Type Operator
+
+두 개의 타입을 합치거나, 인터페이스의 일부만 사용하는 등 타입을 조작해야 할 경우가 있습니다.
 - 작성중
 
 ## 3. Typescript Cheat Sheet
