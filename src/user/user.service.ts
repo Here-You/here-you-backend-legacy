@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import jsonwebtoken from 'jsonwebtoken';
 import { UserEntity } from './user.entity';
+import { IReqUser } from './user.dto';
 
 @Injectable()
 export class UserService {
@@ -13,7 +14,7 @@ export class UserService {
     return bcrypt.compareSync(password, hash);
   }
 
-  private _generateToken(payload: Record<string, unknown>) {
+  private _generateToken(payload: IReqUser) {
     return jsonwebtoken.sign(payload, process.env.JWT_SECRET, {
       expiresIn: '1d',
     });
