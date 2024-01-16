@@ -2,6 +2,13 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## 시작하기 전에...
+Typescript와 NestJS에 대한 기본적인 지식이 필요합니다.\
+아래 문서를 통해 개발을 시작하기 위한 기본적인 지식을 얻을 수 있습니다.
+
+- [Typescript 빠르게 시작하기](docs/typescript-quick-start.md)
+- NestJS 빠르게 시작하기 (작성 예정)
+
 ## Installation
 
 ```bash
