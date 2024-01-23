@@ -1,7 +1,7 @@
 // journey.entity.ts
 
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { ScheduleGroupEntity } from './schedule/schedule.group.entity';
+import { ScheduleGroupEntity } from '../schedule/schedule.group.entity';
 import { MonthlyJourneyEntity } from './monthly-journey.entity';
 
 @Entity({ name: 'Journey' })

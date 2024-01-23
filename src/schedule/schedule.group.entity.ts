@@ -12,7 +12,7 @@ import { JourneyEntity } from '../journey/journey.entity';
 import { ScheduleEntity } from './schedule.entity';
 
 @Entity({ name: 'schedule_group' })
-export class ScheduleGroup {
+export class ScheduleGroupEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -28,9 +28,9 @@ export class ScheduleGroup {
   @DeleteDateColumn()
   deleted: Date;
 
-  @ManyToOne(() => Journey, (journey) => journey.scheduleGroups)
+  @ManyToOne(() => JourneyEntity, (journey) => journey.scheduleGroups)
   journey: JourneyEntity;
 
-  @OneToMany(() => Schedule, (schedule) => schedule.scheduleGroup)
+  @OneToMany(() => ScheduleEntity, (schedule) => schedule.scheduleGroup)
   schedules: ScheduleEntity[];
 }
