@@ -5,7 +5,8 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
-  ManyToOne, OneToMany,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -32,7 +33,10 @@ export class DiaryEntity extends BaseEntity {
   @Column({ type: 'enum', enum: ['SUNNY', 'RAINY', 'SNOWY', 'CLOUDY'] })
   weather: 'SUNNY' | 'RAINY' | 'SNOWY' | 'CLOUDY';
 
-  @Column({ type: 'enum', enum: ['HAPPY', 'SAD', 'ANGRY', 'SHOCKED', 'SLEEPY', 'WINK'] })
+  @Column({
+    type: 'enum',
+    enum: ['HAPPY', 'SAD', 'ANGRY', 'SHOCKED', 'SLEEPY', 'WINK'],
+  })
   mood: 'HAPPY' | 'SAD' | 'ANGRY' | 'SHOCKED' | 'SLEEPY' | 'WINK';
 
   @Column({ type: 'mediumtext' })

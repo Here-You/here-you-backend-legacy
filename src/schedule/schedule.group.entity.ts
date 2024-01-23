@@ -1,25 +1,23 @@
 import {
-  BaseEntity,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity, JoinColumn, ManyToOne, OneToMany,
+  Entity,
   PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
+import { JourneyEntity } from '../journey/journey.entity';
 import { ScheduleEntity } from './schedule.entity';
-import { UserEntity } from '../user/user.entity';
 
-@Entity()
-export class ScheduleGroupEntity extends BaseEntity {
+@Entity({ name: 'schedule_group' })
+export class ScheduleGroup {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToMany(() => ScheduleEntity, (schedule) => schedule.scheduleGroup)
-  schedules: ScheduleEntity[];
-
-  @JoinColumn()
-  @ManyToOne(() => UserEntity)
-  user: UserEntity;
+  @Column({ type: 'date', nullable: false })
+  date: string;
 
   @CreateDateColumn()
   created: Date;
@@ -29,4 +27,10 @@ export class ScheduleGroupEntity extends BaseEntity {
 
   @DeleteDateColumn()
   deleted: Date;
+
+  @ManyToOne(() => Journey, (journey) => journey.scheduleGroups)
+  journey: JourneyEntity;
+
+  @OneToMany(() => Schedule, (schedule) => schedule.scheduleGroup)
+  schedules: ScheduleEntity[];
 }

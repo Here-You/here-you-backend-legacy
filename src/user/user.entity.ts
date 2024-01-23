@@ -3,7 +3,9 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity, OneToMany, OneToOne,
+  Entity,
+  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -39,13 +41,13 @@ export class UserEntity extends BaseEntity {
   @Column()
   oauthToken: string;
 
-  @OneToOne(() => UserProfileImageEntity, profileImage => profileImage.user)
+  @OneToOne(() => UserProfileImageEntity, (profileImage) => profileImage.user)
   profileImage: UserProfileImageEntity;
 
-  @OneToMany(() => UserFollowingEntity, following => following.user)
+  @OneToMany(() => UserFollowingEntity, (following) => following.user)
   following: UserFollowingEntity[];
 
-  @OneToMany(() => UserFollowingEntity, followed => followed.followUser)
+  @OneToMany(() => UserFollowingEntity, (followed) => followed.followUser)
   follower: UserFollowingEntity[];
 
   @CreateDateColumn()
