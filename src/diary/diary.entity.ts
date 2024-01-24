@@ -26,21 +26,27 @@ export class DiaryEntity extends BaseEntity {
   @Column()
   title: string;
 
+  @Column()
+  place: string;
+
   @JoinColumn()
   @ManyToOne(() => LocationEntity)
   location: LocationEntity;
 
-  @Column({ type: 'enum', enum: ['SUNNY', 'RAINY', 'SNOWY', 'CLOUDY'] })
-  weather: 'SUNNY' | 'RAINY' | 'SNOWY' | 'CLOUDY';
+  @Column({
+    type: 'enum',
+    enum: ['CLOUDY', 'RAINY', 'SNOWY', 'PARTLY_CLOUDY', 'SUNNY'],
+  })
+  weather: 'CLOUDY' | 'RAINY' | 'SNOWY' | 'PARTLY_CLOUDY' | 'SUNNY';
 
   @Column({
     type: 'enum',
-    enum: ['HAPPY', 'SAD', 'ANGRY', 'SHOCKED', 'SLEEPY', 'WINK'],
+    enum: ['ANGRY', 'SAD', 'SMILE', 'HAPPY', 'SHOCKED'],
   })
-  mood: 'HAPPY' | 'SAD' | 'ANGRY' | 'SHOCKED' | 'SLEEPY' | 'WINK';
+  mood: 'ANGRY' | 'SAD' | 'SMILE' | 'HAPPY' | 'SHOCKED';
 
   @Column({ type: 'mediumtext' })
-  detail: string;
+  content: string;
 
   @OneToMany(() => DiaryImageEntity, (image) => image.diary)
   images: DiaryImageEntity[];
