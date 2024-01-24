@@ -1,4 +1,4 @@
 export class CreateJourneyDto {
-  journey_title: string;
+  journeyTitle: string;
   dates: string[];
 }
