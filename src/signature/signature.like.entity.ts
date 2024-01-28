@@ -1,4 +1,4 @@
-// signature.entity.ts
+// signature.like.entity.ts
 
 import {
   BaseEntity,
@@ -12,26 +12,18 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import SignatureEntity from './signature.entity';
+import { UserEntity } from 'src/user/user.entity';
 
 @Entity()
-export class SignaturePageEntity extends BaseEntity {
+export class SignatureLikeEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  pageNum: number;
-
-  @Column({ type: 'mediumtext' })
-  content: string;
-
-  @Column()
-  location: string;
-
-  @Column()
-  image: string;
-
   @OneToMany(() => SignatureEntity, (signature) => signature.id)
   signature: SignatureEntity[];
+
+  @OneToMany(() => UserEntity, (user) => user.id)
+  user: UserEntity[];
 
   @CreateDateColumn()
   created: Date;

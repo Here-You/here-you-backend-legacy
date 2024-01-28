@@ -8,6 +8,7 @@ import { DiaryModule } from './diary/diary.module';
 import { LocationModule } from './location/location.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { PlaceModule } from './place/place.module';
+import { SignatureModule } from './signature/signature.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PlaceModule } from './place/place.module';
     LocationModule,
     ScheduleModule,
     PlaceModule,
+    SignatureModule,
   ],
   controllers: [AppController],
   providers: [AppService],
