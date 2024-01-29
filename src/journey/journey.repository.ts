@@ -1,21 +1,13 @@
 // journey.repository.ts
-
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JourneyEntity } from './journey.entity';
-import { CreateJourneyDto } from './journey-dto/create-journey.dto';
 
+@Injectable()
 export class JourneyRepository {
-  constructor(private readonly repository: Repository<JourneyEntity>) {}
-
-  async createJourney(journeyInfo: CreateJourneyDto): Promise<boolean> {
-    const { journeyTitle, dates } = journeyInfo;
-    const journey = this.repository.create({
-      journey_title: journeyTitle,
-      scheduleGroups: dates.map((date) => ({ date })),
-    });
-
-    await this.repository.save(journey);
-
-    return true;
-  }
+  constructor(
+    @InjectRepository(JourneyEntity)
+    private readonly journey: Repository<JourneyEntity>,
+  ) {}
 }

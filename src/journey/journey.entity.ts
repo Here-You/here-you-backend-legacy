@@ -1,11 +1,17 @@
 // journey.entity.ts
 
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  BaseEntity,
+} from 'typeorm';
 import { ScheduleGroupEntity } from '../schedule/schedule.group.entity';
 import { MonthlyJourneyEntity } from './monthly-journey.entity';
 
 @Entity({ name: 'Journey' })
-export class JourneyEntity {
+export class JourneyEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
