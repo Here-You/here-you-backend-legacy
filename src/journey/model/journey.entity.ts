@@ -1,16 +1,17 @@
 // journey.entity.ts
 
 import {
+  BaseEntity,
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToMany,
-  BaseEntity,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
-import { ScheduleGroupEntity } from '../../schedule/schedule.group.entity';
+import { DateGroupEntity } from '../../date/model/date-group.entity';
 import { MonthlyJourneyEntity } from './monthly-journey.entity';
 
-@Entity({ name: 'Journey' })
+@Entity()
 export class JourneyEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -18,15 +19,14 @@ export class JourneyEntity extends BaseEntity {
   @Column({ length: 255, nullable: false })
   journey_title: string;
 
-  @OneToMany(
-    () => ScheduleGroupEntity,
-    (scheduleGroup) => scheduleGroup.journey,
-  )
-  scheduleGroups: ScheduleGroupEntity[];
+  @ManyToOne(() => DateGroupEntity, (dateGroup) => dateGroup.journeys)
+  @JoinColumn({ name: 'date_group_id' })
+  dateGroup: DateGroupEntity;
 
-  @OneToMany(
+  @ManyToOne(
     () => MonthlyJourneyEntity,
-    (monthlyJourney) => monthlyJourney.journey,
+    (monthlyJourney) => monthlyJourney.journeys,
   )
-  monthlyJourneys: MonthlyJourneyEntity[];
+  @JoinColumn({ name: 'monthly_id' })
+  monthlyJourney: MonthlyJourneyEntity;
 }

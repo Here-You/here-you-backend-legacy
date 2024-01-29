@@ -1,22 +1,18 @@
 // monthly-journey.entity.ts
-
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { JourneyEntity } from './journey.entity';
 
-@Entity({ name: 'MonthlyJourney' })
+@Entity()
 export class MonthlyJourneyEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => JourneyEntity, (journey) => journey.monthlyJourneys)
-  journey: JourneyEntity;
-
-  @Column()
-  journey_id: number;
-
-  @Column()
+  @Column({ name: 'year' })
   year: number;
 
-  @Column()
+  @Column({ name: 'month' })
   month: number;
+
+  @OneToMany(() => JourneyEntity, (journey) => journey.monthlyJourney)
+  journeys: JourneyEntity[];
 }
