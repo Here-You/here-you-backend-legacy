@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
 } from 'typeorm';
-import { JourneyEntity } from '../journey/journey.entity';
+import { JourneyEntity } from '../journey/model/journey.entity';
 import { ScheduleEntity } from './schedule.entity';
 
 @Entity({ name: 'schedule_group' })
