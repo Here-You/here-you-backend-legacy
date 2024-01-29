@@ -8,7 +8,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { DateGroupEntity } from '../../date/model/date-group.entity';
+import { DateGroupEntity } from '../../date-group/model/date-group.entity';
 import { MonthlyJourneyEntity } from './monthly-journey.entity';
 
 @Entity()

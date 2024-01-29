@@ -2,7 +2,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { JourneyEntity } from '../../journey/model/journey.entity';
 
-@Entity('dateGroup')
+@Entity()
 export class DateGroupEntity {
   @PrimaryGeneratedColumn()
   id: number;
