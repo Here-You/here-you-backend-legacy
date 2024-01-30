@@ -1,7 +1,7 @@
 // page-signature.dto.ts
 
-export class pageSignatureDto {
-  pageNum: number;
+export class PageSignatureDto {
+  page: number;
   content: string;
   location: string;
   image: string;

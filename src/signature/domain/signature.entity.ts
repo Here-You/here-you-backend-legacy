@@ -5,15 +5,18 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity,
+  Entity, JoinColumn, ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from 'src/user/user.entity';
-import { HomeSignatureDto } from './dto/home-signature.dto';
-import { CreateSignatureDto } from './dto/create-signature.dto';
+import { HomeSignatureDto } from '../dto/home-signature.dto';
+import { CreateSignatureDto } from '../dto/create-signature.dto';
+import { UserService } from '../../user/user.service';
+import { SignaturePageEntity } from './signature.page.entity';
+import { SignatureLikeEntity } from './signature.like.entity';
 
 @Entity()
 export class SignatureEntity extends BaseEntity {
@@ -23,11 +26,21 @@ export class SignatureEntity extends BaseEntity {
   @Column()
   title: string;
 
-  @Column()
+  @Column({default:0})
   liked_cnt: number;
 
-  @OneToMany(() => UserEntity, (owner) => owner.id)
-  owner: UserEntity[];
+  @ManyToOne(() => UserEntity,
+    (user) => user.signatures)
+  @JoinColumn({ name: 'user_id'})
+  user: UserEntity;
+
+  @OneToMany(() => SignaturePageEntity,
+    (signaturePage) => signaturePage.signature)
+  signaturePages: SignaturePageEntity[];
+
+  @OneToMany(() => SignatureLikeEntity,
+    (signatureLike) => signatureLike.signature)
+  likes: SignatureLikeEntity[];
 
   @CreateDateColumn()
   created: Date;
@@ -57,16 +70,27 @@ export class SignatureEntity extends BaseEntity {
   */
 
   static async createSignature(
-    newSignature: CreateSignatureDto,
+    createSignatureDto: CreateSignatureDto,
   ): Promise<SignatureEntity> {
     try {
-      const { title } = newSignature;
-
       const signature: SignatureEntity = new SignatureEntity();
-      signature.title = newSignature.title;
+      signature.title = createSignatureDto.title;
 
-      return await signature.save();
+      // 현재 로그인한 사용자 아이디로 수정해야함
+      const user: UserEntity = await UserEntity.findOne({ where: { id: 1 }});
+
+      if(!user){
+        throw new Error('User not found');
+      }
+      else{
+        console.log("user name: "+ user.name);
+        signature.user = user;
+
+        return await signature.save();
+
+      }
     } catch (error) {
+      console.error('Error creating Signature:', error);
       throw new Error('Failed to create Signature');
     }
   }

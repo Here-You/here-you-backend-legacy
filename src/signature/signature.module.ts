@@ -3,14 +3,13 @@
 import { Module } from '@nestjs/common';
 import { SignatureService } from './signature.service';
 import { SignatureController } from './signature.controller';
-import { SignatureEntity } from './signature.entity';
+import { SignatureEntity } from './domain/signature.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { EntityManager } from 'typeorm';
 
 @Module({
-  //imports: [TypeOrmModule.forFeature([SignatureEntity])],
   controllers: [SignatureController],
-  providers: [SignatureService, EntityManager],
+  providers: [SignatureService],
 })
 export class SignatureModule {}

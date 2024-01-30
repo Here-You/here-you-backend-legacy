@@ -2,12 +2,9 @@
 
 import {
   BaseEntity,
-  Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity,
-  OneToMany,
-  OneToOne,
+  Entity, JoinColumn, ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -19,11 +16,15 @@ export class SignatureLikeEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToMany(() => SignatureEntity, (signature) => signature.id)
-  signature: SignatureEntity[];
+  @ManyToOne(() => SignatureEntity,
+    (signature) => signature.likes)
+  @JoinColumn({name: 'signature_id'})
+  signature: SignatureEntity;
 
-  @OneToMany(() => UserEntity, (user) => user.id)
-  user: UserEntity[];
+  @ManyToOne(() => UserEntity,
+    (user) => user.likes)
+  @JoinColumn({name: 'user_id'})
+  user: UserEntity;
 
   @CreateDateColumn()
   created: Date;

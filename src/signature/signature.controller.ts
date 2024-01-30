@@ -22,8 +22,24 @@ export class SignatureController {
   @Post('/new')
   async createNewSignature(
     @Body() newSignature: CreateSignatureDto,
-  ): Promise<number> {
+  ): Promise<any> {
     const result = await this.signatureService.createSignature(newSignature);
-    return result;
+
+    if(!result){
+      return {
+        status: 500,
+        success: false,
+        message: "서버 내부 오류",
+      };
+
+    }
+    else{
+      return {
+        status: 201,
+        success: true,
+        message: "시그니처 기록하기 성공",
+        data: {result}
+      };
+    }
   }
 }

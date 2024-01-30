@@ -1,8 +1,12 @@
 import {
-  BaseEntity, Column,
+  BaseEntity,
+  Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity, JoinColumn, ManyToOne, OneToMany,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -15,10 +19,16 @@ export class ScheduleEntity extends BaseEntity {
   id: number;
 
   @JoinColumn()
-  @ManyToOne(() => ScheduleGroupEntity, (scheduleGroup) => scheduleGroup.schedules)
+  @ManyToOne(
+    () => ScheduleGroupEntity,
+    (scheduleGroup) => scheduleGroup.schedules,
+  )
   scheduleGroup: ScheduleGroupEntity;
 
-  @OneToMany(() => ScheduleDetailEntity, (scheduleDetail) => scheduleDetail.schedule)
+  @OneToMany(
+    () => ScheduleDetailEntity,
+    (scheduleDetail) => scheduleDetail.schedule,
+  )
   scheduleDetails: ScheduleDetailEntity[];
 
   @Column({ type: 'date' })
