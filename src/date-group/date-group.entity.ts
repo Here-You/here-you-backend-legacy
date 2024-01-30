@@ -1,6 +1,6 @@
 // journey-date-group.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { JourneyEntity } from '../../journey/model/journey.entity';
+import { JourneyEntity } from '../journey/model/journey.entity';
 
 @Entity()
 export class DateGroupEntity {
