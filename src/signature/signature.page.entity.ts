@@ -11,7 +11,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import SignatureEntity from './signature.entity';
+import { SignatureEntity } from './signature.entity';
 
 @Entity()
 export class SignaturePageEntity extends BaseEntity {
