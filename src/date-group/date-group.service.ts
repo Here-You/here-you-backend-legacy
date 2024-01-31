@@ -1,27 +1,21 @@
 // data-group.service.ts
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { MESSAGE } from '../constants/response';
-import { DateGroupRepository } from './date-group.repository';
+import { response } from 'src/response/response';
+import { BaseResponse } from 'src/response/response.status';
 import { CreateJourneyDto } from '../journey/dtos/create-journey.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 import { DateGroupEntity } from './date-group.entity';
 
 @Injectable()
 export class DateGroupService {
-  constructor(
-    @InjectRepository(DateGroupEntity)
-    private readonly dateGroupRepository: DateGroupRepository,
-  ) {}
-
-  async createDateGroup(createJourneyDto: CreateJourneyDto): Promise<number> {
+  async createDateGroup(createJourneyDto: CreateJourneyDto) {
     // DateGroup 생성
-    const dateGroup = await this.dateGroupRepository.createDateGroup(
+    const dateGroup: DateGroupEntity = await DateGroupEntity.createDateGroup(
       createJourneyDto,
     );
     if (!dateGroup) {
-      throw new BadRequestException(MESSAGE.WRONG_INPUT);
+      throw new BadRequestException();
     }
-
-    return dateGroup.id;
+    console.log(dateGroup.id);
+    return response(BaseResponse.DATEGROUP_CREATED, dateGroup);
   }
 }

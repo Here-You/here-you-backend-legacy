@@ -10,9 +10,7 @@ import { LocationModule } from './location/location.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { PlaceModule } from './place/place.module';
 import { JourneyModule } from './journey/journey.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { DateGroupModule } from './date-group/date-group.module';
-import { DateGroupEntity } from './date-group/date-group.entity';
 
 @Module({
   imports: [
@@ -27,9 +25,6 @@ import { DateGroupEntity } from './date-group/date-group.entity';
     PlaceModule,
     JourneyModule,
     DateGroupModule,
-    TypeOrmModule.forRoot({
-      entities: [DateGroupEntity],
-    }),
   ],
   controllers: [AppController],
   providers: [AppService],
