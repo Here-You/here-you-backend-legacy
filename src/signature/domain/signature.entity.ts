@@ -51,23 +51,6 @@ export class SignatureEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
-  /*
-  async findMySignature(userId: number): Promise<HomeSignatureDto[]> {
-    const signatures = await this.createQueryBuilder('signature')
-      .leftJoinAndSelect('signature.owner', 'user')
-      .where('user.id = :userId', { userId })
-      .getMany();
-
-    //결과를 HomeSignatureDto로 매핑
-    const result: HomeSignatureDto[] = signatures.map((signature) => ({
-      title: signature.title,
-      date: signature.created,
-      // 페이지 1장 사진 추가해야
-    }));
-
-    return result;
-  }
-  */
 
   static async createSignature(
     createSignatureDto: CreateSignatureDto,
@@ -77,7 +60,9 @@ export class SignatureEntity extends BaseEntity {
       signature.title = createSignatureDto.title;
 
       // 현재 로그인한 사용자 아이디로 수정해야함
-      const user: UserEntity = await UserEntity.findOne({ where: { id: 1 }});
+      const user: UserEntity = await UserEntity.findOne({
+        where: { id: 1 }
+      });
 
       if(!user){
         throw new Error('User not found');
@@ -93,5 +78,24 @@ export class SignatureEntity extends BaseEntity {
       console.error('Error creating Signature:', error);
       throw new Error('Failed to create Signature');
     }
+  }
+
+  static async findMySignature(user_id: number):Promise<HomeSignatureDto[]> {
+    const mySignatureList:HomeSignatureDto[] = [];
+    const signatures = await SignatureEntity.find({
+      where: { user: { id: user_id} },
+    });
+
+    for(const signature of signatures){
+      const homeSignature:HomeSignatureDto = new HomeSignatureDto();
+
+      homeSignature.id = signature.id;
+      homeSignature.title = signature.title;
+      homeSignature.date = signature.created;
+      homeSignature.image = await SignaturePageEntity.findThumbnail(signature.id);
+
+      mySignatureList.push(homeSignature);
+    }
+    return mySignatureList;
   }
 }

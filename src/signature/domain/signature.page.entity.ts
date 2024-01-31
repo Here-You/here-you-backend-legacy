@@ -58,4 +58,15 @@ export class SignaturePageEntity extends BaseEntity {
     return await signaturePage.save();
 
   }
+
+  static async findThumbnail(id: number) {
+    // 각 시그니처의 첫 번째 페이지의 이미지 가져오기
+    const firstPage=await SignaturePageEntity.findOne({
+      where: {
+        signature: { id: id },
+        pageNum: 1
+      }
+    });
+    return firstPage.image;
+  }
 }
