@@ -35,25 +35,17 @@ export class SignatureService {
     return signature.id;
   }
 
-  /*
-  async homeSignature(userId: number): Promise<HomeSignatureDto[]> {
-    // 사용자 토큰 가져오기 구현
-    const getByUserId = getRepository(UserEntity)
-      .createQueryBuilder('user')
-      .where('user.userId = :userId', {userId });
 
-    const getUser = await getByUserId.getOne();
-    if(!getUser){
+  async homeSignature(user_id: number): Promise<HomeSignatureDto[]> {
+    try {
+      const homeSignatureList: HomeSignatureDto[] = await SignatureEntity.findMySignature(user_id);
+      return homeSignatureList;
 
+    } catch (error) {
+      // 예외 처리
+      console.error('Error on HomeSignature: ', error);
+      throw new HttpException('Internal Server Error', 500);
     }
-    
-    console.log('홈 서비스 진입');
-    const signatures: HomeSignatureDto[] = await SignatureEntity.findMySignature(userId);
-    return signatures;
   }
-  catch(error) {
-    // 예외 처리
-    throw new HttpException('Internal Server Error', 500);
-  }
-  */
+
 }
