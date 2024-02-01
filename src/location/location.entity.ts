@@ -1,3 +1,4 @@
+import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import {
   BaseEntity,
   Column,
@@ -6,6 +7,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  OneToOne,
 } from 'typeorm';
 
 @Entity()
@@ -16,14 +18,14 @@ export class LocationEntity extends BaseEntity {
   @Column()
   name: string;
 
-  @Column()
-  address: string;
+  @Column({ type: 'decimal', precision: 10, scale: 6 })
+  latitude: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 6 })
-  latitude: string;
+  longitude: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 6 })
-  longitude: string;
+  @OneToOne(() => ScheduleEntity, (schedule) => schedule.location)
+  schedule: ScheduleEntity;
 
   @CreateDateColumn()
   created: Date;
