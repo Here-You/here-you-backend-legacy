@@ -3,7 +3,7 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity, ManyToOne,
+  Entity,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -43,19 +43,22 @@ export class UserEntity extends BaseEntity {
   @Column()
   oauthToken: string;
 
-  @OneToOne(() => UserProfileImageEntity, ((profileImage)) => profileImage.user)
+  @OneToOne(() => UserProfileImageEntity, (profileImage) => profileImage.user)
   profileImage: UserProfileImageEntity;
 
-  @OneToMany(() => UserFollowingEntity, ((following)) => following.user)
+  @OneToMany(() => UserFollowingEntity, (following) => following.user)
   following: UserFollowingEntity[];
 
-  @OneToMany(() => UserFollowingEntity, ((followed)) => followed.followUser)
+  @OneToMany(() => UserFollowingEntity, (followed) => followed.followUser)
   follower: UserFollowingEntity[];
 
   @OneToMany(() => SignatureEntity, (signature) => signature.user)
   signatures: SignatureEntity[];
 
-  @OneToMany(() => SignatureLikeEntity, (signatureLike) => signatureLike.signature)
+  @OneToMany(
+    () => SignatureLikeEntity,
+    (signatureLike) => signatureLike.signature,
+  )
   likes: SignatureLikeEntity[];
 
   @CreateDateColumn()
@@ -67,4 +70,3 @@ export class UserEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 }
-
