@@ -33,11 +33,11 @@ export class LocationEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
-  static async createLocation(latitude, longitude) {
+  static async createLocation(scheduleLocation) {
     try {
       const location: LocationEntity = new LocationEntity();
-      location.latitude = latitude;
-      location.longitude = longitude;
+      location.latitude = scheduleLocation.latitude;
+      location.longitude = scheduleLocation.longitude;
 
       return await location.save();
     } catch (error) {
