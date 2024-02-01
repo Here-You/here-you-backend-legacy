@@ -29,10 +29,6 @@ export class DiaryEntity extends BaseEntity {
   @Column()
   place: string;
 
-  @JoinColumn()
-  @ManyToOne(() => LocationEntity)
-  location: LocationEntity;
-
   @Column({
     type: 'enum',
     enum: ['CLOUDY', 'RAINY', 'SNOWY', 'PARTLY_CLOUDY', 'SUNNY'],

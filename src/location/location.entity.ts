@@ -15,9 +15,6 @@ export class LocationEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  name: string;
-
   @Column({ type: 'decimal', precision: 10, scale: 6 })
   latitude: number;
 
@@ -35,4 +32,16 @@ export class LocationEntity extends BaseEntity {
 
   @DeleteDateColumn()
   deleted: Date;
+
+  static async createLocation(latitude, longitude) {
+    try {
+      const location: LocationEntity = new LocationEntity();
+      location.latitude = latitude;
+      location.longitude = longitude;
+
+      return await location.save();
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 }

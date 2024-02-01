@@ -6,8 +6,6 @@ import {
   OneToMany,
   BaseEntity,
 } from 'typeorm';
-import { errResponse } from 'src/response/response';
-import { BaseResponse } from 'src/response/response.status';
 import { JourneyEntity } from '../journey/model/journey.entity';
 import { CreateDateGroupDto } from './dtos/create-date-group.dto';
 

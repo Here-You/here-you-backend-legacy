@@ -2,8 +2,6 @@ import { Controller, Post, Body } from '@nestjs/common';
 import { JourneyService } from './journey.service';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { CreateJourneyDto } from './dtos/create-journey.dto';
-import { response } from 'src/response/response';
-import { BaseResponse } from 'src/response/response.status';
 
 @Controller('api/journey')
 export class JourneyController {

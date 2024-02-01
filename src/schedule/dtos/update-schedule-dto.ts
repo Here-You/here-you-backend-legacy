@@ -1,12 +1,9 @@
-// create-schedule.dto.ts
+// Update-schedule.dto.ts
 import { IsString, IsNumber } from 'class-validator';
 
-export class CreateScheduleDto {
+export class UpdateScheduleDto {
   @IsString()
   title: string;
-
-  @IsString()
-  participant: string;
 
   @IsNumber()
   latitude: number;

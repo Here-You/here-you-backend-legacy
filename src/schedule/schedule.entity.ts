@@ -25,9 +25,6 @@ export class ScheduleEntity extends BaseEntity {
   @Column({ nullable: true })
   title: string;
 
-  @Column({ nullable: true })
-  participants: string;
-
   @OneToMany(
     () => ScheduleDetailEntity,
     (scheduleDetail) => scheduleDetail.schedule,
@@ -58,5 +55,12 @@ export class ScheduleEntity extends BaseEntity {
       currentDate = new Date(currentDate);
       currentDate.setDate(currentDate.getDate() + 1);
     }
+  }
+
+  static async updateSchedule(schedule, updateScheduleDto, location) {
+    schedule.title = updateScheduleDto.title;
+    schedule.location = location.id;
+
+    return await schedule.save();
   }
 }
