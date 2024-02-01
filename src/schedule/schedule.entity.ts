@@ -63,7 +63,7 @@ export class ScheduleEntity extends BaseEntity {
   }
 
   static async updateScheduleLocation(schedule, location) {
-    schedule.location = location.id;
+    schedule.location_id = location.id;
     return await schedule.save();
   }
 }
