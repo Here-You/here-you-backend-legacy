@@ -5,6 +5,11 @@ export const BaseResponse = {
     code: 200,
     message: '세부 일정을 삭제했습니다.',
   },
+  UPDATE_DETAIL_SCHEDULE_STATUS_SUCCESS: {
+    success: true,
+    code: 200,
+    message: '세부 일정 상태를 변경했습니다',
+  },
 
   /* 201 CREATED : 요청 성공, 자원 생성 */
   DATEGROUP_CREATED: {

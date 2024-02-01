@@ -1,4 +1,12 @@
-import { Controller, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Put,
+  Patch,
+  Delete,
+  Param,
+  Body,
+} from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { DetailScheduleService } from './detail-schedule.service';
 import { DetailContentDto } from './detail-schedule-info.dto';
@@ -39,6 +47,22 @@ export class DetailScheduleController {
     const result = await this.detailScheduleService.updateDetailSchedule(
       detailId,
       detailContentDto.content,
+    );
+    return result;
+  }
+
+  //세부 일정 상태 업데이트
+  @ApiOperation({
+    summary: '세부 일정 상태 업데이트',
+    description: 'true면 false로, false면 true로',
+  })
+  @ApiOkResponse({
+    description: '성공 ',
+  })
+  @Patch('update-status/:detailId')
+  async updateDetailStatus(@Param('detailId') detailId: number) {
+    const result = await this.detailScheduleService.updateDetailStatus(
+      detailId,
     );
     return result;
   }

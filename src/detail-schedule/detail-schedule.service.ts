@@ -28,7 +28,20 @@ export class DetailScheduleService {
     return response(BaseResponse.DETAIL_SCHEDULE_UPDATED);
   }
 
-  //세부일정 작성하기
+  //세부일정 상태 업데이트하기
+  async updateDetailStatus(detailId) {
+    const detailSchedule = await DetailScheduleEntity.findExistDetail(detailId);
+    const updateStatus = await DetailScheduleEntity.updateDetailStatus(
+      detailSchedule,
+    );
+    console.log(updateStatus);
+    return response(
+      BaseResponse.UPDATE_DETAIL_SCHEDULE_STATUS_SUCCESS,
+      updateStatus.isDone,
+    );
+  }
+
+  //세부일정 삭제하기
   async deleteDetailSchedule(detailId: number) {
     const detailSchedule = await DetailScheduleEntity.findExistDetail(detailId);
     const deleteDetailSchedule =

@@ -49,6 +49,11 @@ export class DetailScheduleEntity extends BaseEntity {
     detailSchedule.content = content;
     return await detailSchedule.save();
   }
+  //세부 일정 상태 업데이트하기
+  static async updateDetailStatus(detailSchedule) {
+    detailSchedule.isDone = !detailSchedule.isDone;
+    return await detailSchedule.save();
+  }
   //세부 일정 삭제하기
   static async deleteDetailSchedule(detailSchedule) {
     return await DetailScheduleEntity.softRemove(detailSchedule);
