@@ -27,4 +27,12 @@ export class DetailScheduleService {
     console.log(updateContent);
     return response(BaseResponse.DETAIL_SCHEDULE_UPDATED);
   }
+
+  //세부일정 작성하기
+  async deleteDetailSchedule(detailId: number) {
+    const detailSchedule = await DetailScheduleEntity.findExistDetail(detailId);
+    const deleteDetailSchedule =
+      await DetailScheduleEntity.deleteDetailSchedule(detailSchedule);
+    return response(BaseResponse.DELETE_DETAIL_SCHEDULE_SUCCESS);
+  }
 }

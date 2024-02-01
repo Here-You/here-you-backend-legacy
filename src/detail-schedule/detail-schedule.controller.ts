@@ -1,4 +1,4 @@
-import { Controller, Post, Put, Param, Body } from '@nestjs/common';
+import { Controller, Post, Put, Delete, Param, Body } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { DetailScheduleService } from './detail-schedule.service';
 import { DetailContentDto } from './detail-schedule-info.dto';
@@ -39,6 +39,23 @@ export class DetailScheduleController {
     const result = await this.detailScheduleService.updateDetailSchedule(
       detailId,
       detailContentDto.content,
+    );
+    return result;
+  }
+
+  //세부 일정 삭제하기
+  /*remove로 할지, softremove로 할지 고민 */
+  @ApiOperation({
+    summary: '세부 일정 삭제하기',
+    description: '일정 배너에 세부 일정을 삭제할 수 있습니다.',
+  })
+  @ApiOkResponse({
+    description: '성공 ',
+  })
+  @Delete('delete/:detailId')
+  async deleteDetailSchedule(@Param('detailId') detailId: number) {
+    const result = await this.detailScheduleService.deleteDetailSchedule(
+      detailId,
     );
     return result;
   }
