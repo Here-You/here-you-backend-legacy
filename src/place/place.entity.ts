@@ -3,7 +3,8 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity, OneToMany,
+  Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -21,10 +22,10 @@ export class PlaceEntity extends BaseEntity {
   @Column({ type: 'text' })
   description: string;
 
-  @OneToMany(() => PlaceTagEntity, tag => tag.place)
+  @OneToMany(() => PlaceTagEntity, (tag) => tag.place)
   tags: PlaceTagEntity[];
 
-  @OneToMany(() => PlaceImageEntity, image => image.place)
+  @OneToMany(() => PlaceImageEntity, (image) => image.place)
   images: PlaceImageEntity[];
 
   @CreateDateColumn()

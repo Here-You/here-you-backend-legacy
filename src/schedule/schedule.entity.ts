@@ -16,20 +16,20 @@ export class ScheduleEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ nullable: true })
+  date: string;
+
+  @Column({ nullable: true })
+  title: string;
+
+  @Column({ nullable: true })
+  participants: string;
+
   @OneToMany(
     () => ScheduleDetailEntity,
     (scheduleDetail) => scheduleDetail.schedule,
   )
   scheduleDetails: ScheduleDetailEntity[];
-
-  @Column({ type: 'date' })
-  date: Date;
-
-  @Column()
-  title: string;
-
-  @Column()
-  participants: string;
 
   @CreateDateColumn()
   created: Date;
@@ -39,4 +39,17 @@ export class ScheduleEntity extends BaseEntity {
 
   @DeleteDateColumn()
   deleted: Date;
+
+  static async createSchedule(dates) {
+    let currentDate = new Date(dates.startDate);
+    const lastDate = new Date(dates.endDate);
+
+    while (currentDate <= lastDate) {
+      const schedule = new ScheduleEntity();
+      schedule.date = currentDate.toISOString().split('T')[0];
+      await schedule.save();
+      currentDate = new Date(currentDate);
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  }
 }

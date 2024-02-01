@@ -10,13 +10,14 @@ import {
 } from 'typeorm';
 import { DateGroupEntity } from '../../date-group/date-group.entity';
 import { MonthlyJourneyEntity } from './monthly-journey.entity';
+import { CreateJourneyDto } from '../dtos/create-journey.dto';
 
 @Entity()
 export class JourneyEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 255, nullable: false })
+  @Column()
   journey_title: string;
 
   @ManyToOne(() => DateGroupEntity, (dateGroup) => dateGroup.journeys)
@@ -29,4 +30,16 @@ export class JourneyEntity extends BaseEntity {
   )
   @JoinColumn({ name: 'monthly_id' })
   monthlyJourney: MonthlyJourneyEntity;
+
+  static async createJourney(createJourneyDto: CreateJourneyDto, dateGroupId) {
+    try {
+      const journey: JourneyEntity = new JourneyEntity();
+      journey.journey_title = createJourneyDto.journey_title;
+      journey.dateGroup = dateGroupId;
+
+      return await journey.save();
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 }

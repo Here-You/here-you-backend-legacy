@@ -9,7 +9,7 @@ import {
 import { errResponse } from 'src/response/response';
 import { BaseResponse } from 'src/response/response.status';
 import { JourneyEntity } from '../journey/model/journey.entity';
-import { CreateJourneyDto } from 'src/journey/dtos/create-journey.dto';
+import { CreateDateGroupDto } from './dtos/create-date-group.dto';
 
 @Entity()
 export class DateGroupEntity extends BaseEntity {
@@ -27,12 +27,12 @@ export class DateGroupEntity extends BaseEntity {
 
   // 날짜 그룹 생성
   static async createDateGroup(
-    createJourneyDto: CreateJourneyDto,
+    createDateGroupDto: CreateDateGroupDto,
   ): Promise<DateGroupEntity> {
     try {
       const dateGroup: DateGroupEntity = new DateGroupEntity();
-      dateGroup.startDate = createJourneyDto.startDate;
-      dateGroup.endDate = createJourneyDto.endDate;
+      dateGroup.startDate = createDateGroupDto.startDate;
+      dateGroup.endDate = createDateGroupDto.endDate;
 
       return await dateGroup.save();
     } catch (error) {
