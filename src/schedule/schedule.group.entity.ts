@@ -1,27 +1,28 @@
 import {
   BaseEntity,
-  Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { PlaceEntity } from './place.entity';
+import { ScheduleEntity } from './schedule.entity';
+import { UserEntity } from '../user/user.entity';
 
 @Entity()
-export class PlaceImageEntity extends BaseEntity {
+export class ScheduleGroupEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @JoinColumn()
-  @ManyToOne(() => PlaceEntity, (place) => place.images)
-  place: PlaceEntity;
+  @OneToMany(() => ScheduleEntity, (schedule) => schedule.scheduleGroup)
+  schedules: ScheduleEntity[];
 
-  @Column()
-  imageKey: string;
+  @JoinColumn()
+  @ManyToOne(() => UserEntity)
+  user: UserEntity;
 
   @CreateDateColumn()
   created: Date;

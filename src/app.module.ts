@@ -11,6 +11,7 @@ import { ScheduleModule } from './schedule/schedule.module';
 import { PlaceModule } from './place/place.module';
 import { JourneyModule } from './journey/journey.module';
 import { DateGroupModule } from './date-group/date-group.module';
+import { SignatureModule } from './signature/signature.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { DateGroupModule } from './date-group/date-group.module';
     PlaceModule,
     JourneyModule,
     DateGroupModule,
+    SignatureModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jsonwebtoken from 'jsonwebtoken';
 import { UserEntity } from './user.entity';
 import { IReqUser } from './user.dto';
+import { UserFollowingEntity } from './user.following.entity';
 
 @Injectable()
 export class UserService {
@@ -41,5 +42,19 @@ export class UserService {
         id: user.id,
       }),
     };
+  }
+
+  async FindUser(id: number) {
+    const user: UserEntity = await UserEntity.findOne({
+      where: {
+        id: id
+      }
+    });
+
+    if (!user) {
+      throw new HttpException('Invalid user', 403);
+    }
+
+    return user;
   }
 }
