@@ -1,7 +1,7 @@
 import { Body, Controller, Put, Param } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { ScheduleService } from './schedule.service';
-import { UpdateScheduleDto } from './dtos/update-schedule-dto';
+import { UpdateScheduleTitleDto } from './dtos/update-schedule-dto';
 
 @Controller('api/schedule')
 export class ScheduleController {
@@ -9,19 +9,19 @@ export class ScheduleController {
 
   @ApiOperation({
     summary: '여정 작성하기',
-    description: '제목, 위치를 작성합니다.',
+    description: '제목을 작성합니다.',
   })
   @ApiOkResponse({
     description: '성공 ',
   })
-  @Put('update/:scheduleId')
+  @Put('update-title/:scheduleId')
   async updateSchedule(
     @Param('scheduleId') scheduleId: number,
-    @Body() updateScheduleDto: UpdateScheduleDto,
+    @Body() updateScheduleTitleDto: UpdateScheduleTitleDto,
   ) {
-    const result = await this.scheduleService.updateSchedule(
+    const result = await this.scheduleService.updateScheduleTitle(
       scheduleId,
-      updateScheduleDto,
+      updateScheduleTitleDto,
     );
     return result;
   }
