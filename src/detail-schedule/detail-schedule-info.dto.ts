@@ -15,3 +15,9 @@ export class DetailScheduleInfoDto {
   @IsNumber()
   schedule_id: number;
 }
+
+export class DetailContentDto {
+  @IsOptional()
+  @IsString()
+  content: string;
+}

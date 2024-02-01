@@ -16,4 +16,15 @@ export class DetailScheduleService {
     console.log(detailSchedule);
     return response(BaseResponse.DETAIL_SCHEDULE_CREATED);
   }
+
+  //세부일정 작성하기
+  async updateDetailSchedule(detailId, content) {
+    const detailSchedule = await DetailScheduleEntity.findExistDetail(detailId);
+    const updateContent = await DetailScheduleEntity.updateDetailSchedule(
+      detailSchedule,
+      content,
+    );
+    console.log(updateContent);
+    return response(BaseResponse.DETAIL_SCHEDULE_UPDATED);
+  }
 }
