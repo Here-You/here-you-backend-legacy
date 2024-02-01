@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ScheduleEntity } from './schedule.entity';
+import { ScheduleEntity } from '../schedule/schedule.entity';
 
 @Entity()
 export class DetailScheduleEntity extends BaseEntity {

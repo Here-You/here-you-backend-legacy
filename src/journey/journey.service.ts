@@ -4,7 +4,7 @@ import { JourneyEntity } from './model/journey.entity';
 import { response } from 'src/response/response';
 import { BaseResponse } from 'src/response/response.status';
 import { DateGroupEntity } from 'src/date-group/date-group.entity';
-import { ScheduleEntity } from 'src/schedule/models/schedule.entity';
+import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { CreateJourneyDto } from './dtos/create-journey.dto';
 import { CreateDateGroupDto } from 'src/date-group/dtos/create-date-group.dto';
 

@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { DetailScheduleEntity } from './detail-schedule';
+import { DetailScheduleEntity } from '../detail-schedule/detail-schedule';
 import { LocationEntity } from 'src/location/location.entity';
 
 @Entity()
@@ -27,7 +27,7 @@ export class ScheduleEntity extends BaseEntity {
 
   @OneToMany(
     () => DetailScheduleEntity,
-    (detailSchedule) => DetailSchedule.schedule,
+    (detailSchedule) => detailSchedule.schedule,
   )
   detailSchedules: DetailScheduleEntity[];
 

@@ -1,4 +1,4 @@
-import { ScheduleEntity } from 'src/schedule/models/schedule.entity';
+import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import {
   BaseEntity,
   Column,
