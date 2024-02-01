@@ -12,19 +12,19 @@ import {
 import { ScheduleEntity } from './schedule.entity';
 
 @Entity()
-export class ScheduleDetailEntity extends BaseEntity {
+export class DetailScheduleEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @JoinColumn()
-  @ManyToOne(() => ScheduleEntity, (schedule) => schedule.scheduleDetails)
-  schedule: ScheduleEntity;
+  @Column({ nullable: true })
+  content: string;
 
-  @Column()
-  name: string;
-
-  @Column()
+  @Column({ default: false })
   isDone: boolean;
+
+  @JoinColumn({ name: 'schedule_id' })
+  @ManyToOne(() => ScheduleEntity, (schedule) => schedule.detailSchedules)
+  schedule: ScheduleEntity;
 
   @CreateDateColumn()
   created: Date;

@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { ScheduleDetailEntity } from './schedule.detail.entity';
+import { DetailScheduleEntity } from './detail-schedule';
 import { LocationEntity } from 'src/location/location.entity';
 
 @Entity()
@@ -26,10 +26,10 @@ export class ScheduleEntity extends BaseEntity {
   title: string;
 
   @OneToMany(
-    () => ScheduleDetailEntity,
-    (scheduleDetail) => scheduleDetail.schedule,
+    () => DetailScheduleEntity,
+    (detailSchedule) => DetailSchedule.schedule,
   )
-  scheduleDetails: ScheduleDetailEntity[];
+  detailSchedules: DetailScheduleEntity[];
 
   @OneToOne(() => LocationEntity, { eager: true }) // eager 옵션을 사용하여 즉시 로드
   @JoinColumn({ name: 'location_id' }) // 외래 키에 대한 컬럼명 설정

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { response } from 'src/response/response';
 import { BaseResponse } from 'src/response/response.status';
 import { LocationEntity } from 'src/location/location.entity';
-import { ScheduleEntity } from './schedule.entity';
+import { ScheduleEntity } from './models/schedule.entity';
 
 @Injectable()
 export class ScheduleService {
