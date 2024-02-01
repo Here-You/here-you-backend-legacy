@@ -10,8 +10,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-import { DetailScheduleEntity } from '../detail-schedule/detail-schedule';
+import { NotFoundException } from '@nestjs/common';
+import { BaseResponse } from 'src/response/response.status';
+import { DetailScheduleEntity } from '../detail-schedule/detail-schedule.entity';
 import { LocationEntity } from 'src/location/location.entity';
 
 @Entity()
@@ -65,5 +66,15 @@ export class ScheduleEntity extends BaseEntity {
   static async updateScheduleLocation(schedule, location) {
     schedule.location_id = location.id;
     return await schedule.save();
+  }
+
+  static async findExistSchedule(scheduleId) {
+    const schedule = await ScheduleEntity.findOne({
+      where: { id: scheduleId },
+    });
+    if (!schedule) {
+      throw new NotFoundException(BaseResponse.SCHEDULE_NOT_FOUND);
+    }
+    return schedule;
   }
 }

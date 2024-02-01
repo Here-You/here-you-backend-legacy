@@ -12,6 +12,7 @@ import { PlaceModule } from './place/place.module';
 import { JourneyModule } from './journey/journey.module';
 import { DateGroupModule } from './date-group/date-group.module';
 import { SignatureModule } from './signature/signature.module';
+import { DetailScheduleModule } from './detail-schedule/detail-schedule.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { SignatureModule } from './signature/signature.module';
     DiaryModule,
     LocationModule,
     ScheduleModule,
+    DetailScheduleModule,
     PlaceModule,
     JourneyModule,
     DateGroupModule,

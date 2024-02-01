@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ScheduleEntity } from '../schedule/schedule.entity';
+import { DetailScheduleInfoDto } from './detail-schedule-info.dto';
 
 @Entity()
 export class DetailScheduleEntity extends BaseEntity {
@@ -34,4 +35,10 @@ export class DetailScheduleEntity extends BaseEntity {
 
   @DeleteDateColumn()
   deleted: Date;
+
+  static async createDetailSchedule(scheduleId) {
+    const detailSchedule = new DetailScheduleEntity();
+    detailSchedule.schedule = scheduleId;
+    return await detailSchedule.save();
+  }
 }
