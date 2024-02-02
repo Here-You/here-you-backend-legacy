@@ -48,6 +48,11 @@ export const BaseResponse = {
     code: 201,
     message: '일지를 수정했습니다.',
   },
+  DIARY_IMG_URL_CREATED: {
+    success: true,
+    code: 201,
+    message: '이미지 url이 발급되었습니다.',
+  },
 
   /* 404 NOT_FOUND : Resource 를 찾을 수 없음 */
   SCHEDULE_NOT_FOUND: {

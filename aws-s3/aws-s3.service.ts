@@ -12,7 +12,7 @@ export class AwsS3Service {
 
     private readonly configService: ConfigService,
   ) {}
-  async getDiaryImgUrl(getDiaryImgUrlDto: GetDiaryImgUrlDto, diaryId: number) {
+  async getDiaryImgUrl(diaryId: number, getDiaryImgUrlDto: GetDiaryImgUrlDto) {
     // 저장될 파일 이름
     const fileName = `profile/${diaryId}/${Date.now()}${
       getDiaryImgUrlDto.fileName
