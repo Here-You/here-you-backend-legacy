@@ -18,23 +18,23 @@ export class JourneyEntity extends BaseEntity {
   id: number;
 
   @Column()
-  journey_title: string;
+  title: string;
 
   @ManyToOne(() => DateGroupEntity, (dateGroup) => dateGroup.journeys)
-  @JoinColumn({ name: 'date_group_id' })
+  @JoinColumn({ name: 'dateGroupId' })
   dateGroup: DateGroupEntity;
 
   @ManyToOne(
     () => MonthlyJourneyEntity,
     (monthlyJourney) => monthlyJourney.journeys,
   )
-  @JoinColumn({ name: 'monthly_id' })
+  @JoinColumn({ name: 'monthlyId' })
   monthlyJourney: MonthlyJourneyEntity;
 
   static async createJourney(createJourneyDto: CreateJourneyDto, dateGroupId) {
     try {
       const journey: JourneyEntity = new JourneyEntity();
-      journey.journey_title = createJourneyDto.journey_title;
+      journey.title = createJourneyDto.title;
       journey.dateGroup = dateGroupId;
 
       return await journey.save();

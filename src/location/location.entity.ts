@@ -48,7 +48,7 @@ export class LocationEntity extends BaseEntity {
   static async updateLocation(schedule, scheduleLocation) {
     try {
       const location = await LocationEntity.findOneOrFail({
-        where: { id: schedule.location_id },
+        where: { id: schedule.locationId },
       });
       location.latitude = scheduleLocation.latitude;
       location.longitude = scheduleLocation.longitude;

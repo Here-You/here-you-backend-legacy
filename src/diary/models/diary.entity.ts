@@ -6,13 +6,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from '../user/user.entity';
+import { UserEntity } from '../../user/user.entity';
 import { DiaryImageEntity } from './diary.image.entity';
-import { LocationEntity } from '../location/location.entity';
+import { LocationEntity } from '../../location/location.entity';
 
 @Entity()
 export class DiaryEntity extends BaseEntity {
@@ -44,8 +44,11 @@ export class DiaryEntity extends BaseEntity {
   @Column({ type: 'mediumtext' })
   content: string;
 
-  @OneToMany(() => DiaryImageEntity, (image) => image.diary)
-  images: DiaryImageEntity[];
+  @OneToOne(() => DiaryImageEntity, (image) => image.diary, {
+    nullable: true,
+    cascade: true,
+  })
+  image: DiaryImageEntity;
 
   @CreateDateColumn()
   created: Date;

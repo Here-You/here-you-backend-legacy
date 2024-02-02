@@ -5,12 +5,14 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity, JoinColumn, ManyToOne,
+  Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { SignatureEntity } from './signature.entity';
-import {PageSignatureDto} from '../dto/page-signature.dto';
+import { PageSignatureDto } from '../dto/page-signature.dto';
 
 @Entity()
 export class SignaturePageEntity extends BaseEntity {
@@ -29,9 +31,8 @@ export class SignaturePageEntity extends BaseEntity {
   @Column()
   image: string;
 
-  @ManyToOne(() => SignatureEntity,
-    (signature) => signature.signaturePages)
-  @JoinColumn({name: 'signature_id'})
+  @ManyToOne(() => SignatureEntity, (signature) => signature.signaturePages)
+  @JoinColumn({ name: 'signature_id' })
   signature: SignatureEntity;
 
   @CreateDateColumn()
@@ -44,10 +45,10 @@ export class SignaturePageEntity extends BaseEntity {
   deleted: Date;
 
   static async saveSignaturePages(
-    pageSignatureDto:PageSignatureDto,
-    signature:SignatureEntity):Promise<SignaturePageEntity> {
-
-    const signaturePage:SignaturePageEntity = new SignaturePageEntity();
+    pageSignatureDto: PageSignatureDto,
+    signature: SignatureEntity,
+  ): Promise<SignaturePageEntity> {
+    const signaturePage: SignaturePageEntity = new SignaturePageEntity();
 
     signaturePage.signature = signature;
     signaturePage.content = pageSignatureDto.content;
@@ -56,16 +57,15 @@ export class SignaturePageEntity extends BaseEntity {
     signaturePage.pageNum = pageSignatureDto.page;
 
     return await signaturePage.save();
-
   }
 
   static async findThumbnail(id: number) {
     // 각 시그니처의 첫 번째 페이지의 이미지 가져오기
-    const firstPage=await SignaturePageEntity.findOne({
+    const firstPage = await SignaturePageEntity.findOne({
       where: {
         signature: { id: id },
-        pageNum: 1
-      }
+        pageNum: 1,
+      },
     });
     return firstPage.image;
   }

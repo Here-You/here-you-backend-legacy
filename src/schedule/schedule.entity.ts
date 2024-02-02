@@ -33,7 +33,7 @@ export class ScheduleEntity extends BaseEntity {
   detailSchedules: DetailScheduleEntity[];
 
   @OneToOne(() => LocationEntity, { eager: true }) // eager 옵션을 사용하여 즉시 로드
-  @JoinColumn({ name: 'location_id' }) // 외래 키에 대한 컬럼명 설정
+  @JoinColumn({ name: 'locationId' }) // 외래 키에 대한 컬럼명 설정
   location: LocationEntity;
 
   @CreateDateColumn()
@@ -64,7 +64,7 @@ export class ScheduleEntity extends BaseEntity {
   }
 
   static async updateScheduleLocation(schedule, location) {
-    schedule.location_id = location.id;
+    schedule.locationId = location.id;
     return await schedule.save();
   }
 

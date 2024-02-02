@@ -3,7 +3,7 @@ import { IsString, IsDateString } from 'class-validator';
 
 export class CreateJourneyDto {
   @IsString()
-  journey_title: string;
+  title: string;
 
   @IsDateString()
   startDate: string;

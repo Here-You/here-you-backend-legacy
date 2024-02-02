@@ -5,7 +5,7 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
-  ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -16,12 +16,12 @@ export class DiaryImageEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @JoinColumn()
-  @ManyToOne(() => DiaryEntity, (diary) => diary.images)
-  diary: DiaryEntity;
-
   @Column()
-  imageKey: string;
+  imageUrl: string;
+
+  @JoinColumn({ name: 'diaryId' })
+  @OneToOne(() => DiaryEntity, (diary) => diary.image)
+  diary: DiaryEntity;
 
   @CreateDateColumn()
   created: Date;
