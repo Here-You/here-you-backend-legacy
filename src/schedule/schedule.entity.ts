@@ -14,6 +14,7 @@ import { NotFoundException } from '@nestjs/common';
 import { BaseResponse } from 'src/response/response.status';
 import { DetailScheduleEntity } from '../detail-schedule/detail-schedule.entity';
 import { LocationEntity } from 'src/location/location.entity';
+import { DiaryEntity } from 'src/diary/models/diary.entity';
 
 @Entity()
 export class ScheduleEntity extends BaseEntity {
@@ -35,6 +36,9 @@ export class ScheduleEntity extends BaseEntity {
   @OneToOne(() => LocationEntity, { eager: true }) // eager 옵션을 사용하여 즉시 로드
   @JoinColumn({ name: 'locationId' }) // 외래 키에 대한 컬럼명 설정
   location: LocationEntity;
+
+  @OneToOne(() => DiaryEntity, (diary) => diary.schedule, { cascade: true })
+  diary: DiaryEntity;
 
   @CreateDateColumn()
   created: Date;
@@ -64,7 +68,7 @@ export class ScheduleEntity extends BaseEntity {
   }
 
   static async updateScheduleLocation(schedule, location) {
-    schedule.locationId = location.id;
+    schedule.location = location.id;
     return await schedule.save();
   }
 

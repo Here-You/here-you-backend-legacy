@@ -38,6 +38,16 @@ export const BaseResponse = {
     code: 201,
     message: '세부 일정을 작성했습니다.',
   },
+  DIARY_CREATED: {
+    success: true,
+    code: 201,
+    message: '일지를 작성했습니다.',
+  },
+  DIARY_UPDATED: {
+    success: true,
+    code: 201,
+    message: '일지를 수정했습니다.',
+  },
 
   /* 404 NOT_FOUND : Resource 를 찾을 수 없음 */
   SCHEDULE_NOT_FOUND: {
@@ -49,5 +59,10 @@ export const BaseResponse = {
     success: false,
     code: 404,
     message: '세부 일정이 없습니다.',
+  },
+  DIARY_NOT_FOUND: {
+    success: false,
+    code: 404,
+    message: '일지가 없습니다.',
   },
 };

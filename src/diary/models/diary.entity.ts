@@ -12,7 +12,8 @@ import {
 } from 'typeorm';
 import { UserEntity } from '../../user/user.entity';
 import { DiaryImageEntity } from './diary.image.entity';
-import { LocationEntity } from '../../location/location.entity';
+import { ScheduleEntity } from 'src/schedule/schedule.entity';
+import { CreateDiaryDto } from '../dtos/create-diary.dto';
 
 @Entity()
 export class DiaryEntity extends BaseEntity {
@@ -50,6 +51,10 @@ export class DiaryEntity extends BaseEntity {
   })
   image: DiaryImageEntity;
 
+  @OneToOne(() => ScheduleEntity, (schedule) => schedule.diary)
+  @JoinColumn({ name: 'scheduleId' })
+  schedule: ScheduleEntity;
+
   @CreateDateColumn()
   created: Date;
 
@@ -58,4 +63,16 @@ export class DiaryEntity extends BaseEntity {
 
   @DeleteDateColumn()
   deleted: Date;
+
+  static async createDiary(schedule, diaryInfo: CreateDiaryDto) {
+    const diary = new DiaryEntity();
+    diary.title = diaryInfo.title;
+    diary.place = diaryInfo.place;
+    diary.weather = diaryInfo.weather;
+    diary.mood = diaryInfo.mood;
+    diary.content = diaryInfo.content;
+    diary.schedule = schedule.id;
+
+    return await diary.save();
+  }
 }

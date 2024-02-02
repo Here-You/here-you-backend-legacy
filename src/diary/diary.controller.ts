@@ -1,7 +1,7 @@
 import { ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 import { Controller, Post, Body, Param } from '@nestjs/common';
 import { DiaryService } from './diary.service';
-import { CreateDiaryInfoDto } from './dtos/diary-info-dto';
+import { CreateDiaryDto } from './dtos/create-diary.dto';
 
 @Controller('api/diary')
 export class DiaryController {
@@ -17,11 +17,11 @@ export class DiaryController {
   @Post('create/:scheduleId')
   async createJourney(
     @Param('scheduleId') scheduleId: number,
-    @Body() createDiaryInfoDto: CreateDiaryInfoDto,
+    @Body() createDiaryDto: CreateDiaryDto,
   ) {
     const result = await this.diaryService.createDiary(
       scheduleId,
-      createDiaryInfoDto,
+      createDiaryDto,
     );
     return result;
   }
