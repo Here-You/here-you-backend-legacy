@@ -4,6 +4,7 @@ import jsonwebtoken from 'jsonwebtoken';
 import { UserEntity } from './user.entity';
 import { IReqUser } from './user.dto';
 import { UserFollowingEntity } from './user.following.entity';
+import { UserProfileImageEntity } from './user.profile.image.entity';
 
 @Injectable()
 export class UserService {
@@ -44,17 +45,41 @@ export class UserService {
     };
   }
 
-  async FindUser(id: number) {
-    const user: UserEntity = await UserEntity.findOne({
-      where: {
-        id: id
-      }
-    });
+  async checkIfFollowing(user: UserEntity, targetUserId: number): Promise<boolean> {
+    // user가 targetUser를 팔로우하고 있는지 확인
 
-    if (!user) {
-      throw new HttpException('Invalid user', 403);
+    const followingArray = user.following||[];
+
+    const isFollowing = followingArray.some(
+      (following) => following.followUser.id === targetUserId);
+
+    return isFollowing;
+  }
+
+  async findUserById(userId: number): Promise<UserEntity> {
+    try{
+      const user:UserEntity = await UserEntity.findOne({
+        where: { id: userId },
+      });
+      return user;
+
+    }catch (error){
+      console.log("Error on findUserById: ", error);
+      throw error;
     }
+  }
 
-    return user;
+  async getProfileImage(userId: number) {
+    try{
+      const profileImageEntity = await UserProfileImageEntity.findOne({
+        where:{ user:{ id: userId } }
+      });
+
+      console.log("겟프로필이미지: ",profileImageEntity);
+      return profileImageEntity;
+
+    }catch (error){
+      console.log("Error on getProfileImage: "+error);
+    }
   }
 }
