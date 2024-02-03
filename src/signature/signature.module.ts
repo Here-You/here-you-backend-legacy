@@ -7,9 +7,10 @@ import { SignatureEntity } from './domain/signature.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { EntityManager } from 'typeorm';
+import { UserService } from '../user/user.service';
 
 @Module({
   controllers: [SignatureController],
-  providers: [SignatureService],
+  providers: [SignatureService,UserService],
 })
 export class SignatureModule {}

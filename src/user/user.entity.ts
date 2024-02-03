@@ -3,7 +3,7 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity, ManyToOne,
+  Entity,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -29,8 +29,11 @@ export class UserEntity extends BaseEntity {
   @Column()
   password: string;
 
+  @Column()
+  nickname: string;
+
   @Column({ type: 'text' })
-  bio: string;
+  introduction: string;
 
   @Column()
   age: number;
