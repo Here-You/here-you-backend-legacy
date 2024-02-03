@@ -12,14 +12,14 @@ import { AwsS3Service } from '../../aws-s3/aws-s3.service';
 export class DiaryService {
   constructor(private readonly awsS3Service: AwsS3Service) {}
 
-  //일지 작성하기
-  async postDiary(scheduleId, diaryInfo: PostDiaryDto) {
-    const schedule = await ScheduleEntity.findExistSchedule(scheduleId);
-    const diary = await DiaryEntity.postDiary(schedule, diaryInfo);
+  /*일지 작성하기*/
+  async postDiary(diaryId, diaryInfo: PostDiaryDto) {
+    const diary = await DiaryEntity.postDiary(diaryId, diaryInfo);
     console.log(diary);
     return response(BaseResponse.DIARY_CREATED);
   }
-  //일지 사진 S3에 업로드 후 url 받기
+
+  /*일지 사진 S3에 업로드 후 url 받기*/
   async getDiaryImgUrl(diaryId: number, getDiaryImgUrlDto: GetDiaryImgUrlDto) {
     const createImgUrl = await this.awsS3Service.getDiaryImgUrl(
       diaryId,

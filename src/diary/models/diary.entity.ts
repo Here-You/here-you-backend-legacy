@@ -10,9 +10,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { NotFoundException } from '@nestjs/common';
+import { BaseResponse } from 'src/response/response.status';
+import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { UserEntity } from '../../user/user.entity';
 import { DiaryImageEntity } from './diary.image.entity';
-import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { PostDiaryDto } from '../dtos/post-diary.dto';
 
 @Entity()
@@ -48,7 +50,6 @@ export class DiaryEntity extends BaseEntity {
   content: string;
 
   @OneToOne(() => DiaryImageEntity, (image) => image.diary, {
-    nullable: true,
     cascade: true,
   })
   image: DiaryImageEntity;
@@ -73,15 +74,24 @@ export class DiaryEntity extends BaseEntity {
     await diary.save();
   }
   /*일지 작성하기*/
-  static async postDiary(schedule, diaryInfo: PostDiaryDto) {
-    const diary = new DiaryEntity();
+  static async postDiary(diaryId, diaryInfo: PostDiaryDto) {
+    const diary = await this.findExistDairy(diaryId);
     diary.title = diaryInfo.title;
     diary.place = diaryInfo.place;
     diary.weather = diaryInfo.weather;
     diary.mood = diaryInfo.mood;
     diary.content = diaryInfo.content;
-    diary.schedule = schedule.id;
 
     return await diary.save();
+  }
+
+  static async findExistDairy(diaryId) {
+    const diary = await DiaryEntity.findOne({
+      where: { id: diaryId },
+    });
+    if (!diary) {
+      throw new NotFoundException(BaseResponse.DIARY_NOT_FOUND);
+    }
+    return diary;
   }
 }

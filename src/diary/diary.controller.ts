@@ -1,5 +1,5 @@
 import { ApiOperation, ApiOkResponse } from '@nestjs/swagger';
-import { Controller, Post, Body, Param } from '@nestjs/common';
+import { Controller, Put, Post, Body, Param } from '@nestjs/common';
 import { DiaryService } from './diary.service';
 import { PostDiaryDto } from './dtos/post-diary.dto';
 import { GetDiaryImgUrlDto } from './dtos/get-diary-img-url.dto';
@@ -16,7 +16,7 @@ export class DiaryController {
   @ApiOkResponse({
     description: '성공 ',
   })
-  @Post('post/:diaryId')
+  @Put('post/:diaryId')
   async postJourney(
     @Param('diaryId') diaryId: number,
     @Body() body: PostDiaryDto,
