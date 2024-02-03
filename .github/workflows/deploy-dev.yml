@@ -1,0 +1,27 @@
+name: Development Server Deploy
+on:
+  push:
+    branches:
+      - feature/#32
+      - develop
+  pull_request:
+    branches:
+      - develop
+jobs:
+    deploy:
+        name: Deploy
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: SSH
+              uses: appleboy/ssh-action@master
+              with:
+                host: ${{ secrets.SSH_HOST }}
+                username: ${{ secrets.SSH_USER }}
+                password: ${{ secrets.SSH_PASSWORD }}
+                script: |
+                  cd /root/hereyou
+                  git pull
+                  npm install
+                  npm run build
+                  pm2 restart all

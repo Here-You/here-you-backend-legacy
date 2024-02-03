@@ -29,10 +29,15 @@ export class UserEntity extends BaseEntity {
   @Column({ nullable: true })
   password: string;
 
+  @Column()
+  nickname: string;
+
   @Column({ type: 'text', nullable: true })
   bio: string;
+  @Column({ type: 'text' })
+  introduction: string;
 
-  @Column({ nullable: true })
+  @Column()
   age: number;
 
   @Column({ type: 'enum', enum: ['MALE', 'FEMALE', 'UNKNOWN'], nullable: true })
