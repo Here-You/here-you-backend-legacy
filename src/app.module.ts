@@ -9,6 +9,8 @@ import { LocationModule } from './location/location.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { PlaceModule } from './place/place.module';
 import { SignatureModule } from './signature/signature.module';
+import { RuleModule } from './rule/rule.module';
+
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { SignatureModule } from './signature/signature.module';
     ScheduleModule,
     PlaceModule,
     SignatureModule,
+    RuleModule,
   ],
   controllers: [AppController],
   providers: [AppService],

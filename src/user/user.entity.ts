@@ -13,6 +13,7 @@ import { UserProfileImageEntity } from './user.profile.image.entity';
 import { UserFollowingEntity } from './user.following.entity';
 import { SignatureEntity } from '../signature/domain/signature.entity';
 import { SignatureLikeEntity } from '../signature/domain/signature.like.entity';
+import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
 
 @Entity()
 export class UserEntity extends BaseEntity {
@@ -57,6 +58,12 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => SignatureLikeEntity, (signatureLike) => signatureLike.signature)
   likes: SignatureLikeEntity[];
+
+  @OneToMany(() => RuleInvitationEntity, (invitation) => invitation.inviter)
+  invitationsSent: RuleInvitationEntity[];
+
+  @OneToMany(() => RuleInvitationEntity, (invitation) => invitation.invited)
+  invitationsReceived: RuleInvitationEntity[];
 
   @CreateDateColumn()
   created: Date;
