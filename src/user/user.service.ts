@@ -3,7 +3,6 @@ import bcrypt from 'bcrypt';
 import jsonwebtoken from 'jsonwebtoken';
 import { UserEntity } from './user.entity';
 import { IReqUser } from './user.dto';
-import { UserFollowingEntity } from './user.following.entity';
 
 @Injectable()
 export class UserService {
