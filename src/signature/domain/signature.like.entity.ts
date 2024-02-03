@@ -26,12 +26,4 @@ export class SignatureLikeEntity extends BaseEntity {
   @JoinColumn({name: 'user_id'})
   user: UserEntity;
 
-  @CreateDateColumn()
-  created: Date;
-
-  @UpdateDateColumn()
-  updated: Date;
-
-  @DeleteDateColumn()
-  deleted: Date;
 }

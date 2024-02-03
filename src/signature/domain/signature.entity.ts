@@ -27,7 +27,7 @@ export class SignatureEntity extends BaseEntity {
   title: string;
 
   @Column({default:0})
-  liked_cnt: number;
+  liked: number;
 
   @ManyToOne(() => UserEntity,
     (user) => user.signatures)
@@ -51,6 +51,13 @@ export class SignatureEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
+  static async formatDateString(date: Date): Promise<string> {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}.${month}.${day}`;
+  }
 
   static async createSignature(
     createSignatureDto: CreateSignatureDto,
@@ -97,5 +104,14 @@ export class SignatureEntity extends BaseEntity {
       mySignatureList.push(homeSignature);
     }
     return mySignatureList;
+  }
+
+  static async findSignatureById(signatureId: number): Promise<SignatureEntity> {
+    const signature:SignatureEntity = await SignatureEntity.findOne({
+      where: { id: signatureId },
+      relations: ['user'] // user 관계를 포함
+    });
+
+    return signature;
   }
 }
