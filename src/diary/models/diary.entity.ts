@@ -66,12 +66,13 @@ export class DiaryEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
+  /*일지 생성하기*/
   static async createDiary(schedule) {
     const diary = new DiaryEntity();
     diary.schedule = schedule.id;
     await diary.save();
   }
-
+  /*일지 작성하기*/
   static async postDiary(schedule, diaryInfo: PostDiaryDto) {
     const diary = new DiaryEntity();
     diary.title = diaryInfo.title;

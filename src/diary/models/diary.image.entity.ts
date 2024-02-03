@@ -16,7 +16,7 @@ export class DiaryImageEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'mediumtext' })
   imageUrl: string;
 
   @JoinColumn({ name: 'diaryId' })
@@ -31,4 +31,11 @@ export class DiaryImageEntity extends BaseEntity {
 
   @DeleteDateColumn()
   deleted: Date;
+
+  static async createDiaryImg(diaryId, ImgUrl: string) {
+    const diaryImg = new DiaryImageEntity();
+    diaryImg.imageUrl = ImgUrl;
+    diaryImg.diary = diaryId;
+    await diaryImg.save();
+  }
 }
