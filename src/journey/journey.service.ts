@@ -7,6 +7,7 @@ import { DateGroupEntity } from 'src/date-group/date-group.entity';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { CreateJourneyDto } from './dtos/create-journey.dto';
 import { CreateDateGroupDto } from 'src/date-group/dtos/create-date-group.dto';
+import { DiaryEntity } from 'src/diary/models/diary.entity';
 
 @Injectable()
 export class JourneyService {
@@ -25,8 +26,16 @@ export class JourneyService {
       dateGroup.id,
     );
 
-    const schedule = await ScheduleEntity.createSchedule(dates);
-    console.log(journey, schedule);
+    // let schedule = await ScheduleEntity.createSchedule(dates);
+    let currentDate = new Date(dates.startDate);
+    const lastDate = new Date(dates.endDate);
+
+    while (currentDate <= lastDate) {
+      const schedule = await ScheduleEntity.createSchedule(currentDate);
+      const diary = await DiaryEntity.preDiary(schedule);
+      currentDate = new Date(currentDate);
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
     return response(BaseResponse.JOURNEY_CREATED);
   }
 }

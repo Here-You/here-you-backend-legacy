@@ -16,8 +16,8 @@ export class DiaryController {
   @ApiOkResponse({
     description: '성공 ',
   })
-  @Post('create/:diaryId')
-  async createJourney(
+  @Post('post/:diaryId')
+  async postJourney(
     @Param('diaryId') diaryId: number,
     @Body() body: CreateDiaryDto,
   ) {
@@ -40,4 +40,6 @@ export class DiaryController {
     const result = await this.diaryService.getDiaryImgUrl(diaryId, body);
     return result;
   }
+
+  /*일지 사진 업로드*/
 }

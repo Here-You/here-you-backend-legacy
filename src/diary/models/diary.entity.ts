@@ -24,25 +24,27 @@ export class DiaryEntity extends BaseEntity {
   @ManyToOne(() => UserEntity)
   author: UserEntity;
 
-  @Column()
+  @Column({ nullable: true })
   title: string;
 
-  @Column()
+  @Column({ nullable: true })
   place: string;
 
   @Column({
     type: 'enum',
     enum: ['CLOUDY', 'RAINY', 'SNOWY', 'PARTLY_CLOUDY', 'SUNNY'],
+    nullable: true,
   })
   weather: 'CLOUDY' | 'RAINY' | 'SNOWY' | 'PARTLY_CLOUDY' | 'SUNNY';
 
   @Column({
     type: 'enum',
     enum: ['ANGRY', 'SAD', 'SMILE', 'HAPPY', 'SHOCKED'],
+    nullable: true,
   })
   mood: 'ANGRY' | 'SAD' | 'SMILE' | 'HAPPY' | 'SHOCKED';
 
-  @Column({ type: 'mediumtext' })
+  @Column({ nullable: true, type: 'mediumtext' })
   content: string;
 
   @OneToOne(() => DiaryImageEntity, (image) => image.diary, {
@@ -63,6 +65,12 @@ export class DiaryEntity extends BaseEntity {
 
   @DeleteDateColumn()
   deleted: Date;
+
+  static async preDiary(schedule) {
+    const diary = new DiaryEntity();
+    diary.schedule = schedule.id;
+    await diary.save();
+  }
 
   static async createDiary(schedule, diaryInfo: CreateDiaryDto) {
     const diary = new DiaryEntity();

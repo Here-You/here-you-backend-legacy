@@ -49,17 +49,10 @@ export class ScheduleEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
-  static async createSchedule(dates) {
-    let currentDate = new Date(dates.startDate);
-    const lastDate = new Date(dates.endDate);
-
-    while (currentDate <= lastDate) {
-      const schedule = new ScheduleEntity();
-      schedule.date = currentDate.toISOString().split('T')[0];
-      await schedule.save();
-      currentDate = new Date(currentDate);
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
+  static async createSchedule(currentDate) {
+    const schedule = new ScheduleEntity();
+    schedule.date = currentDate.toISOString().split('T')[0];
+    return await schedule.save();
   }
 
   static async updateScheduleTitle(schedule, title) {
