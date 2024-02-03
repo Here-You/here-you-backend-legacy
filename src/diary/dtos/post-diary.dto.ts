@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsEnum } from 'class-validator';
 
-export class CreateDiaryDto {
+export class PostDiaryDto {
   @IsString()
   title: string;
 

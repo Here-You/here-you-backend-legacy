@@ -1,7 +1,7 @@
 import { ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 import { Controller, Post, Body, Param } from '@nestjs/common';
 import { DiaryService } from './diary.service';
-import { CreateDiaryDto } from './dtos/create-diary.dto';
+import { PostDiaryDto } from './dtos/post-diary.dto';
 import { GetDiaryImgUrlDto } from './dtos/get-diary-img-url.dto';
 
 @Controller('api/diary')
@@ -19,9 +19,9 @@ export class DiaryController {
   @Post('post/:diaryId')
   async postJourney(
     @Param('diaryId') diaryId: number,
-    @Body() body: CreateDiaryDto,
+    @Body() body: PostDiaryDto,
   ) {
-    const result = await this.diaryService.createDiary(diaryId, body);
+    const result = await this.diaryService.postDiary(diaryId, body);
     return result;
   }
   /*일지 사진 url 발급 */

@@ -32,7 +32,7 @@ export class JourneyService {
 
     while (currentDate <= lastDate) {
       const schedule = await ScheduleEntity.createSchedule(currentDate);
-      const diary = await DiaryEntity.preDiary(schedule);
+      const diary = await DiaryEntity.createDiary(schedule);
       currentDate = new Date(currentDate);
       currentDate.setDate(currentDate.getDate() + 1);
     }

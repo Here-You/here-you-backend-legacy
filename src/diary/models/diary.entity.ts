@@ -13,7 +13,7 @@ import {
 import { UserEntity } from '../../user/user.entity';
 import { DiaryImageEntity } from './diary.image.entity';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
-import { CreateDiaryDto } from '../dtos/create-diary.dto';
+import { PostDiaryDto } from '../dtos/post-diary.dto';
 
 @Entity()
 export class DiaryEntity extends BaseEntity {
@@ -66,13 +66,13 @@ export class DiaryEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
-  static async preDiary(schedule) {
+  static async createDiary(schedule) {
     const diary = new DiaryEntity();
     diary.schedule = schedule.id;
     await diary.save();
   }
 
-  static async createDiary(schedule, diaryInfo: CreateDiaryDto) {
+  static async postDiary(schedule, diaryInfo: PostDiaryDto) {
     const diary = new DiaryEntity();
     diary.title = diaryInfo.title;
     diary.place = diaryInfo.place;
