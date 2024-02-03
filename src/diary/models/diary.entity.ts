@@ -50,13 +50,13 @@ export class DiaryEntity extends BaseEntity {
   @Column({ nullable: true, type: 'mediumtext' })
   content: string;
 
-  @OneToOne(() => DiaryImageEntity, (image) => image.diaryId, {
+  @OneToOne(() => DiaryImageEntity, (image) => image.diary, {
     cascade: true,
   })
   image: DiaryImageEntity;
 
-  @OneToOne(() => ScheduleEntity, (schedule) => schedule.diary)
-  scheduleId: ScheduleEntity;
+  @ManyToOne(() => ScheduleEntity, (schedule) => schedule.diary)
+  schedule: ScheduleEntity;
 
   @CreateDateColumn()
   created: Date;
@@ -68,9 +68,9 @@ export class DiaryEntity extends BaseEntity {
   deleted: Date;
 
   /*일지 생성하기*/
-  static async createDiary(journey, schedule) {
+  static async createDiary(schedule) {
     const diary = new DiaryEntity();
-    diary.scheduleId = schedule.id;
+    diary.schedule = schedule.id;
 
     return await diary.save();
   }

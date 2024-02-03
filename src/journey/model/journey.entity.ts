@@ -32,9 +32,9 @@ export class JourneyEntity extends BaseEntity {
   endDate: string;
 
   @ManyToOne(() => UserEntity, (user) => user.journeys)
-  userId: UserEntity;
+  user: UserEntity;
 
-  @OneToMany(() => ScheduleEntity, (schedule) => schedule.journeyId)
+  @OneToMany(() => ScheduleEntity, (schedule) => schedule.journey)
   schedules: ScheduleEntity[];
 
   @CreateDateColumn()
@@ -46,12 +46,13 @@ export class JourneyEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
-  static async createJourney(createJourneyDto: CreateJourneyDto) {
+  static async createJourney(createJourneyDto) {
     try {
       const journey: JourneyEntity = new JourneyEntity();
       journey.title = createJourneyDto.title;
       journey.startDate = createJourneyDto.startDate;
       journey.endDate = createJourneyDto.endDate;
+      journey.user = createJourneyDto.userId;
 
       return await journey.save();
     } catch (error) {

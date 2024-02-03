@@ -20,28 +20,28 @@ export class UserEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: true })
   name: string;
 
-  @Column()
+  @Column({ nullable: true })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   password: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   bio: string;
 
-  @Column()
+  @Column({ nullable: true })
   age: number;
 
-  @Column({ type: 'enum', enum: ['MALE', 'FEMALE', 'UNKNOWN'] })
+  @Column({ type: 'enum', enum: ['MALE', 'FEMALE', 'UNKNOWN'], nullable: true })
   gender: 'MALE' | 'FEMALE' | 'UNKNOWN';
 
-  @Column({ type: 'enum', enum: ['KAKAO', 'GOOGLE'] })
+  @Column({ type: 'enum', enum: ['KAKAO', 'GOOGLE'], nullable: true })
   oauthType: 'KAKAO' | 'GOOGLE';
 
-  @Column()
+  @Column({ nullable: true })
   oauthToken: string;
 
   @OneToOne(() => UserProfileImageEntity, (profileImage) => profileImage.user)
@@ -62,7 +62,7 @@ export class UserEntity extends BaseEntity {
   )
   likes: SignatureLikeEntity[];
 
-  @OneToMany(() => JourneyEntity, (journey) => journey.userId)
+  @OneToMany(() => JourneyEntity, (journey) => journey.user)
   journeys: JourneyEntity[];
 
   @CreateDateColumn()

@@ -10,7 +10,6 @@ import { LocationModule } from './location/location.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { PlaceModule } from './place/place.module';
 import { JourneyModule } from './journey/journey.module';
-import { DateGroupModule } from './date-group/date-group.module';
 import { SignatureModule } from './signature/signature.module';
 import { DetailScheduleModule } from './detail-schedule/detail-schedule.module';
 
@@ -27,7 +26,6 @@ import { DetailScheduleModule } from './detail-schedule/detail-schedule.module';
     DetailScheduleModule,
     PlaceModule,
     JourneyModule,
-    DateGroupModule,
     SignatureModule,
   ],
   controllers: [AppController],

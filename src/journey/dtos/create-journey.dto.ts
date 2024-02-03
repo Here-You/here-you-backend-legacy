@@ -1,7 +1,10 @@
 // create-journey.dto.ts
-import { IsString, IsDateString } from 'class-validator';
+import { IsString, IsDateString, IsNumber } from 'class-validator';
 
 export class CreateJourneyDto {
+  @IsNumber()
+  userId: number;
+
   @IsString()
   title: string;
 

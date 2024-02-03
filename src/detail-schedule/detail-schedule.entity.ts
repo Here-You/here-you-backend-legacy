@@ -26,7 +26,7 @@ export class DetailScheduleEntity extends BaseEntity {
   isDone: boolean;
 
   @ManyToOne(() => ScheduleEntity, (schedule) => schedule.detailSchedules)
-  scheduleId: ScheduleEntity;
+  schedule: ScheduleEntity;
 
   @CreateDateColumn()
   created: Date;
@@ -40,7 +40,7 @@ export class DetailScheduleEntity extends BaseEntity {
   //세부 일정 추가하기
   static async createDetailSchedule(scheduleId) {
     const detailSchedule = new DetailScheduleEntity();
-    detailSchedule.scheduleId = scheduleId;
+    detailSchedule.schedule = scheduleId;
     return await detailSchedule.save();
   }
   //세부 일정 작성하기

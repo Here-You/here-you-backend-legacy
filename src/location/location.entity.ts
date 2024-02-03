@@ -21,7 +21,7 @@ export class LocationEntity extends BaseEntity {
   @Column({ type: 'decimal', precision: 10, scale: 6 })
   longitude: number;
 
-  @OneToOne(() => ScheduleEntity, (schedule) => schedule.locationId)
+  @OneToOne(() => ScheduleEntity, (schedule) => schedule.location)
   schedule: ScheduleEntity;
 
   @CreateDateColumn()

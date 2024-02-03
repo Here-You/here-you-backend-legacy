@@ -5,9 +5,7 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinColumn,
   ManyToOne,
-  OneToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -29,20 +27,20 @@ export class ScheduleEntity extends BaseEntity {
   @Column({ nullable: true })
   title: string;
 
-  @ManyToOne(() => LocationEntity, (location) => location.id)
-  locationId: Location;
+  @ManyToOne(() => LocationEntity, (location) => location.schedule)
+  location: LocationEntity;
 
   @ManyToOne(() => JourneyEntity, (journey) => journey.schedules)
-  journeyId: JourneyEntity;
+  journey: JourneyEntity;
 
   @OneToMany(
     () => DetailScheduleEntity,
-    (detailSchedule) => detailSchedule.scheduleId,
+    (detailSchedule) => detailSchedule.schedule,
   )
   detailSchedules: DetailScheduleEntity[];
 
-  @OneToOne(() => DiaryEntity, (diary) => diary.scheduleId, { cascade: true })
-  diary: DiaryEntity;
+  @OneToMany(() => DiaryEntity, (diary) => diary.schedule)
+  diary: DiaryEntity[];
 
   @CreateDateColumn()
   created: Date;
@@ -56,7 +54,7 @@ export class ScheduleEntity extends BaseEntity {
   static async createSchedule(journey, currentDate) {
     const schedule = new ScheduleEntity();
     schedule.date = currentDate.toISOString().split('T')[0];
-
+    schedule.journey = journey.id;
     return await schedule.save();
   }
 

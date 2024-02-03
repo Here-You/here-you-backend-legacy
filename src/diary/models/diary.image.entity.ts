@@ -20,7 +20,7 @@ export class DiaryImageEntity extends BaseEntity {
   imageUrl: string;
 
   @OneToOne(() => DiaryEntity, (diary) => diary.image)
-  diaryId: DiaryEntity;
+  diary: DiaryEntity;
 
   @CreateDateColumn()
   created: Date;
@@ -34,7 +34,7 @@ export class DiaryImageEntity extends BaseEntity {
   static async createDiaryImg(diaryId, ImgUrl: string) {
     const diaryImg = new DiaryImageEntity();
     diaryImg.imageUrl = ImgUrl;
-    diaryImg.diaryId = diaryId;
+    diaryImg.diary = diaryId;
     await diaryImg.save();
   }
 }
