@@ -15,7 +15,4 @@ export class PostDiaryDto {
 
   @IsString()
   content: string;
-
-  @IsString()
-  image: string;
 }

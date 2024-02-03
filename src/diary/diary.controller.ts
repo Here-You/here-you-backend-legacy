@@ -25,6 +25,7 @@ export class DiaryController {
     return result;
   }
   /*일지 사진 url 발급 */
+  /*일지 사진 업로드*/
   @ApiOperation({
     summary: '일지 사진 업로드 위한 presigned Url 발급',
     description: '일지를 작성하고 저장한 상태',
@@ -40,6 +41,4 @@ export class DiaryController {
     const result = await this.diaryService.getDiaryImgUrl(diaryId, body);
     return result;
   }
-
-  /*일지 사진 업로드*/
 }
