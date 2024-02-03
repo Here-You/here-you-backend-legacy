@@ -14,6 +14,7 @@ import { DetailSignatureDto } from './dto/detail-signature.dto';
 import { AuthorSignatureDto } from './dto/author-signature.dto';
 import { HeaderSignatureDto } from './dto/header-signature.dto';
 import { UserService } from '../user/user.service';
+import { SignatureLikeEntity } from './domain/signature.like.entity';
 
 @Injectable()
 export class SignatureService {
@@ -23,7 +24,7 @@ export class SignatureService {
   async createSignature(createSignatureDto: CreateSignatureDto): Promise<number> {
 
     // [1] 시그니처 저장
-    const signature: SignatureEntity = await SignatureEntity.createSignature( createSignatureDto);
+    const signature: SignatureEntity = await SignatureEntity.createSignature(createSignatureDto);
 
     if (!signature) throw new BadRequestException();
     else{ // [2] 각 페이지 저장
@@ -137,5 +138,53 @@ export class SignatureService {
       console.error('Error on DetailSignature: ', error);
       throw new HttpException('Internal Server Error', 500);
     }
+  }
+
+  async findIfAlreadyLiked(userId: number, signatureId: number): Promise<SignatureLikeEntity> {
+
+    const signatureLike = await SignatureLikeEntity.findOne({
+      where:{
+        user: { id: userId },
+        signature: {id: signatureId}
+      }
+    });
+
+    if(signatureLike) return signatureLike
+    else null;
+
+  }
+
+
+  async addLikeOnSignature(userId: number, signatureId: number) {
+
+    // [1] 시그니처 객체, 로그인 유저 객체 가져오기
+    const signature:SignatureEntity = await SignatureEntity.findSignatureById(signatureId);
+    console.log("시그니처 정보: ", signature);
+
+    const loginUser:UserEntity = await this.userService.findUserById(userId);
+    console.log("로그인한 유저 정보: ", loginUser);
+
+    // [2] 좋아요 테이블에 인스턴스 추가하기
+    const signatureLike = await SignatureLikeEntity.createLike(signature,loginUser);
+
+    // [3] 해당 시그니처 좋아요 개수 추가하기
+    signature.liked ++;
+    const newSignature = await SignatureEntity.save(signature);
+
+    return signature;
+
+  }
+
+  async deleteLikeOnSignature(signatureLike:SignatureLikeEntity, signatureId:number) {
+
+    // [1] 해당 좋아요 기록 삭제
+    const deleted_like = await SignatureLikeEntity.softRemove(signatureLike);
+
+    // [2] 시그니처 좋아요 개수 -1
+    const signature:SignatureEntity = await SignatureEntity.findSignatureById(signatureId);
+    signature.liked --;
+    const newSignature = await SignatureEntity.save(signature);
+
+    return signature
   }
 }
