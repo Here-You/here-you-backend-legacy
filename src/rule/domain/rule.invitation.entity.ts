@@ -1,5 +1,5 @@
 import { BaseEntity, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn } from 'typeorm';
-import { UserEntity } from '../../user/user.entity';
+import { UserEntity } from 'src/user/user.entity';
 import { RuleMainEntity } from './rule.main.entity'
 
 @Entity()
