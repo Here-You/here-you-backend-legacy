@@ -10,7 +10,7 @@ import { DetailSignatureDto } from './dto/detail-signature.dto';
 import { TmpUserIdDto } from './dto/tmp-userId.dto';
 import { SignatureEntity } from './domain/signature.entity';
 import { SignatureLikeEntity } from './domain/signature.like.entity';
-import { LikeSignatureDto } from './dto/like-signature.dto';
+import { LikeSignatureDto } from './dto/Like-signature.dto';
 
 
 @Controller('signature')
