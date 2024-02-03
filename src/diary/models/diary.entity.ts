@@ -14,6 +14,7 @@ import { NotFoundException } from '@nestjs/common';
 import { BaseResponse } from 'src/response/response.status';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { UserEntity } from '../../user/user.entity';
+import { JourneyEntity } from 'src/journey/model/journey.entity';
 import { DiaryImageEntity } from './diary.image.entity';
 import { PostDiaryDto } from '../dtos/post-diary.dto';
 
@@ -49,14 +50,13 @@ export class DiaryEntity extends BaseEntity {
   @Column({ nullable: true, type: 'mediumtext' })
   content: string;
 
-  @OneToOne(() => DiaryImageEntity, (image) => image.diary, {
+  @OneToOne(() => DiaryImageEntity, (image) => image.diaryId, {
     cascade: true,
   })
   image: DiaryImageEntity;
 
   @OneToOne(() => ScheduleEntity, (schedule) => schedule.diary)
-  @JoinColumn({ name: 'scheduleId' })
-  schedule: ScheduleEntity;
+  scheduleId: ScheduleEntity;
 
   @CreateDateColumn()
   created: Date;
@@ -68,10 +68,11 @@ export class DiaryEntity extends BaseEntity {
   deleted: Date;
 
   /*일지 생성하기*/
-  static async createDiary(schedule) {
+  static async createDiary(journey, schedule) {
     const diary = new DiaryEntity();
-    diary.schedule = schedule.id;
-    await diary.save();
+    diary.scheduleId = schedule.id;
+
+    return await diary.save();
   }
   /*일지 작성하기*/
   static async postDiary(diaryId, diaryInfo: PostDiaryDto) {

@@ -13,6 +13,7 @@ import { UserProfileImageEntity } from './user.profile.image.entity';
 import { UserFollowingEntity } from './user.following.entity';
 import { SignatureEntity } from '../signature/domain/signature.entity';
 import { SignatureLikeEntity } from '../signature/domain/signature.like.entity';
+import { JourneyEntity } from 'src/journey/model/journey.entity';
 
 @Entity()
 export class UserEntity extends BaseEntity {
@@ -60,6 +61,9 @@ export class UserEntity extends BaseEntity {
     (signatureLike) => signatureLike.signature,
   )
   likes: SignatureLikeEntity[];
+
+  @OneToMany(() => JourneyEntity, (journey) => journey.userId)
+  journeys: JourneyEntity[];
 
   @CreateDateColumn()
   created: Date;

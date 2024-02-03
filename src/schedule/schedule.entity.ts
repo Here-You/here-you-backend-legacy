@@ -2,19 +2,21 @@ import {
   BaseEntity,
   Column,
   CreateDateColumn,
+  UpdateDateColumn,
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { BaseResponse } from 'src/response/response.status';
 import { DetailScheduleEntity } from '../detail-schedule/detail-schedule.entity';
 import { LocationEntity } from 'src/location/location.entity';
 import { DiaryEntity } from 'src/diary/models/diary.entity';
+import { JourneyEntity } from 'src/journey/model/journey.entity';
 
 @Entity()
 export class ScheduleEntity extends BaseEntity {
@@ -27,17 +29,19 @@ export class ScheduleEntity extends BaseEntity {
   @Column({ nullable: true })
   title: string;
 
+  @ManyToOne(() => LocationEntity, (location) => location.id)
+  locationId: Location;
+
+  @ManyToOne(() => JourneyEntity, (journey) => journey.schedules)
+  journeyId: JourneyEntity;
+
   @OneToMany(
     () => DetailScheduleEntity,
-    (detailSchedule) => detailSchedule.schedule,
+    (detailSchedule) => detailSchedule.scheduleId,
   )
   detailSchedules: DetailScheduleEntity[];
 
-  @OneToOne(() => LocationEntity, { eager: true }) // eager 옵션을 사용하여 즉시 로드
-  @JoinColumn({ name: 'locationId' }) // 외래 키에 대한 컬럼명 설정
-  location: LocationEntity;
-
-  @OneToOne(() => DiaryEntity, (diary) => diary.schedule, { cascade: true })
+  @OneToOne(() => DiaryEntity, (diary) => diary.scheduleId, { cascade: true })
   diary: DiaryEntity;
 
   @CreateDateColumn()
@@ -49,9 +53,10 @@ export class ScheduleEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
-  static async createSchedule(currentDate) {
+  static async createSchedule(journey, currentDate) {
     const schedule = new ScheduleEntity();
     schedule.date = currentDate.toISOString().split('T')[0];
+
     return await schedule.save();
   }
 

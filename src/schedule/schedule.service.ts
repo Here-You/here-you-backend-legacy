@@ -15,7 +15,7 @@ export class ScheduleService {
 
   async updateScheduleLocation(scheduleId, scheduleLocation) {
     const schedule = await ScheduleEntity.findExistSchedule(scheduleId);
-    if (schedule.location) {
+    if (schedule.locationId) {
       const location = LocationEntity.updateLocation(
         schedule,
         scheduleLocation,

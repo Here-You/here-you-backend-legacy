@@ -5,12 +5,17 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+  OneToMany,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { DateGroupEntity } from '../../date-group/date-group.entity';
-import { MonthlyJourneyEntity } from './monthly-journey.entity';
+
 import { CreateJourneyDto } from '../dtos/create-journey.dto';
+import { ScheduleEntity } from 'src/schedule/schedule.entity';
+import { UserEntity } from 'src/user/user.entity';
 
 @Entity()
 export class JourneyEntity extends BaseEntity {
@@ -20,22 +25,33 @@ export class JourneyEntity extends BaseEntity {
   @Column()
   title: string;
 
-  @ManyToOne(() => DateGroupEntity, (dateGroup) => dateGroup.journeys)
-  @JoinColumn({ name: 'dateGroupId' })
-  dateGroup: DateGroupEntity;
+  @Column()
+  startDate: string;
 
-  @ManyToOne(
-    () => MonthlyJourneyEntity,
-    (monthlyJourney) => monthlyJourney.journeys,
-  )
-  @JoinColumn({ name: 'monthlyId' })
-  monthlyJourney: MonthlyJourneyEntity;
+  @Column()
+  endDate: string;
 
-  static async createJourney(createJourneyDto: CreateJourneyDto, dateGroupId) {
+  @ManyToOne(() => UserEntity, (user) => user.journeys)
+  userId: UserEntity;
+
+  @OneToMany(() => ScheduleEntity, (schedule) => schedule.journeyId)
+  schedules: ScheduleEntity[];
+
+  @CreateDateColumn()
+  created: Date;
+
+  @UpdateDateColumn()
+  updated: Date;
+
+  @DeleteDateColumn()
+  deleted: Date;
+
+  static async createJourney(createJourneyDto: CreateJourneyDto) {
     try {
       const journey: JourneyEntity = new JourneyEntity();
       journey.title = createJourneyDto.title;
-      journey.dateGroup = dateGroupId;
+      journey.startDate = createJourneyDto.startDate;
+      journey.endDate = createJourneyDto.endDate;
 
       return await journey.save();
     } catch (error) {
