@@ -1,7 +1,7 @@
 import Express from 'express';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import jsonwebtoken from 'jsonwebtoken';
+import * as jsonwebtoken from 'jsonwebtoken';
 import { IReqUser } from './user.dto';
 
 @Injectable()
