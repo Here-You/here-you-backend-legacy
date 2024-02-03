@@ -187,4 +187,15 @@ export class SignatureService {
 
     return signature
   }
+
+  async deleteSignature(signature){
+    try{
+      const result = await SignatureEntity.softRemove(signature);
+      return result;
+    }
+    catch(error){
+      console.log("Error on deleting Signature: ",error);
+      throw error;
+    }
+  }
 }
