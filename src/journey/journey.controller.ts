@@ -5,7 +5,7 @@ import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { JourneyService } from './journey.service';
 import { CreateJourneyDto } from './dtos/create-journey.dto';
 
-@Controller('api/journey')
+@Controller('journey')
 export class JourneyController {
   constructor(private readonly journeyService: JourneyService) {}
   /*여정 저장하기*/

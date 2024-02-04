@@ -4,7 +4,7 @@ import { DiaryService } from './diary.service';
 import { PostDiaryDto } from './dtos/post-diary.dto';
 import { GetDiaryImgUrlDto } from './dtos/get-diary-img-url.dto';
 
-@Controller('api/diary')
+@Controller('diary')
 export class DiaryController {
   constructor(private readonly diaryService: DiaryService) {}
 

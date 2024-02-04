@@ -4,7 +4,7 @@ import { ScheduleService } from './schedule.service';
 import { UpdateScheduleDto } from './dtos/update-schedule-dto';
 import { CreateLocationDto } from 'src/location/dtos/create-location.dto';
 
-@Controller('api/schedule')
+@Controller('schedule')
 export class ScheduleController {
   constructor(private readonly scheduleService: ScheduleService) {}
 
