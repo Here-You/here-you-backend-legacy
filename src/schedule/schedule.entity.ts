@@ -2,43 +2,45 @@ import {
   BaseEntity,
   Column,
   CreateDateColumn,
+  UpdateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
-import { ScheduleGroupEntity } from './schedule.group.entity';
-import { ScheduleDetailEntity } from './schedule.detail.entity';
+import { NotFoundException } from '@nestjs/common';
+import { BaseResponse } from 'src/response/response.status';
+import { DetailScheduleEntity } from '../detail-schedule/detail-schedule.entity';
+import { LocationEntity } from 'src/location/location.entity';
+import { DiaryEntity } from 'src/diary/models/diary.entity';
+import { JourneyEntity } from 'src/journey/model/journey.entity';
 
 @Entity()
 export class ScheduleEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @JoinColumn()
-  @ManyToOne(
-    () => ScheduleGroupEntity,
-    (scheduleGroup) => scheduleGroup.schedules,
-  )
-  scheduleGroup: ScheduleGroupEntity;
+  @Column({ nullable: true })
+  date: string;
 
-  @OneToMany(
-    () => ScheduleDetailEntity,
-    (scheduleDetail) => scheduleDetail.schedule,
-  )
-  scheduleDetails: ScheduleDetailEntity[];
-
-  @Column({ type: 'date' })
-  date: Date;
-
-  @Column()
+  @Column({ nullable: true })
   title: string;
 
-  @Column()
-  participants: string;
+  @ManyToOne(() => LocationEntity, (location) => location.schedule)
+  location: LocationEntity;
+
+  @ManyToOne(() => JourneyEntity, (journey) => journey.schedules)
+  journey: JourneyEntity;
+
+  @OneToMany(
+    () => DetailScheduleEntity,
+    (detailSchedule) => detailSchedule.schedule,
+  )
+  detailSchedules: DetailScheduleEntity[];
+
+  @OneToMany(() => DiaryEntity, (diary) => diary.schedule)
+  diary: DiaryEntity[];
 
   @CreateDateColumn()
   created: Date;
@@ -48,4 +50,31 @@ export class ScheduleEntity extends BaseEntity {
 
   @DeleteDateColumn()
   deleted: Date;
+
+  static async createSchedule(journey, currentDate) {
+    const schedule = new ScheduleEntity();
+    schedule.date = currentDate.toISOString().split('T')[0];
+    schedule.journey = journey.id;
+    return await schedule.save();
+  }
+
+  static async updateScheduleTitle(schedule, updateScheduleDto) {
+    schedule.title = updateScheduleDto.title;
+    return await schedule.save();
+  }
+
+  static async updateScheduleLocation(schedule, location) {
+    schedule.location = location.id;
+    return await schedule.save();
+  }
+
+  static async findExistSchedule(scheduleId) {
+    const schedule = await ScheduleEntity.findOne({
+      where: { id: scheduleId },
+    });
+    if (!schedule) {
+      throw new NotFoundException(BaseResponse.SCHEDULE_NOT_FOUND);
+    }
+    return schedule;
+  }
 }
