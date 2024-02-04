@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Req, UseGuards } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
-// import { Request } from 'express';
-// import { UserGuard } from 'src/user/user.guard';
+import { Request } from 'express';
+import { UserGuard } from 'src/user/user.guard';
 import { JourneyService } from './journey.service';
 import { CreateJourneyDto } from './dtos/create-journey.dto';
 
@@ -16,14 +16,17 @@ export class JourneyController {
   @ApiOkResponse({
     description: '성공 ',
   })
-  // @UseGuards(UserGuard)
+  @UseGuards(UserGuard)
   @Post('create')
   async createJourney(
     @Body() createJourneyDto: CreateJourneyDto,
-    // @Req() req: Request,
+    @Req() req: Request,
   ) {
-    // const user = req.user;
-    const result = await this.journeyService.createJourney(createJourneyDto);
+    const user = req.user;
+    const result = await this.journeyService.createJourney(
+      user,
+      createJourneyDto,
+    );
     return result;
   }
 }

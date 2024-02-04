@@ -55,6 +55,13 @@ export const BaseResponse = {
   },
 
   /* 404 NOT_FOUND : Resource 를 찾을 수 없음 */
+
+  JOURNEY_NOT_FOUND: {
+    success: false,
+    code: 404,
+    message: '아직 작성한 여정이 없어요!',
+  },
+
   SCHEDULE_NOT_FOUND: {
     success: false,
     code: 404,

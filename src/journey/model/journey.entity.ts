@@ -28,7 +28,7 @@ export class JourneyEntity extends BaseEntity {
   @Column()
   startDate: string;
 
-  @Column()
+  @Column({ nullable: true })
   endDate: string;
 
   @ManyToOne(() => UserEntity, (user) => user.journeys)
@@ -46,13 +46,13 @@ export class JourneyEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
-  static async createJourney(createJourneyDto) {
+  static async createJourney(user, createJourneyDto) {
     try {
       const journey: JourneyEntity = new JourneyEntity();
       journey.title = createJourneyDto.title;
       journey.startDate = createJourneyDto.startDate;
       journey.endDate = createJourneyDto.endDate;
-      journey.user = createJourneyDto.userId;
+      journey.user = user.id;
 
       return await journey.save();
     } catch (error) {

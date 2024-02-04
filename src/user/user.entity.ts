@@ -21,19 +21,19 @@ export class UserEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: true })
+  @Column()
   name: string;
 
-  @Column({ nullable: true })
+  @Column()
   email: string;
 
-  @Column({ nullable: true })
+  @Column()
   password: string;
 
   @Column()
   nickname: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text' })
   bio: string;
   @Column({ type: 'text' })
   introduction: string;
@@ -41,13 +41,13 @@ export class UserEntity extends BaseEntity {
   @Column()
   age: number;
 
-  @Column({ type: 'enum', enum: ['MALE', 'FEMALE', 'UNKNOWN'], nullable: true })
+  @Column({ type: 'enum', enum: ['MALE', 'FEMALE', 'UNKNOWN'] })
   gender: 'MALE' | 'FEMALE' | 'UNKNOWN';
 
-  @Column({ type: 'enum', enum: ['KAKAO', 'GOOGLE'], nullable: true })
+  @Column({ type: 'enum', enum: ['KAKAO', 'GOOGLE'] })
   oauthType: 'KAKAO' | 'GOOGLE';
 
-  @Column({ nullable: true })
+  @Column()
   oauthToken: string;
 
   @OneToOne(() => UserProfileImageEntity, (profileImage) => profileImage.user)
