@@ -29,8 +29,4 @@ export class CreateRuleDto {
   @IsArray()
   @IsNumber({}, { each: true })
   invitedId: number[];
-
-  @IsNotEmpty()
-  @IsNumber()
-  ruleId: number;
 }

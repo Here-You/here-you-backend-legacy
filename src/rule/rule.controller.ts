@@ -10,7 +10,6 @@ export class RuleController {
     private readonly ruleCreateService: RuleService,
   ) {}
 
-  // 여행 규칙 생성하기
   @Post('/write')
   async createRule(@Body() createRuleDto: CreateRuleDto): Promise<ResponseDto<any>> {
     const result = await this.ruleCreateService.createRule(createRuleDto);
