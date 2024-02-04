@@ -12,7 +12,7 @@ import { PlaceModule } from './place/place.module';
 import { JourneyModule } from './journey/journey.module';
 import { SignatureModule } from './signature/signature.module';
 import { RuleModule } from './rule/rule.module';
-
+import { CommentModule } from './comment/comment.module';
 import { DetailScheduleModule } from './detail-schedule/detail-schedule.module';
 import { S3Module } from './utils/S3.module';
 
@@ -31,6 +31,7 @@ import { S3Module } from './utils/S3.module';
     JourneyModule,
     SignatureModule,
     RuleModule,
+    CommentModule,
     S3Module,
   ],
   controllers: [AppController],

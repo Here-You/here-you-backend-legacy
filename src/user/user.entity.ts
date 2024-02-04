@@ -14,6 +14,7 @@ import { UserFollowingEntity } from './user.following.entity';
 import { SignatureEntity } from '../signature/domain/signature.entity';
 import { SignatureLikeEntity } from '../signature/domain/signature.like.entity';
 import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
+import { CommentEntity } from 'src/comment/domain/comment.entity';
 import { JourneyEntity } from 'src/journey/model/journey.entity';
 
 @Entity()
@@ -73,6 +74,9 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => RuleInvitationEntity, (invitation) => invitation.invited)
   invitationsReceived: RuleInvitationEntity[];
+
+  @OneToMany(() => CommentEntity, (comment) => comment.user)
+  comments: CommentEntity[];
 
   @OneToMany(() => JourneyEntity, (journey) => journey.user)
   journeys: JourneyEntity[];
