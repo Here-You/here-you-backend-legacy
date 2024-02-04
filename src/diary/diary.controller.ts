@@ -36,9 +36,9 @@ export class DiaryController {
   @Post('image-url/:diaryId')
   async getDiaryImageUrl(
     @Param('diaryId') diaryId: number,
-    @Body() body: GetDiaryImgUrlDto,
+    @Body('fileName') fileName: string,
   ) {
-    const result = await this.diaryService.getDiaryImgUrl(diaryId, body);
+    const result = await this.diaryService.getDiaryImgUrl(diaryId, fileName);
     return result;
   }
 }

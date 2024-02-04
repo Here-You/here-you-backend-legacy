@@ -50,9 +50,7 @@ export class DiaryEntity extends BaseEntity {
   @Column({ nullable: true, type: 'mediumtext' })
   content: string;
 
-  @OneToOne(() => DiaryImageEntity, (image) => image.diary, {
-    cascade: true,
-  })
+  @OneToOne(() => DiaryImageEntity, (image) => image.diary, {})
   image: DiaryImageEntity;
 
   @ManyToOne(() => ScheduleEntity, (schedule) => schedule.diary)
@@ -76,7 +74,7 @@ export class DiaryEntity extends BaseEntity {
   }
   /*일지 작성하기*/
   static async postDiary(diaryId, diaryInfo: PostDiaryDto) {
-    const diary = await this.findExistDairy(diaryId);
+    const diary = await this.findExistDiary(diaryId);
     diary.title = diaryInfo.title;
     diary.place = diaryInfo.place;
     diary.weather = diaryInfo.weather;
@@ -86,7 +84,7 @@ export class DiaryEntity extends BaseEntity {
     return await diary.save();
   }
 
-  static async findExistDairy(diaryId) {
+  static async findExistDiary(diaryId) {
     const diary = await DiaryEntity.findOne({
       where: { id: diaryId },
     });

@@ -12,6 +12,7 @@ import { PlaceModule } from './place/place.module';
 import { JourneyModule } from './journey/journey.module';
 import { SignatureModule } from './signature/signature.module';
 import { DetailScheduleModule } from './detail-schedule/detail-schedule.module';
+import { S3Module } from './utils/S3.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { DetailScheduleModule } from './detail-schedule/detail-schedule.module';
     PlaceModule,
     JourneyModule,
     SignatureModule,
+    S3Module,
   ],
   controllers: [AppController],
   providers: [AppService],
