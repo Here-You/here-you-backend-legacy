@@ -28,5 +28,4 @@ export class UserFollowingEntity extends BaseEntity {
 
   @DeleteDateColumn()
   deleted: Date;
-
 }
