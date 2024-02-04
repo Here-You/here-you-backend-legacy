@@ -33,11 +33,11 @@ export class LocationEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
-  static async createLocation(scheduleLocation) {
+  static async createLocation(updateScheduleDto) {
     try {
       const location: LocationEntity = new LocationEntity();
-      location.latitude = scheduleLocation.latitude;
-      location.longitude = scheduleLocation.longitude;
+      location.latitude = updateScheduleDto.latitude;
+      location.longitude = updateScheduleDto.longitude;
 
       return await location.save();
     } catch (error) {
@@ -45,17 +45,29 @@ export class LocationEntity extends BaseEntity {
     }
   }
 
-  static async updateLocation(schedule, scheduleLocation) {
+  static async updateLocation(schedule, updateScheduleDto) {
     try {
       const location = await LocationEntity.findOneOrFail({
         where: { id: schedule.locationId },
       });
-      location.latitude = scheduleLocation.latitude;
-      location.longitude = scheduleLocation.longitude;
+      location.latitude = updateScheduleDto.latitude;
+      location.longitude = updateScheduleDto.longitude;
 
       return await location.save();
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  static async findExistLocation(updateScheduleDto) {
+    {
+    }
+    const location = await LocationEntity.findOne({
+      where: {
+        latitude: updateScheduleDto.latitude,
+        longitude: updateScheduleDto.longitude,
+      },
+    });
+    return location;
   }
 }

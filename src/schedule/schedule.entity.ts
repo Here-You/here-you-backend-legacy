@@ -58,8 +58,8 @@ export class ScheduleEntity extends BaseEntity {
     return await schedule.save();
   }
 
-  static async updateScheduleTitle(schedule, title) {
-    schedule.title = title;
+  static async updateScheduleTitle(schedule, updateScheduleDto) {
+    schedule.title = updateScheduleDto.title;
     return await schedule.save();
   }
 

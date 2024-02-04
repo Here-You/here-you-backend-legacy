@@ -1,7 +1,16 @@
 // Update-schedule.dto.ts
-import { IsString } from 'class-validator';
+import { IsString, IsNumber, IsOptional } from 'class-validator';
 
-export class UpdateScheduleTitleDto {
+export class UpdateScheduleDto {
   @IsString()
+  @IsOptional()
   title: string;
+
+  @IsOptional()
+  @IsNumber()
+  latitude: number;
+
+  @IsOptional()
+  @IsNumber()
+  longitude: number;
 }
