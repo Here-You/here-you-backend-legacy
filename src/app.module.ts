@@ -10,7 +10,7 @@ import { ScheduleModule } from './schedule/schedule.module';
 import { PlaceModule } from './place/place.module';
 import { SignatureModule } from './signature/signature.module';
 import { RuleModule } from './rule/rule.module';
-
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -25,6 +25,7 @@ import { RuleModule } from './rule/rule.module';
     PlaceModule,
     SignatureModule,
     RuleModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
