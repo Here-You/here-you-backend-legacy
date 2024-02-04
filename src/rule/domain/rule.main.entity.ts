@@ -28,4 +28,13 @@ export class RuleMainEntity extends BaseEntity {
 
   @OneToMany(() => CommentEntity, comment => comment.rule)
   comments: CommentEntity[];
+
+  static async findMainById(ruleId: number): Promise<RuleMainEntity> {
+    const ruleMain : RuleMainEntity = await RuleMainEntity.findOne({
+      where: { id: ruleId },
+      relations: ['rules', 'invitations', 'comments']
+    });
+
+    return ruleMain;
+  }
 }
