@@ -14,37 +14,40 @@ import { UserFollowingEntity } from './user.following.entity';
 import { SignatureEntity } from '../signature/domain/signature.entity';
 import { SignatureLikeEntity } from '../signature/domain/signature.like.entity';
 import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
+import { JourneyEntity } from 'src/journey/model/journey.entity';
 
 @Entity()
 export class UserEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: true })
   name: string;
 
-  @Column()
+  @Column({ nullable: true })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   password: string;
 
   @Column()
   nickname: string;
 
+  @Column({ type: 'text', nullable: true })
+  bio: string;
   @Column({ type: 'text' })
   introduction: string;
 
   @Column()
   age: number;
 
-  @Column({ type: 'enum', enum: ['MALE', 'FEMALE', 'UNKNOWN'] })
+  @Column({ type: 'enum', enum: ['MALE', 'FEMALE', 'UNKNOWN'], nullable: true })
   gender: 'MALE' | 'FEMALE' | 'UNKNOWN';
 
-  @Column({ type: 'enum', enum: ['KAKAO', 'GOOGLE'] })
+  @Column({ type: 'enum', enum: ['KAKAO', 'GOOGLE'], nullable: true })
   oauthType: 'KAKAO' | 'GOOGLE';
 
-  @Column()
+  @Column({ nullable: true })
   oauthToken: string;
 
   @OneToOne(() => UserProfileImageEntity, (profileImage) => profileImage.user)
@@ -59,7 +62,10 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => SignatureEntity, (signature) => signature.user)
   signatures: SignatureEntity[];
 
-  @OneToMany(() => SignatureLikeEntity, (signatureLike) => signatureLike.signature)
+  @OneToMany(
+    () => SignatureLikeEntity,
+    (signatureLike) => signatureLike.signature,
+  )
   likes: SignatureLikeEntity[];
 
   @OneToMany(() => RuleInvitationEntity, (invitation) => invitation.inviter)
@@ -67,6 +73,9 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => RuleInvitationEntity, (invitation) => invitation.invited)
   invitationsReceived: RuleInvitationEntity[];
+
+  @OneToMany(() => JourneyEntity, (journey) => journey.user)
+  journeys: JourneyEntity[];
 
   @CreateDateColumn()
   created: Date;

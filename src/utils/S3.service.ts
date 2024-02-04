@@ -5,10 +5,13 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class S3UtilService {
   private readonly s3 = new S3({
-    endpoint: process.env.S3_ENDPOINT ?? undefined,
-    accessKeyId: process.env.S3_ACCESS_KEY,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
     signatureVersion: 'v4',
+    endpoint: process.env.S3_ENDPOINT,
+    region: process.env.AWS_REGION,
+    credentials: {
+      accessKeyId: process.env.S3_ACCESS_KEY,
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    },
   });
 
   public async listObjects() {
@@ -51,6 +54,7 @@ export class S3UtilService {
 
   public generateRandomImageKey(originalName: string) {
     const ext = originalName.split('.').pop();
+    console.log(ext);
     const uuid = uuidv4();
 
     return `${uuid}.${ext}`;
