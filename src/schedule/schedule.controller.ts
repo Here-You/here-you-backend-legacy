@@ -1,8 +1,18 @@
-import { Body, Controller, Put, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Put,
+  Get,
+  Param,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { Request } from 'express';
+import { UserGuard } from 'src/user/user.guard';
 import { ScheduleService } from './schedule.service';
 import { UpdateScheduleDto } from './dtos/update-schedule-dto';
-import { CreateLocationDto } from 'src/location/dtos/create-location.dto';
+import { FindMonthlyScheduleDto } from './dtos/find-monthly-schedule.dto';
 
 @Controller('schedule')
 export class ScheduleController {
@@ -21,6 +31,34 @@ export class ScheduleController {
     @Body() body: UpdateScheduleDto,
   ) {
     const result = await this.scheduleService.updateSchedule(scheduleId, body);
+    return result;
+  }
+
+  @ApiOperation({
+    summary: '홈 화면 - 캘린더',
+    description: '월별 일정을 불러옵니다.',
+  })
+  @ApiOkResponse({
+    description: '성공 ',
+  })
+  @UseGuards(UserGuard)
+  @Get(':year/:month')
+  async getMonthlySchedule(
+    @Param('year') year: number,
+    @Param('month') month: number,
+    @Req() req: Request,
+  ) {
+    const user = req.user;
+    console.log(user.id);
+    const findMonthlyScheduleDto: FindMonthlyScheduleDto = {
+      year,
+      month,
+    };
+    const result = await this.scheduleService.getMonthlySchedule(
+      user.id,
+      findMonthlyScheduleDto,
+    );
+
     return result;
   }
 }

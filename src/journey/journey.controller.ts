@@ -22,9 +22,8 @@ export class JourneyController {
     @Body() createJourneyDto: CreateJourneyDto,
     @Req() req: Request,
   ) {
-    const user = req.user;
     const result = await this.journeyService.createJourney(
-      user,
+      req.user,
       createJourneyDto,
     );
     return result;

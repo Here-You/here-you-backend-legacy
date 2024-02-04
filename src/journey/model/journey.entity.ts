@@ -10,6 +10,7 @@ import {
   DeleteDateColumn,
   OneToMany,
   ManyToOne,
+  Between,
   JoinColumn,
 } from 'typeorm';
 
@@ -31,6 +32,7 @@ export class JourneyEntity extends BaseEntity {
   @Column({ nullable: true })
   endDate: string;
 
+  @JoinColumn()
   @ManyToOne(() => UserEntity, (user) => user.journeys)
   user: UserEntity;
 
@@ -58,5 +60,24 @@ export class JourneyEntity extends BaseEntity {
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  static async getMonthlyJourney(journeys: JourneyEntity[], dates) {
+    const monthlyJourneys: JourneyEntity[] = journeys.filter((journey) => {
+      return (
+        journey.startDate >= dates.startDate && journey.endDate <= dates.endDate
+      );
+    });
+    console.log(monthlyJourneys);
+    return monthlyJourneys;
+  }
+
+  static async findJourneysByuserId(userId) {
+    const journeys: JourneyEntity[] = await JourneyEntity.find({
+      where: {
+        user: { id: userId },
+      },
+    });
+    return journeys;
   }
 }

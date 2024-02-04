@@ -31,13 +31,6 @@ export class JourneyService {
 
     return response(BaseResponse.JOURNEY_CREATED);
   }
+
+  async getDateRange(startDate, endDate) {}
 }
-/*const dates: CreateDateGroupDto = new CreateDateGroupDto();
-    {
-      (dates.startDate = createJourneyDto.startDate),
-        (dates.endDate = createJourneyDto.endDate);
-    }
-    const dateGroup = await DateGroupEntity.createDateGroup(dates);
-    if (!dateGroup) {
-      throw new Error();
-    }*/
