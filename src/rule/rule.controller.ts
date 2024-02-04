@@ -12,7 +12,7 @@ export class RuleController {
     private readonly ruleService: RuleService,
   ) {}
 
-  // 여행 규칙 생성
+ // 여행 규칙 생성
   @Post('/write')
   async createRule(@Body() createRuleDto: CreateRuleDto): Promise<ResponseDto<any>> {
     const result = await this.ruleService.createRule(createRuleDto);
@@ -44,7 +44,7 @@ export class RuleController {
       return new ResponseDto(
         ResponseCode.GET_RULE_DETAIL_FAIL,
         false,
-        "내 시그니처 가져오기 실패",
+        "규칙 및 댓글 가져오기 실패",
         null
       );
     }
@@ -52,47 +52,7 @@ export class RuleController {
       return new ResponseDto(
         ResponseCode.GET_RULE_DETAIL_SUCCESS,
         true,
-        "내 시그니처 가져오기 성공",
+        "규칙 및 댓글 가져오기 성공",
         result
       );
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    if(!result){
-      return new ResponseDto(
-        ResponseCode.RULE_CREATION_FAIL,
-        false,
-        "여행 규칙 생성 실패",
-        null);
-
-    }
-    else{
-      return new ResponseDto(
-        ResponseCode.RULE_CREATED,
-        true,
-        "여행 규칙 생성 성공",
-        result);
-    }
-  }
-
-
-}
