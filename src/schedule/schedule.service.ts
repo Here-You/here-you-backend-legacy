@@ -41,20 +41,4 @@ export class ScheduleService {
       console.log(location);
     }
   }
-  //   const existLocation = LocationEntity.findExistLocation(updateScheduleDto);
-  //   if (!existLocation) {
-  //     if (!schedule.location) {
-  //       const location = await LocationEntity.createLocation(updateScheduleDto);
-  //       await ScheduleEntity.updateScheduleLocation(schedule, location);
-  //       console.log(location);
-  //     } else {
-  //       const location = LocationEntity.updateLocation(
-  //         schedule,
-  //         updateScheduleDto,
-  //       );
-  //       console.log(location);
-  //     }
-  //   }
-  //   await ScheduleEntity.updateScheduleLocation(schedule, existLocation);
-  // }
 }
