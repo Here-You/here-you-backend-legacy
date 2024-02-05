@@ -127,7 +127,7 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
   static async findSignatureById(signatureId: number): Promise<SignatureEntity> {
     const signature:SignatureEntity = await SignatureEntity.findOne({
       where: { id: signatureId },
-      relations: ['user'] // user 관계를 포함
+      relations: ['user'] // user 포함
     });
 
     return signature;
@@ -143,7 +143,7 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
     // [2] 오늘로부터 일주일 안으로 쓰여진 시그니처 가져오기
     const recentSignatures = await SignatureEntity.find({
       where:{ created: MoreThan(sevenDaysAgo) },
-      relations: ['user'] // user 관계를 포함
+      relations: ['user'] // user 포함
     });
 
     return recentSignatures;
@@ -158,7 +158,7 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
     // [2] 일주일 전에 쓰인 메이트의 최신 시그니처 가져오기
     const signatures = await SignatureEntity.find({
       where:{user:{id: userId}, created: MoreThan(sevenDaysAgo)},
-      relations: ['user'] // user 관계를 포함
+      relations: ['user'] // user 포함
     })
     return signatures;
   }
