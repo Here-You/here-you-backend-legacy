@@ -44,7 +44,7 @@ export class SignaturePageEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
-  static async saveSignaturePages(
+  static async saveSignaturePage(
     pageSignatureDto:PageSignatureDto,
     signature:SignatureEntity):Promise<SignaturePageEntity> {
 
