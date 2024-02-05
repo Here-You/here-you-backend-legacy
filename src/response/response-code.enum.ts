@@ -14,7 +14,7 @@ export enum ResponseCode {
   UNFOLLOW_SUCCESS = 'OK',
   GET_FOLLOWER_LIST_SUCCESS = 'OK',
   GET_FOLLOWING_LIST_SUCCESS = 'OK',
-
+  GET_MEMBER_LIST_SUCCESS = 'OK',
 
   
   /* 201 CREATED : 요청 성공, 자원 생성 */
@@ -39,6 +39,7 @@ export enum ResponseCode {
   GET_FOLLOWER_LIST_FAIL = 'BAD_REQUEST',
   GET_FOLLOWING_LIST_FAIL = 'BAD_REQUEST',
   IS_ALREADY_FOLLOW = 'BAD_REQUEST',
+  GET_MEMBER_LIST_FAIL = 'BAD_REQUEST',
 
 
   /* 401 UNAUTHORIZED : 인증되지 않은 사용자 */

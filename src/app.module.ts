@@ -16,6 +16,7 @@ import { CommentModule } from './comment/comment.module';
 import { DetailScheduleModule } from './detail-schedule/detail-schedule.module';
 import { S3Module } from './utils/S3.module';
 import { FollowModule } from './follow/follow.module';
+import { MemberModule } from './member/member.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { FollowModule } from './follow/follow.module';
     CommentModule,
     S3Module,
     FollowModule,
+    MemberModule,
   ],
   controllers: [AppController],
   providers: [AppService],
