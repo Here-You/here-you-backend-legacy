@@ -78,7 +78,7 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
   }
 
   static async createSignature(
-    createSignatureDto: CreateSignatureDto,
+    createSignatureDto: CreateSignatureDto, userId: number
   ): Promise<SignatureEntity> {
     try {
       const signature: SignatureEntity = new SignatureEntity();
@@ -86,7 +86,7 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
 
       // 현재 로그인한 사용자 아이디로 수정해야함
       const user: UserEntity = await UserEntity.findOne({
-        where: { id: 1 }
+        where: { id: userId}
       });
 
       if(!user){

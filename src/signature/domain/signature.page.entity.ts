@@ -13,7 +13,6 @@ import {
 } from 'typeorm';
 import { SignatureEntity } from './signature.entity';
 import { PageSignatureDto } from '../dto/page-signature.dto';
-import { errorContext } from 'rxjs/internal/util/errorContext';
 
 @Entity()
 export class SignaturePageEntity extends BaseEntity {
