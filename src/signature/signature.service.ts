@@ -29,7 +29,7 @@ export class SignatureService {
     if (!signature) throw new BadRequestException();
     else{ // [2] 각 페이지 저장
       for(const pageSignatureDto of createSignatureDto.pages){
-        await SignaturePageEntity.saveSignaturePages(pageSignatureDto, signature);
+        await SignaturePageEntity.saveSignaturePage(pageSignatureDto, signature);
       }
     }
 
@@ -227,8 +227,11 @@ export class SignatureService {
       where:{ signature:{ id: signature.id } }
     });
 
-    // [4] 기존 페이지 수정하기
+    // [4] 기존 페이지 수정 및 새로운 페이지 추가하기
     for(const patchedPage of patchSignatureDto.pages){
+      if(!patchedPage._id){ // id가 없으면 새로 추가할 페이지
+        await SignaturePageEntity.saveSignaturePage(patchedPage,signature);
+      }
       for( const originalPage of originalSignaturePages ){
         if(patchedPage._id == originalPage.id){
           originalPage.content = patchedPage.content;
