@@ -5,7 +5,7 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity, EntitySubscriberInterface, EventSubscriber, InsertEvent, JoinColumn, ManyToOne,
+  Entity, EntitySubscriberInterface, EventSubscriber, InsertEvent, JoinColumn, ManyToOne, MoreThan,
   OneToMany,
   PrimaryGeneratedColumn, RemoveEvent,
   UpdateDateColumn,
@@ -131,5 +131,35 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
     });
 
     return signature;
+  }
+
+  static async findRecentSignatures(): Promise<SignatureEntity[]> {
+
+    // [1] 기준이 되는 일주일 전 날짜
+    const sevenDaysAgo: Date = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
+    console.log(sevenDaysAgo);
+
+    // [2] 오늘로부터 일주일 안으로 쓰여진 시그니처 가져오기
+    const recentSignatures = await SignatureEntity.find({
+      where:{ created: MoreThan(sevenDaysAgo) },
+      relations: ['user'] // user 관계를 포함
+    });
+
+    return recentSignatures;
+  }
+
+  static async findNewSignaturesByUser(userId: number) {
+    // [1] 기준이 되는 일주일 전 날짜
+    const sevenDaysAgo: Date = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
+    console.log(sevenDaysAgo);
+
+    // [2] 일주일 전에 쓰인 메이트의 최신 시그니처 가져오기
+    const signatures = await SignatureEntity.find({
+      where:{user:{id: userId}, created: MoreThan(sevenDaysAgo)},
+      relations: ['user'] // user 관계를 포함
+    })
+    return signatures;
   }
 }
