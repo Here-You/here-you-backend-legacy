@@ -1,3 +1,4 @@
+// app.module.ts
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -8,7 +9,12 @@ import { DiaryModule } from './diary/diary.module';
 import { LocationModule } from './location/location.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { PlaceModule } from './place/place.module';
+import { JourneyModule } from './journey/journey.module';
 import { SignatureModule } from './signature/signature.module';
+import { RuleModule } from './rule/rule.module';
+
+import { DetailScheduleModule } from './detail-schedule/detail-schedule.module';
+import { S3Module } from './utils/S3.module';
 
 @Module({
   imports: [
@@ -20,8 +26,12 @@ import { SignatureModule } from './signature/signature.module';
     DiaryModule,
     LocationModule,
     ScheduleModule,
+    DetailScheduleModule,
     PlaceModule,
+    JourneyModule,
     SignatureModule,
+    RuleModule,
+    S3Module,
   ],
   controllers: [AppController],
   providers: [AppService],

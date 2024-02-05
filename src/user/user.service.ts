@@ -1,6 +1,6 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import bcrypt from 'bcrypt';
-import jsonwebtoken from 'jsonwebtoken';
+import * as bcrypt from 'bcrypt';
+import * as jsonwebtoken from 'jsonwebtoken';
 import { UserEntity } from './user.entity';
 import { IReqUser, IUserProfile } from './user.dto';
 import { UserProfileImageEntity } from './user.profile.image.entity';

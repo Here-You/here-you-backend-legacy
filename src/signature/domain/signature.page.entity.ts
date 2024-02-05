@@ -5,12 +5,14 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity, JoinColumn, ManyToOne,
+  Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { SignatureEntity } from './signature.entity';
-import {PageSignatureDto} from '../dto/page-signature.dto';
+import { PageSignatureDto } from '../dto/page-signature.dto';
 import { errorContext } from 'rxjs/internal/util/errorContext';
 
 @Entity()
@@ -30,9 +32,8 @@ export class SignaturePageEntity extends BaseEntity {
   @Column()
   image: string;
 
-  @ManyToOne(() => SignatureEntity,
-    (signature) => signature.signaturePages)
-  @JoinColumn({name: 'signature_id'})
+  @ManyToOne(() => SignatureEntity, (signature) => signature.signaturePages)
+  @JoinColumn({ name: 'signature_id' })
   signature: SignatureEntity;
 
   @CreateDateColumn()
@@ -43,6 +44,7 @@ export class SignaturePageEntity extends BaseEntity {
 
   @DeleteDateColumn()
   deleted: Date;
+
 
   static async saveSignaturePage(
     pageSignatureDto:PageSignatureDto,
@@ -57,39 +59,41 @@ export class SignaturePageEntity extends BaseEntity {
     signaturePage.page = pageSignatureDto.page;
 
     return await signaturePage.save();
-
   }
 
   static async findThumbnail(id: number) {
     // 각 시그니처의 첫 번째 페이지의 이미지 가져오기
-    try{
-      const firstPage=await SignaturePageEntity.findOne({
+    try {
+      const firstPage = await SignaturePageEntity.findOne({
         where: {
           signature: { id: id },
-          page: 1
-        }
+          page: 1,
+        },
       });
 
       if (firstPage && firstPage.signature) {
-        console.log("썸네일 아이디: ", firstPage.id, " signatureId: ", firstPage.signature.id);
+        console.log(
+          '썸네일 아이디: ',
+          firstPage.id,
+          ' signatureId: ',
+          firstPage.signature.id,
+        );
         return firstPage.image;
       } else {
-        console.log("썸네일을 찾을 수 없습니다.");
+        console.log('썸네일을 찾을 수 없습니다.');
         return null;
       }
-
-    }catch (error){
-      console.log("Error on findThumbnail: ",error);
+    } catch (error) {
+      console.log('Error on findThumbnail: ', error);
       throw error;
     }
-
   }
 
-  static async findSignaturePages(signatureId: number){
+  static async findSignaturePages(signatureId: number) {
     const pages: SignaturePageEntity[] = await SignaturePageEntity.find({
       where: {
-        signature: {id: signatureId}
-      }
+        signature: { id: signatureId },
+      },
     });
 
     return pages;
