@@ -74,7 +74,7 @@ export class FollowController {
     // [3] 팔로우 리스트 조회
     @Get('/followList')
     async getFollowList(): Promise<ResponseDto<any>> {
-        // 현재 사용자 ID
+        // 현재 로그인한 사용자 ID
         // const userId = req.user.id;
         const userId = 1;
 
@@ -91,6 +91,31 @@ export class FollowController {
                 ResponseCode.GET_FOLLOWING_LIST_FAIL,
                 false,
                 "팔로우 리스트 불러오기 실패",
+                null
+            );
+        }
+    }
+
+    // [4] 팔로워 리스트 조회
+    @Get('/followerList')
+    async getFollowerList(): Promise<ResponseDto<any>> {
+        // 현재 로그인한 사용자 ID
+        // const userId = req.user.id;
+        const userId = 1;
+
+        try {
+            const followerList = await this.followService.getFollowerList(userId);
+            return new ResponseDto(
+            ResponseCode.GET_FOLLOWER_LIST_SUCCESS,
+            true,
+            "팔로워 리스트 불러오기 성공",
+            followerList
+            );
+        } catch (error) {
+            return new ResponseDto(
+                ResponseCode.GET_FOLLOWER_LIST_FAIL,
+                false,
+                "팔로워 리스트 불러오기 실패",
                 null
             );
         }

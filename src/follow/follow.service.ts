@@ -1,12 +1,15 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { UserFollowingEntity } from 'src/user/user.following.entity';
 import { FollowListConverter } from './follow.list.converter';
+import { FollowerListConverter } from './follower.list.converter';
 import { FollowDto } from './dto/follow.dto';
 
 @Injectable()
 export class FollowService {
     constructor(
         private followListConverter: FollowListConverter,
+        private followerListConverter: FollowerListConverter,
+
     ) {}
 
     // [1] 팔로우
@@ -30,5 +33,12 @@ export class FollowService {
         const followDto: FollowDto[] = await this.followListConverter.toDto(userId);
 
         return followDto;
+    }
+
+    // [4] 팔로워 리스트 조회
+    async getFollowerList(userId: number): Promise<FollowDto[]> {
+        const followerDto: FollowDto[] = await this.followerListConverter.toDto(userId);
+
+        return followerDto;
     }
 }

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { UserEntity } from 'src/user/user.entity';
-import { UserProfileImageEntity } from 'src/user/user.profile.image.entity';
 import { UserFollowingEntity } from 'src/user/user.following.entity';
 import { FollowDto } from './dto/follow.dto';
 import { UserService } from 'src/user/user.service';
@@ -26,19 +25,16 @@ export class FollowListConverter {
             const followDto : FollowDto = new FollowDto();
             const mateEntity : UserEntity = following.user;
 
-            followDto.mateId = mateEntity.id;
             followDto.nickName = mateEntity.nickname;
+            followDto.mateId = mateEntity.id;
             followDto.email = mateEntity.email;
             followDto.introduction = mateEntity.introduction;
-
             followDto.followId = following.id; // 팔로우 테이블 ID
             const image = await this.userService.getProfileImage(mateEntity.id);
             followDto.image = image.imageKey;
 
             return followDto;
         }))
-
-        console.log(informs);
         
         return informs;
     }

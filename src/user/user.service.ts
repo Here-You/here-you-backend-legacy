@@ -149,8 +149,19 @@ export class UserService {
         where: { user: { id: userId } },
         relations: ['user'],
       });
-
       return userFollowingEntity;
+    } catch (error) {
+      console.log('Error on getFollowingList: ' + error);
+    }
+  }
+
+  async getFollowerList(userId: number) {
+    try {
+      const userFollowerEntity = await UserFollowingEntity.find({
+        where: { followUser: { id: userId } },
+        relations: ['user'],
+      });
+      return userFollowerEntity;
     } catch (error) {
       console.log('Error on getFollowingList: ' + error);
     }
