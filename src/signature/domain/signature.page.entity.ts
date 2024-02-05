@@ -45,11 +45,12 @@ export class SignaturePageEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
-  static async saveSignaturePages(
-    pageSignatureDto: PageSignatureDto,
-    signature: SignatureEntity,
-  ): Promise<SignaturePageEntity> {
-    const signaturePage: SignaturePageEntity = new SignaturePageEntity();
+
+  static async saveSignaturePage(
+    pageSignatureDto:PageSignatureDto,
+    signature:SignatureEntity):Promise<SignaturePageEntity> {
+
+    const signaturePage:SignaturePageEntity = new SignaturePageEntity();
 
     signaturePage.signature = signature;
     signaturePage.content = pageSignatureDto.content;

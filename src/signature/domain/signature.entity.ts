@@ -7,14 +7,12 @@ import {
   DeleteDateColumn,
   Entity, EntitySubscriberInterface, EventSubscriber, InsertEvent, JoinColumn, ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn, RemoveEvent,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from 'src/user/user.entity';
 import { HomeSignatureDto } from '../dto/home-signature.dto';
 import { CreateSignatureDto } from '../dto/create-signature.dto';
-import { UserService } from '../../user/user.service';
 import { SignaturePageEntity } from './signature.page.entity';
 import { SignatureLikeEntity } from './signature.like.entity';
 @Entity()
@@ -29,16 +27,16 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
   @Column({ default: 0 })
   liked: number;
 
-  @ManyToOne(() => UserEntity, (user) => user.signatures)
+  @ManyToOne(() => UserEntity,
+    (user) => user.signatures)
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
   @OneToMany(() => SignaturePageEntity, (signaturePage) => signaturePage.signature)
   signaturePages: SignaturePageEntity[];
 
-  @OneToMany(() => SignatureLikeEntity, (signatureLike) => signatureLike.signature, {
-    cascade: true, // 관계에 대한 연산을 가능하게 합니다.
-  })
+  @OneToMany(() => SignatureLikeEntity,
+    (signatureLike) => signatureLike.signature)
   likes: SignatureLikeEntity[];
 
   listenTo() {
@@ -58,7 +56,7 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
   // 변경된 값에 따라 liked 카운트 업데이트
   private updateLikedCount(entity: SignatureLikeEntity, change: number): void {
     this.liked += change;
-    this.save(); // 업데이트된 liked 카운트를 데이터베이스에 저장합니다.
+    this.save(); // 업데이트된 liked 카운트를 데이터베이스에 저장
   }
 
 
@@ -116,7 +114,7 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
     for(const signature of signatures){
       const homeSignature:HomeSignatureDto = new HomeSignatureDto();
 
-      homeSignature.id = signature.id;
+      homeSignature._id = signature.id;
       homeSignature.title = signature.title;
       homeSignature.date = signature.created;
       homeSignature.image = await SignaturePageEntity.findThumbnail(signature.id);

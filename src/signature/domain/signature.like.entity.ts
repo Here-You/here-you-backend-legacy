@@ -40,12 +40,21 @@ export class SignatureLikeEntity extends BaseEntity {
       const signatureLike = new SignatureLikeEntity();
       signatureLike.signature = signature;
       signatureLike.user = loginUser;
-
-      return SignatureLikeEntity.save(signatureLike);
+      const signatureLikeEntity = await signatureLike.save();
+      console.log("sigLike created: ", signatureLikeEntity);
 
     }catch(error){
       console.error('Error on likeSignature: ', error);
       throw new Error('Failed to like Signature');
     }
+  }
+
+  static async findSignatureLikes(signatureId: number) {
+    const signatureLikeEntities = await SignatureLikeEntity.find({
+      where:{ signature:{id: signatureId} },
+      relations: ['user', 'signature'],
+    })
+
+    return signatureLikeEntities;
   }
 }
