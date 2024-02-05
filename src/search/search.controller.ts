@@ -1,12 +1,13 @@
 // search.controller.ts
 
-import { Body, Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { ResponseDto } from '../response/response.dto';
 import { GetSearchMainDto } from './dto/get-search-main.dto';
-import { TmpUserIdDto } from '../signature/dto/tmp-userId.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { CoverSignatureDto } from './dto/cover-signature.dto';
 import { SearchService } from './search.service';
+import { UserGuard } from '../user/user.guard';
+import { Request } from 'express';
 
 @Controller('search')
 export class SearchController{
@@ -14,8 +15,9 @@ export class SearchController{
   constructor(private readonly searchService: SearchService) {}
 
   @Get('/')
+  @UseGuards(UserGuard)
   async getSearchMain(
-    @Body() user_id: TmpUserIdDto
+    @Req() req: Request,
   ): Promise<ResponseDto<GetSearchMainDto>>{
     try{
       const getSearchMainDto:GetSearchMainDto = new GetSearchMainDto();
@@ -25,7 +27,7 @@ export class SearchController{
       getSearchMainDto.hot = hotSignatures;
 
       // [2] 내가 팔로우하는 메이트들의 최신 시그니처 가져오기
-      const newSignatures:CoverSignatureDto[] = await this.searchService.findMatesNewSignatures(user_id.userId);
+      const newSignatures:CoverSignatureDto[] = await this.searchService.findMatesNewSignatures(req.user.id);
       getSearchMainDto.new = newSignatures;
 
       return new ResponseDto(

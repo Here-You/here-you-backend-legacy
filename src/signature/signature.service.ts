@@ -1,11 +1,8 @@
 // signature.service.ts
 
 import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
-import bcrypt from 'bcrypt';
-import jsonwebtoken from 'jsonwebtoken';
 import { CreateSignatureDto } from './dto/create-signature.dto';
 import { SignatureEntity } from './domain/signature.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import { HomeSignatureDto } from './dto/home-signature.dto';
 import { UserEntity } from 'src/user/user.entity';
 import { SignaturePageEntity } from './domain/signature.page.entity';
@@ -17,17 +14,16 @@ import { UserService } from '../user/user.service';
 import { SignatureLikeEntity } from './domain/signature.like.entity';
 import { GetLikeListDto } from './dto/get-like-list.dto'
 import { LikeProfileDto } from './dto/like-profile.dto';
-import { errorContext } from 'rxjs/internal/util/errorContext';
 
 @Injectable()
 export class SignatureService {
 
   constructor(private readonly userService: UserService) {}
 
-  async createSignature(createSignatureDto: CreateSignatureDto): Promise<number> {
+  async createSignature(createSignatureDto: CreateSignatureDto, userId: number): Promise<number> {
 
     // [1] 시그니처 저장
-    const signature: SignatureEntity = await SignatureEntity.createSignature(createSignatureDto);
+    const signature: SignatureEntity = await SignatureEntity.createSignature(createSignatureDto, userId);
 
     if (!signature) throw new BadRequestException();
     else{ // [2] 각 페이지 저장
@@ -87,7 +83,7 @@ export class SignatureService {
       // 본인의 시그니처면 빈 객체를, 다르면 작성자의 프로필 정보를 담는다
       if(loginUser.id != signature.user.id) {
         authorDto._id = signature.user.id;
-        authorDto.name = signature.user.name;
+        authorDto.name = signature.user.nickname;
 
         const image = await this.userService.getProfileImage(signature.user.id);
         console.log("시그니처 작성자 프로필 이미지: ",image);
