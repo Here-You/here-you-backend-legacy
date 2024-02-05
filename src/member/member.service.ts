@@ -2,11 +2,13 @@ import { Injectable, HttpException } from '@nestjs/common';
 import { MemberListConverter } from './member.list.converter';
 import { MemberDto } from './dto/member.dto';
 import { RuleInvitationEntity } from 'src/rule/domain/rule.invitation.entity';
+import { RuleService } from 'src/rule/rule.service';
 
 @Injectable()
 export class MemberService {
     constructor(
         private memberListConverter: MemberListConverter,
+        private ruleService: RuleService,
     ) {}
 
     // [1] 여행 규칙 멤버 리스트 조회
@@ -29,4 +31,9 @@ export class MemberService {
     }
     
     // [3] 여행 규칙 멤버 삭제
+    async deleteMember(ruleId: number, memberId: number): Promise<RuleInvitationEntity> {
+        const invitation : RuleInvitationEntity = await RuleInvitationEntity.findInvitationByRuleId(ruleId, memberId);
+
+        return invitation.softRemove();
+    }
 }

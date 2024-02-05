@@ -42,21 +42,7 @@ export class RuleService {
       throw new HttpException('Internal Server Error', 500);
     }
   }
-
-  //
-
-  async findRuleById(ruleId: number): Promise<RuleMainEntity> {
-    try {
-      const rule: RuleMainEntity = await RuleMainEntity.findOne({
-        where: { id: ruleId },
-      });
-      return rule;
-    } catch (error) {
-      console.log('Error on findRuleById: ', error);
-      throw error;
-    }
-  }
-
+ 
   // [member] 초대 받은 멤버 리스트 생성
   async getInvitationList(ruleId: number) {
     try {
@@ -70,15 +56,15 @@ export class RuleService {
     }
   }
 
-  // [member] 이미 초대된 멤버인지 확인
-  async checkAlreadyMember(rule: RuleMainEntity, targetUserId: number): Promise<boolean> {
+  // [member] 멤버인지 확인
+  async checkMember(rule: RuleMainEntity, targetUserId: number): Promise<boolean> {
     const invitedArray = rule.invitations || [];
 
-    const isAlreadyMember = invitedArray.some(
+    const isMember = invitedArray.some(
       (invitations) => invitations.invited.id  === targetUserId,
     );
 
-    console.log('테스트 결과 : ', isAlreadyMember);
-    return isAlreadyMember;
+    console.log('테스트 결과 : ', isMember);
+    return isMember;
   }
 }
