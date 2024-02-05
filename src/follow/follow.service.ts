@@ -9,7 +9,6 @@ export class FollowService {
     constructor(
         private followListConverter: FollowListConverter,
         private followerListConverter: FollowerListConverter,
-
     ) {}
 
     // [1] 팔로우

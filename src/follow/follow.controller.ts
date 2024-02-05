@@ -2,7 +2,8 @@ import { Controller, Post, Req, UseGuards, Param, Delete, Get } from '@nestjs/co
 import { FollowService } from './follow.service';
 import { ResponseCode } from '../response/response-code.enum';
 import { ResponseDto } from '../response/response.dto';
-import { FollowDto } from './dto/follow.dto';
+import { UserEntity } from 'src/user/user.entity';
+import { UserService } from 'src/user/user.service';
 // import { UserGuard } from 'src/user/user.guard';
 
 // @UseGuards(UserGuard)
@@ -10,6 +11,7 @@ import { FollowDto } from './dto/follow.dto';
 export class FollowController {
   constructor(
     private readonly followService: FollowService,
+    private readonly userService: UserService,
   ) {}
 
   // [1] 팔로우
@@ -18,6 +20,19 @@ export class FollowController {
     // 현재 사용자 ID
     // const userId = req.user.id;
     const userId = 1;
+
+    // 이미 팔로우하는 사용자인지 검증
+    const user : UserEntity = await this.userService.findUserById(userId);
+    const isAlreadyFollow = this.userService.checkIfFollowing(user, followingId);
+
+    if (isAlreadyFollow) {
+        return new ResponseDto(
+            ResponseCode.IS_ALREADY_FOLLOW,
+            false,
+            "이미 팔로우하는 사용자입니다",
+            null
+        );
+    }
 
     try {
         await this.followService.createFollow(userId, followingId);
