@@ -10,7 +10,7 @@ import { DetailSignatureDto } from './dto/detail-signature.dto';
 import { TmpUserIdDto } from './dto/tmp-userId.dto';
 import { SignatureEntity } from './domain/signature.entity';
 import { SignatureLikeEntity } from './domain/signature.like.entity';
-import { LikeSignatureDto } from './dto/Like-signature.dto';
+import { LikeSignatureDto } from './dto/like-signature.dto';
 
 
 @Controller('signature')
@@ -119,6 +119,14 @@ export class SignatureController {
       // 임시로 토큰이 아닌 유저 아이디 받도록 구현 -> 리펙토링 예정
       const result = await this.signatureService.detailSignature(user_id.userId, signatureId);
 
+      if(result == null){
+        return new ResponseDto(
+          ResponseCode.SIGNATURE_NOT_FOUND,
+          false,
+          "존재하지 않는 시그니처 입니다",
+          result
+        );
+      }
       return new ResponseDto(
         ResponseCode.GET_SIGNATURE_DETAIL_SUCCESS,
         true,
@@ -134,31 +142,44 @@ export class SignatureController {
   }
 
   @Patch('/:signatureId') // 시그니처 수정하기
-  async patchSignatureDetail(
-    @Body() user_id: TmpUserIdDto,
+  async patchSignature(
+    @Body() patchSignatureDto: CreateSignatureDto,
     @Param('signatureId') signatureId: number
   ): Promise<ResponseDto<any>> {
     try{
       // 임시로 토큰이 아닌 유저 아이디 받도록 구현 -> 리펙토링 예정
-      const result = await this.signatureService.detailSignature(user_id.userId, signatureId);
+      const result = await this.signatureService.patchSignature(signatureId, patchSignatureDto);
+
+      if(result == null) {
+        return new ResponseDto(
+          ResponseCode.SIGNATURE_NOT_FOUND,
+          false,
+          "존재하지 않는 시그니처 입니다",
+          result
+        );
+      }
 
       return new ResponseDto(
-        ResponseCode.GET_SIGNATURE_DETAIL_SUCCESS,
+        ResponseCode.PATCH_SIGNATURE_SUCCESS,
         true,
-        "시그니처 상세보기 성공",
+        "시그니처 수정하기 성공",
         result
       );
     }
     catch(error){
-      console.log('Error on signatureId: ',error);
-      throw error;
+      console.log(error);
+      return new ResponseDto(
+        ResponseCode.SIGNATURE_PATCH_FAIL,
+        false,
+        "시그니처 수정하기 실패",
+        null
+      );
     }
 
   }
 
   @Delete('/:signatureId') // 시그니처 삭제하기
-  async deleteSignatureDetail(
-    @Body() user_id: TmpUserIdDto,
+  async deleteSignature(
     @Param('signatureId') signatureId: number
   ): Promise<ResponseDto<any>> {
     try{
@@ -167,6 +188,15 @@ export class SignatureController {
       // [1] 시그니처 가져오기
       const signature:SignatureEntity = await SignatureEntity.findSignatureById(signatureId);
       console.log("시그니처 정보: ", signature);
+
+      if(signature == null) {
+        return new ResponseDto(
+          ResponseCode.SIGNATURE_NOT_FOUND,
+          false,
+          "존재하지 않는 시그니처 입니다",
+          null
+        );
+      }
 
       // [2] 시그니처 삭제하기
       const result = await this.signatureService.deleteSignature(signature);
@@ -179,6 +209,7 @@ export class SignatureController {
       );
     }
     catch(error){
+      console.log(error);
       return new ResponseDto(
         ResponseCode.SIGNATURE_DELETE_FAIL,
         false,

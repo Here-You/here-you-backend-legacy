@@ -68,6 +68,7 @@ export class SignatureService {
 
       // [1] 시그니처 객체, 로그인 유저 객체 가져오기
       const signature:SignatureEntity = await SignatureEntity.findSignatureById(signatureId);
+      if(signature == null) return null;
       console.log("시그니처 정보: ", signature);
 
       const loginUser:UserEntity = await this.userService.findUserById(userId);
@@ -165,11 +166,11 @@ export class SignatureService {
     console.log("로그인한 유저 정보: ", loginUser);
 
     // [2] 좋아요 테이블에 인스턴스 추가하기
-    const signatureLike = await SignatureLikeEntity.createLike(signature,loginUser);
+    await SignatureLikeEntity.createLike(signature,loginUser);
 
     // [3] 해당 시그니처 좋아요 개수 추가하기
     signature.liked ++;
-    const newSignature = await SignatureEntity.save(signature);
+    await SignatureEntity.save(signature);
 
     return signature;
 
@@ -185,17 +186,62 @@ export class SignatureService {
     signature.liked --;
     const newSignature = await SignatureEntity.save(signature);
 
-    return signature
+    return signature;
   }
 
   async deleteSignature(signature){
     try{
-      const result = await SignatureEntity.softRemove(signature);
-      return result;
+
+      // [1] 페이지부터 삭제
+      const deleteSignaturePages: SignaturePageEntity[] = await SignaturePageEntity.find({
+        where:{ signature:{ id: signature.id } }
+      });
+
+      for( const deletePage of deleteSignaturePages ){
+        await SignaturePageEntity.softRemove(deletePage);
+      }
+
+      // [2] 시그니처 삭제
+      await SignatureEntity.softRemove(signature);
+
     }
     catch(error){
       console.log("Error on deleting Signature: ",error);
       throw error;
     }
+  }
+
+  async patchSignature(signatureId: number, patchSignatureDto: CreateSignatureDto) {
+
+    // [1] 시그니처 객체 가져오기
+    const signature:SignatureEntity = await SignatureEntity.findSignatureById(signatureId);
+    if(signature == null) return null;
+    console.log("시그니처 정보: ", signature);
+
+    // [2] 시그니처 수정
+    signature.title = patchSignatureDto.title;
+    await SignatureEntity.save(signature);
+
+    // [3] 기존 페이지 가져오기
+    const originalSignaturePages: SignaturePageEntity[] = await SignaturePageEntity.find({
+      where:{ signature:{ id: signature.id } }
+    });
+
+    // [4] 기존 페이지 수정하기
+    for(const patchedPage of patchSignatureDto.pages){
+      for( const originalPage of originalSignaturePages ){
+        if(patchedPage._id == originalPage.id){
+          originalPage.content = patchedPage.content;
+          originalPage.location = patchedPage.location;
+
+          // 이미지 수정 필요
+          originalPage.image = patchedPage.image;
+        }
+        await SignaturePageEntity.save(originalPage);
+      }
+    }
+
+    return signatureId;
+
   }
 }
