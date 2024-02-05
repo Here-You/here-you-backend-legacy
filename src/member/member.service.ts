@@ -1,6 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { MemberListConverter } from './member.list.converter';
 import { MemberDto } from './dto/member.dto';
+import { RuleInvitationEntity } from 'src/rule/domain/rule.invitation.entity';
 
 @Injectable()
 export class MemberService {
@@ -16,6 +17,16 @@ export class MemberService {
     }
 
     // [2] 여행 규칙 멤버 초대
-
+    async createInvitation(ruleId: number, userId: number, invitedId: number): Promise<RuleInvitationEntity> {
+  
+        // invitation 객체 생성
+        const invitation = RuleInvitationEntity.create({
+            rule: { id : ruleId },
+            inviter: { id : userId},
+            invited: { id : invitedId},
+        })
+        return invitation.save();
+    }
+    
     // [3] 여행 규칙 멤버 삭제
 }
