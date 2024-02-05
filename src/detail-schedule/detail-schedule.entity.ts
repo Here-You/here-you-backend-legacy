@@ -67,4 +67,12 @@ export class DetailScheduleEntity extends BaseEntity {
     }
     return detail;
   }
+
+  static async findExistDetailByScheduleId(schedule) {
+    const detail = await DetailScheduleEntity.find({
+      where: { schedule: { id: schedule.id } },
+      select: ['id', 'content', 'isDone'],
+    });
+    return detail;
+  }
 }

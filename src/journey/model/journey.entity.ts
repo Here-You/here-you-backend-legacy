@@ -62,21 +62,22 @@ export class JourneyEntity extends BaseEntity {
     }
   }
 
-  static async getMonthlyJourney(journeys: JourneyEntity[], dates) {
-    const monthlyJourneys: JourneyEntity[] = journeys.filter((journey) => {
-      return (
-        journey.startDate >= dates.startDate && journey.endDate <= dates.endDate
-      );
-    });
-    console.log(monthlyJourneys);
-    return monthlyJourneys;
-  }
+  // static async getMonthlyJourney(journeys: JourneyEntity[], dates) {
+  //   const monthlyJourneys: JourneyEntity[] = journeys.filter((journey) => {
+  //     return (
+  //       journey.startDate >= dates.startDate && journey.endDate <= dates.endDate
+  //     );
+  //   });
+  //   console.log(monthlyJourneys);
+  //   return monthlyJourneys;
+  // }
 
   static async findJourneysByuserId(userId) {
     const journeys: JourneyEntity[] = await JourneyEntity.find({
       where: {
         user: { id: userId },
       },
+      select: ['id', 'title', 'startDate', 'endDate'],
     });
     return journeys;
   }
