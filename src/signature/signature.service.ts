@@ -15,7 +15,7 @@ import { AuthorSignatureDto } from './dto/author-signature.dto';
 import { HeaderSignatureDto } from './dto/header-signature.dto';
 import { UserService } from '../user/user.service';
 import { SignatureLikeEntity } from './domain/signature.like.entity';
-import { GetLikeListDto } from './dto/get-like-list.dto';
+import { GetLikeListDto } from './dto/get-like-list.dto'
 import { LikeProfileDto } from './dto/like-profile.dto';
 import { errorContext } from 'rxjs/internal/util/errorContext';
 
