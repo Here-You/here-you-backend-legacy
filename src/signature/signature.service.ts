@@ -1,6 +1,6 @@
 // signature.service.ts
 
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import jsonwebtoken from 'jsonwebtoken';
 import { CreateSignatureDto } from './dto/create-signature.dto';
@@ -15,6 +15,9 @@ import { AuthorSignatureDto } from './dto/author-signature.dto';
 import { HeaderSignatureDto } from './dto/header-signature.dto';
 import { UserService } from '../user/user.service';
 import { SignatureLikeEntity } from './domain/signature.like.entity';
+import { GetLikeListDto } from './dto/get-like-list.dto';
+import { LikeProfileDto } from './dto/like-profile.dto';
+import { errorContext } from 'rxjs/internal/util/errorContext';
 
 @Injectable()
 export class SignatureService {
@@ -247,4 +250,54 @@ export class SignatureService {
     return signatureId;
 
   }
+
+
+  async getSignatureLikeList(userId: number, signatureId: number): Promise<GetLikeListDto> {
+
+    try{
+
+      const signature = await SignatureEntity.findSignatureById(signatureId);
+      if(!signature) {
+        throw new NotFoundException(`Signature with ID ${signatureId} not found`);
+      }
+
+      const getLikeListDto: GetLikeListDto = new GetLikeListDto();
+
+      const signatureLikeEntities = await SignatureLikeEntity.findSignatureLikes(signatureId);
+
+      // 총 좋아요 개수
+      getLikeListDto.liked = signatureLikeEntities.length;
+
+      const likeProfileDtos: LikeProfileDto[] = [];
+
+      for(const signatureLikeEntity of signatureLikeEntities){
+        const likeProfileDto = new LikeProfileDto();
+
+
+        if (signatureLikeEntity.user) {
+          const image = await this.userService.getProfileImage(signatureLikeEntity.user.id);
+          likeProfileDto._id = signatureLikeEntity.user.id;
+          likeProfileDto.image = image.imageKey;
+          likeProfileDto.introduction = signatureLikeEntity.user.introduction;
+          likeProfileDto.nickname = signatureLikeEntity.user.nickname;
+
+          // 만약 좋아요 누른 사용자가 본인이 아니라면 is_followed 값을 체크하고 본인이면 null로 보내준다.
+          if(signatureLikeEntity.user.id != userId){
+            const loginUser= await this.userService.findUserById(userId);
+            likeProfileDto.is_followed = await this.userService.checkIfFollowing(loginUser,signatureLikeEntity.user.id);
+          }
+          else likeProfileDto.is_followed = null;
+          likeProfileDtos.push(likeProfileDto);
+        }
+      }
+      getLikeListDto.profiles = likeProfileDtos;
+
+      return getLikeListDto;
+
+    }catch(error){
+      console.log("Error on GetSignatureLikeList: ", error);
+      throw error;
+    }
+  }
+
 }

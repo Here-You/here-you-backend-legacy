@@ -11,7 +11,7 @@ import { TmpUserIdDto } from './dto/tmp-userId.dto';
 import { SignatureEntity } from './domain/signature.entity';
 import { SignatureLikeEntity } from './domain/signature.like.entity';
 import { LikeSignatureDto } from './dto/like-signature.dto';
-
+import { GetLikeListDto } from './dto/get-like-list.dto';
 
 @Controller('signature')
 //@UseGuards(new AuthGuard())
@@ -88,7 +88,6 @@ export class SignatureController {
           '시그니처 좋아요 취소하기 성공',
           likeSignatureDto
         );
-
 
       }else{  // 좋아요 한적 없으면 시그니처 좋아요 추가
         result = await this.signatureService.addLikeOnSignature(user_id.userId,signatureId);
@@ -199,7 +198,7 @@ export class SignatureController {
       }
 
       // [2] 시그니처 삭제하기
-      const result = await this.signatureService.deleteSignature(signature);
+      await this.signatureService.deleteSignature(signature);
 
       return new ResponseDto(
         ResponseCode.DELETE_SIGNATURE_SUCCESS,
@@ -217,6 +216,32 @@ export class SignatureController {
         null
       );
     }
-
   }
+
+  @Get('/like/:signatureId') // 시그니처에 좋아요한 사용자 목록
+  async getSignatureLikeList(
+    @Body() user_id: TmpUserIdDto,
+    @Param('signatureId') signatureId: number
+  ): Promise<ResponseDto<GetLikeListDto>> {
+    try{
+      const getLikeListDto:GetLikeListDto = await this.signatureService.getSignatureLikeList(user_id.userId, signatureId);
+
+      return new ResponseDto(
+        ResponseCode.GET_LIKE_SIGNATURE_PROFILES_SUCCESS,
+        true,
+        "시그니처 좋아요 목록 불러오기 성공",
+        getLikeListDto
+      );
+
+    }
+    catch(error){
+      return new ResponseDto(
+        ResponseCode.GET_LIKE_SIGNATURE_PROFILES_FAIL,
+        false,
+        "시그니처 좋아요 목록 불러오기 실패",
+        null
+      );
+    }
+  }
+
 }
