@@ -2,7 +2,7 @@ import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { RuleService } from './rule.service';
 import { CreateRuleDto } from './dto/create-rule.dto';
 import { ResponseCode } from '../response/response-code.enum';
-import { ResponseDto } from '../response/response.dto'
+import { ResponseDto } from '../response/response.dto';
 import { MetaToBackDto } from './dto/meta-to-back.dto';
 
 @Controller('mate/rule')

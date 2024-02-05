@@ -1,7 +1,8 @@
-import { Controller, Post, Req, UseGuards, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Req, UseGuards, Param, Delete, Get } from '@nestjs/common';
 import { FollowService } from './follow.service';
 import { ResponseCode } from '../response/response-code.enum';
 import { ResponseDto } from '../response/response.dto';
+import { FollowDto } from './dto/follow.dto';
 // import { UserGuard } from 'src/user/user.guard';
 
 // @UseGuards(UserGuard)
@@ -11,7 +12,7 @@ export class FollowController {
     private readonly followService: FollowService,
   ) {}
 
-  // 팔로우
+  // [1] 팔로우
   @Post('/:followingId')
   async createFollow(@Param('followingId') followingId : number): Promise<ResponseDto<any>> {
     // 현재 사용자 ID
@@ -34,9 +35,9 @@ export class FollowController {
           null
         );
       }
-  }
+    }
 
-  // 언팔로우
+  // [2] 언팔로우
   @Delete('/:followId')
   async deleteFollow(@Param('followId') followId: number): Promise<ResponseDto<any>> {
     // 현재 사용자 ID
@@ -68,5 +69,31 @@ export class FollowController {
           null
         );
       }
-  }
+    }
+
+    // [3] 팔로우 리스트 조회
+    @Get('/followList')
+    async getFollowList(): Promise<ResponseDto<any>> {
+        // 현재 사용자 ID
+        // const userId = req.user.id;
+        const userId = 1;
+
+        try {
+            const followList = await this.followService.getFollowList(userId);
+            return new ResponseDto(
+            ResponseCode.GET_FOLLOWING_LIST_SUCCESS,
+            true,
+            "팔로우 리스트 불러오기 성공",
+            followList
+            );
+        } catch (error) {
+            return new ResponseDto(
+                ResponseCode.GET_FOLLOWING_LIST_FAIL,
+                false,
+                "팔로우 리스트 불러오기 실패",
+                null
+            );
+        }
+    }
+
 }
