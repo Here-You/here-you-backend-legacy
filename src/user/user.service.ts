@@ -141,4 +141,19 @@ export class UserService {
       );
     }
   }
+
+  async findFollowingMates(userId: number) {
+    try{
+      // userId에 해당하는 유저가 팔로우하고 있는 메이트 목록 리턴
+      const followingMates = await UserEntity.find({
+        where:{
+          follower:{ user: { id: userId }}
+        }
+      });
+      return followingMates;
+    }catch (error){
+      console.log("Error on findFollowingMates: ", error);
+      throw error;
+    }
+  }
 }
