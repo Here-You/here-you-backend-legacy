@@ -7,14 +7,12 @@ import { SignaturePageEntity } from '../signature/domain/signature.page.entity';
 import { UserService } from '../user/user.service';
 import { exit } from '@nestjs/cli/actions';
 import { SignatureService } from '../signature/signature.service';
+import { Like } from 'typeorm';
 
 @Injectable()
 export class SearchService{
 
-  constructor(
-    private readonly userService: UserService,
-    private readonly signatureService: SignatureService
-  ) {}
+  constructor( private readonly userService: UserService ) {}
 
   async findHotSignatures(): Promise<CoverSignatureDto[]> {
     try{
@@ -32,7 +30,7 @@ export class SearchService{
       console.log(recentSignatures);
 
       // [3] 그 중에서 20개만 리턴한다
-      const hotSignatureCovers: CoverSignatureDto[] = await this.getSignatureCovers(recentSignatures);
+      const hotSignatureCovers: CoverSignatureDto[] = await this.getSignatureCoversForSearchMain(recentSignatures);
 
       return hotSignatureCovers;
 
@@ -69,7 +67,7 @@ export class SearchService{
       totalNewSignatures.sort((a,b)=>a.created.getDate()-b.created.getDate());
 
       // [4] 20개만 리턴
-      const newSignatureCovers: CoverSignatureDto[] = await this.getSignatureCovers(totalNewSignatures);
+      const newSignatureCovers: CoverSignatureDto[] = await this.getSignatureCoversForSearchMain(totalNewSignatures);
 
       return newSignatureCovers;
 
@@ -79,28 +77,59 @@ export class SearchService{
     }
   }
 
-  async getSignatureCovers(signatureEntities){
+  async getSignatureCoversForSearchMain(signatureEntities){
 
+    // 탐색 메인화면에 출력될 시그니처 커버 20개 만들기
     const signatureCovers: CoverSignatureDto[] = [];
 
     for (let i = 0; i < signatureEntities.length && i < 20; i++) {
       const signature = signatureEntities[i];
-      const signatureCoverDto = new CoverSignatureDto();
+      const signatureCover = await this.getSignatureCover(signature);
 
-      signatureCoverDto._id = signature.id;
-      signatureCoverDto.title = signature.title;
-      signatureCoverDto.liked = signature.liked;
-      signatureCoverDto.userName = signature.user.name;
-
-      signatureCoverDto.date = await SignatureEntity.formatDateString(signature.created);
-      signatureCoverDto.image = await SignaturePageEntity.findThumbnail(signature.id);
-
-      const userProfileImageEntity = await this.userService.getProfileImage(signature.user.id);
-      signatureCoverDto.userImage = userProfileImageEntity.imageKey;
-
-      signatureCovers.push(signatureCoverDto);
+      signatureCovers.push(signatureCover);
     }
 
     return signatureCovers;
   }
+
+  async searchByKeyword(keyword: string) {
+    try{
+      // 키워드로 검색하기
+      const resultSignatures = await SignatureEntity.find({
+        where:{ title: Like(`%${keyword}%`) },
+        relations: ['user'] // user 포함
+      });
+
+      const resultCovers = [];
+      for(const signature of resultSignatures){
+        const signatureCover = await this.getSignatureCover(signature);
+        resultCovers.push(signatureCover);
+      }
+      return resultCovers;
+
+    }catch(error){
+      console.log("검색 서비스 에러발생: "+error);
+      throw error;
+    }
+  }
+
+
+  async getSignatureCover(signature:SignatureEntity):Promise<CoverSignatureDto>{
+    // 시그니처 커버 만들기
+    const signatureCover = new CoverSignatureDto();
+
+    signatureCover._id = signature.id;
+    signatureCover.title = signature.title;
+    signatureCover.liked = signature.liked;
+    signatureCover.userName = signature.user.name;
+
+    signatureCover.date = await SignatureEntity.formatDateString(signature.created);
+    signatureCover.image = await SignaturePageEntity.findThumbnail(signature.id);
+
+    const userProfileImageEntity = await this.userService.getProfileImage(signature.user.id);
+    signatureCover.userImage = userProfileImageEntity.imageKey;
+
+    return signatureCover;
+  }
 }
+
