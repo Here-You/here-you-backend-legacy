@@ -1,9 +1,18 @@
-import { Controller, Post, Body, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Param,
+  Body,
+  Req,
+  UseGuards,
+  Get,
+  Post,
+} from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { Request } from 'express';
 import { UserGuard } from 'src/user/user.guard';
 import { JourneyService } from './journey.service';
 import { CreateJourneyDto } from './dtos/create-journey.dto';
+import { FindMonthlyJourneyDto } from './dtos/find-monthly-journey.dto';
 
 @Controller('journey')
 export class JourneyController {
@@ -25,6 +34,33 @@ export class JourneyController {
     const result = await this.journeyService.createJourney(
       req.user,
       createJourneyDto,
+    );
+    return result;
+  }
+
+  /*월별 여정 불러오기*/
+  @ApiOperation({
+    summary: '월별 여정 불러오기',
+    description: '월별 여정과 일지 개수, 사진을 불러옵니다.',
+  })
+  @ApiOkResponse({
+    description: '성공 ',
+  })
+  @UseGuards(UserGuard)
+  @Get('monthly/:year/:month')
+  async getMonthlyJourney(
+    @Param('year') year: number,
+    @Param('month') month: number,
+    @Req() req: Request,
+  ) {
+    const user = req.user;
+    const findMonthlyJourneyDto: FindMonthlyJourneyDto = {
+      year,
+      month,
+    };
+    const result = await this.journeyService.getMonthlyJourneyMap(
+      user.id,
+      findMonthlyJourneyDto,
     );
     return result;
   }

@@ -12,9 +12,15 @@ export class DiaryService {
   constructor(private readonly s3UtilService: S3UtilService) {}
 
   /*일지 작성하기*/
-  async postDiary(diaryId, diaryInfo: PostDiaryDto) {
-    const diary = await DiaryEntity.postDiary(diaryId, diaryInfo);
+  async createDiary(scheduleId, diaryInfo: PostDiaryDto) {
+    const diary = await DiaryEntity.createDiary(scheduleId, diaryInfo);
     console.log(diary);
+    return response(BaseResponse.DIARY_CREATED);
+  }
+
+  /*일지 수정하기*/
+  async updateDiary(diaryId, diaryInfo: PostDiaryDto) {
+    const diary = await DiaryEntity.updateDiary(diaryId, diaryInfo);
     return response(BaseResponse.DIARY_CREATED);
   }
 

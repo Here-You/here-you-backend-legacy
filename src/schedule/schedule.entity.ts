@@ -8,6 +8,8 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  OneToOne,
+  Between,
 } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { BaseResponse } from 'src/response/response.status';
@@ -15,14 +17,15 @@ import { DetailScheduleEntity } from '../detail-schedule/detail-schedule.entity'
 import { LocationEntity } from 'src/location/location.entity';
 import { DiaryEntity } from 'src/diary/models/diary.entity';
 import { JourneyEntity } from 'src/journey/model/journey.entity';
+import { FindMonthlyJourneyDto } from 'src/journey/dtos/find-monthly-journey.dto';
 
 @Entity()
 export class ScheduleEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: true })
-  date: string;
+  @Column({ type: 'date' })
+  date: Date;
 
   @Column({ nullable: true })
   title: string;
@@ -39,8 +42,8 @@ export class ScheduleEntity extends BaseEntity {
   )
   detailSchedules: DetailScheduleEntity[];
 
-  @OneToMany(() => DiaryEntity, (diary) => diary.schedule)
-  diary: DiaryEntity[];
+  @OneToOne(() => DiaryEntity, (diary) => diary.schedule)
+  diary: DiaryEntity;
 
   @CreateDateColumn()
   created: Date;
@@ -78,11 +81,17 @@ export class ScheduleEntity extends BaseEntity {
     return schedule;
   }
 
-  static async findExistScheduleByJourneyId(journey) {
+  static async findMonthlySchedule(
+    journeyId,
+    dates: FindMonthlyJourneyDto,
+  ): Promise<ScheduleEntity[]> {
+    const firstDate = new Date(`${dates.year}-${dates.month}-01`);
+    const lastDate = new Date(`${dates.year}-${dates.month}-31`);
     const schedule = await ScheduleEntity.find({
-      where: { journey: journey },
-      // select: ['id', 'title', 'date', 'location'],
-      relations: ['location', 'detailSchedules'],
+      where: {
+        journey: { id: journeyId },
+        date: Between(firstDate, lastDate),
+      },
     });
     return schedule;
   }

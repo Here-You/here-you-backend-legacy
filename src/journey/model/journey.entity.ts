@@ -12,11 +12,16 @@ import {
   ManyToOne,
   Between,
   JoinColumn,
+  MoreThanOrEqual,
+  LessThanOrEqual,
 } from 'typeorm';
 
 import { CreateJourneyDto } from '../dtos/create-journey.dto';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { UserEntity } from 'src/user/user.entity';
+import { FindMonthlyJourneyDto } from '../dtos/find-monthly-journey.dto';
+import { errResponse } from 'src/response/response';
+import { BaseResponse } from 'src/response/response.status';
 
 @Entity()
 export class JourneyEntity extends BaseEntity {
@@ -26,11 +31,11 @@ export class JourneyEntity extends BaseEntity {
   @Column()
   title: string;
 
-  @Column()
-  startDate: string;
+  @Column({ type: 'date' })
+  startDate: Date;
 
-  @Column({ nullable: true })
-  endDate: string;
+  @Column({ type: 'date' })
+  endDate: Date;
 
   @ManyToOne(() => UserEntity, (user) => user.journeys)
   user: UserEntity;
@@ -61,21 +66,20 @@ export class JourneyEntity extends BaseEntity {
     }
   }
 
-  // static async getMonthlyJourney(journeys: JourneyEntity[], dates) {
-  //   const monthlyJourneys: JourneyEntity[] = journeys.filter((journey) => {
-  //     return (
-  //       journey.startDate >= dates.startDate && journey.endDate <= dates.endDate
-  //     );
-  //   });
-  //   console.log(monthlyJourneys);
-  //   return monthlyJourneys;
-  // }
-
-  static async findJourneysByuserId(userId) {
+  static async findMonthlyJourney(userId, dates: FindMonthlyJourneyDto) {
+    const firstDate = new Date(`${dates.year}-${dates.month}-01`);
+    const lastDate = new Date(`${dates.year}-${dates.month}-31`);
     const journeys: JourneyEntity[] = await JourneyEntity.find({
-      where: {
-        user: { id: userId },
-      },
+      where: [
+        {
+          user: { id: userId },
+          startDate: Between(firstDate, lastDate),
+        },
+        {
+          user: { id: userId },
+          endDate: Between(firstDate, lastDate),
+        },
+      ],
     });
     return journeys;
   }

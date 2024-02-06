@@ -16,14 +16,32 @@ export class DiaryController {
   @ApiOkResponse({
     description: '성공 ',
   })
-  @Put('post/:diaryId')
+  @Post('create/:scheduleId')
   async postJourney(
+    @Param('scheduleId') scheduleId: number,
+    @Body() body: PostDiaryDto,
+  ) {
+    const result = await this.diaryService.createDiary(scheduleId, body);
+    return result;
+  }
+
+  /*일지 수정하기 */
+  @ApiOperation({
+    summary: '일지 수정하기',
+    description: '일지를 작성 후 확인하기에서 바로 수정 가능',
+  })
+  @ApiOkResponse({
+    description: '성공 ',
+  })
+  @Put('update/:diaryId')
+  async updateJourney(
     @Param('diaryId') diaryId: number,
     @Body() body: PostDiaryDto,
   ) {
-    const result = await this.diaryService.postDiary(diaryId, body);
+    const result = await this.diaryService.updateDiary(diaryId, body);
     return result;
   }
+
   /*일지 사진 url 발급 */
   /*일지 사진 업로드*/
   @ApiOperation({
