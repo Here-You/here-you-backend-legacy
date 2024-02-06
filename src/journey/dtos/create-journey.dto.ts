@@ -2,9 +2,6 @@
 import { IsString, IsDateString, IsNumber } from 'class-validator';
 
 export class CreateJourneyDto {
-  @IsNumber()
-  userId: number;
-
   @IsString()
   title: string;
 

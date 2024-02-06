@@ -19,7 +19,6 @@ export class DiaryImageEntity extends BaseEntity {
   @Column({ type: 'mediumtext' })
   imageUrl: string;
 
-  @JoinColumn()
   @OneToOne(() => DiaryEntity, (diary) => diary.image)
   diary: DiaryEntity;
 

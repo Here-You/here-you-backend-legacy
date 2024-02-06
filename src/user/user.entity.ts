@@ -15,19 +15,21 @@ import { SignatureEntity } from '../signature/domain/signature.entity';
 import { SignatureLikeEntity } from '../signature/domain/signature.like.entity';
 import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
 import { JourneyEntity } from 'src/journey/model/journey.entity';
+import { NotFoundException } from '@nestjs/common';
+import { BaseResponse } from 'src/response/response.status';
 
 @Entity()
 export class UserEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: true })
+  @Column()
   name: string;
 
-  @Column({ nullable: true })
+  @Column()
   email: string;
 
-  @Column({ nullable: true })
+  @Column()
   password: string;
 
   @Column()
@@ -39,13 +41,13 @@ export class UserEntity extends BaseEntity {
   @Column()
   age: number;
 
-  @Column({ type: 'enum', enum: ['MALE', 'FEMALE', 'UNKNOWN'], nullable: true })
+  @Column({ type: 'enum', enum: ['MALE', 'FEMALE', 'UNKNOWN'] })
   gender: 'MALE' | 'FEMALE' | 'UNKNOWN';
 
-  @Column({ type: 'enum', enum: ['KAKAO', 'GOOGLE'], nullable: true })
+  @Column({ type: 'enum', enum: ['KAKAO', 'GOOGLE'] })
   oauthType: 'KAKAO' | 'GOOGLE';
 
-  @Column({ nullable: true })
+  @Column()
   oauthToken: string;
 
   @OneToOne(() => UserProfileImageEntity, (profileImage) => profileImage.user)
@@ -83,4 +85,14 @@ export class UserEntity extends BaseEntity {
 
   @DeleteDateColumn()
   deleted: Date;
+
+  static async findExistUser(userId) {
+    const user = await UserEntity.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException(BaseResponse.USER_NOT_FOUND);
+    }
+    return user;
+  }
 }

@@ -77,4 +77,13 @@ export class ScheduleEntity extends BaseEntity {
     }
     return schedule;
   }
+
+  static async findExistScheduleByJourneyId(journey) {
+    const schedule = await ScheduleEntity.find({
+      where: { journey: journey },
+      // select: ['id', 'title', 'date', 'location'],
+      relations: ['location', 'detailSchedules'],
+    });
+    return schedule;
+  }
 }
