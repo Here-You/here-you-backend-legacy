@@ -75,7 +75,7 @@ export class ScheduleEntity extends BaseEntity {
   }
 
   //일정 조회하기
-  static async findExistSchedule(scheduleId) {
+  static async findExistSchedule(scheduleId): Promise<ScheduleEntity> {
     const schedule = await ScheduleEntity.findOne({
       where: { id: scheduleId },
     });
@@ -83,6 +83,16 @@ export class ScheduleEntity extends BaseEntity {
       throw new NotFoundException(BaseResponse.SCHEDULE_NOT_FOUND);
     }
     return schedule;
+  }
+
+  //journeyId로 일정 조회하기
+  static async findExistScheduleByJourneyId(
+    journeyId: number,
+  ): Promise<ScheduleEntity[]> {
+    const schedules = await ScheduleEntity.find({
+      where: { journey: { id: journeyId } },
+    });
+    return schedules;
   }
   // 월별 일정 조회하기
   static async findMonthlySchedule(

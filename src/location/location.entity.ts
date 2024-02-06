@@ -70,4 +70,11 @@ export class LocationEntity extends BaseEntity {
     });
     return location;
   }
+
+  static async findExistLocationById(locationId) {
+    const location = await LocationEntity.findOne({
+      where: { id: locationId },
+    });
+    return location;
+  }
 }

@@ -66,6 +66,16 @@ export class JourneyEntity extends BaseEntity {
     }
   }
 
+  //여정 조회
+  static async findExistJourney(journeyId: number) {
+    const journey: JourneyEntity = await JourneyEntity.findOne({
+      where: {
+        id: journeyId,
+      },
+    });
+    return journey;
+  }
+
   //사용자의 월별 여정 조회
   static async findMonthlyJourney(userId, dates: FindMonthlyJourneyDto) {
     const firstDate = new Date(`${dates.year}-${dates.month}-01`);

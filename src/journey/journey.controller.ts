@@ -38,10 +38,24 @@ export class JourneyController {
     return result;
   }
 
+  /*여정 불러오기*/
+  @ApiOperation({
+    summary: '여정 불러오기',
+    description: '여정 제목, 날짜, 위치, 사진을 불러옵니다.',
+  })
+  @ApiOkResponse({
+    description: '성공 ',
+  })
+  @Get(':journeyId')
+  async getJourneyPreview(@Param('journeyId') journeyId: number) {
+    const result = await this.journeyService.getJourneyPreview(journeyId);
+    return result;
+  }
+
   /*월별 여정 불러오기*/
   @ApiOperation({
     summary: '월별 여정 불러오기',
-    description: '월별 여정과 일지 개수, 사진을 불러옵니다.',
+    description: '월별 여정 리스트 - 제목, 날짜, 일지 개수를 불러옵니다.',
   })
   @ApiOkResponse({
     description: '성공 ',
