@@ -51,37 +51,9 @@ export class ScheduleService {
     const user = await UserEntity.findExistUser(userId);
     const journeys = await this.getMonthlyJourney(user.id, dates);
     const schedules = await this.getMonthlySchedule(journeys, dates);
-    const detailSchedules = await this.getMonthlyDetailSchedules(schedules);
     const diaries = await this.getMonthlyDiaries(schedules);
-    const monthlyCalender = await Promise.all(
-      journeys.map(async (journey) => {
-        return {
-          journeyId: journey.id,
-          journeyTitle: journey.title,
-          startDate: journey.startDate,
-          endDate: journey.endDate,
-          schedules: schedules.map((schedule) => ({
-            scheduleId: schedule.id,
-            date: schedule.date,
-            title: schedule.title,
-            location: schedule.location
-              ? {
-                  latitude: schedule.location.latitude,
-                  longitude: schedule.location.longitude,
-                }
-              : null,
-          })),
-          detailSchedules: detailSchedules.map((detailSchedule) => ({
-            detailScheduleId: detailSchedule.id,
-            content: detailSchedule.content,
-            isDone: detailSchedule.isDone,
-          })),
-
-          diary: diaries.some((diaryExists) => diaryExists),
-        };
-      }),
-    );
-    return monthlyCalender;
+    const data = [journeys, schedules, diaries];
+    return response(BaseResponse.GET_MONTHLY_JOURNEY_SUCCESS, data);
   }
 
   async getMonthlyJourney(userId, dates: FindMonthlyScheduleDto) {
@@ -89,56 +61,53 @@ export class ScheduleService {
     const monthlyJourneys = await Promise.all(
       journeys.map(async (journey) => {
         const startDate = await this.parseDate(journey.startDate);
+        const endDate = await this.parseDate(journey.endDate);
         if (
-          startDate.year.toString() === dates.year.toString() &&
-          startDate.month.toString() === dates.month.toString()
+          (startDate.year.toString() === dates.year.toString() &&
+            startDate.month.toString() === dates.month.toString()) ||
+          (endDate.year.toString() === dates.year.toString() &&
+            endDate.month.toString() === dates.month.toString())
         ) {
           return journey;
         }
       }),
     );
-    return monthlyJourneys;
-    // const monthlyJourneys = [];
-    // for (const journey of journeys) {
-    //   const startDate = await this.parseDate(journey.startDate);
-    //   if (
-    //     startDate.year.toString() === dates.year.toString() &&
-    //     startDate.month.toString() === dates.month.toString()
-    //   ) {
-    //     monthlyJourneys.push(journey);
-    //   }
-    // }
-    // return monthlyJourneys;
+    return monthlyJourneys.filter((journey) => journey !== null);
   }
+  // const monthlyJourneys = [];
+  // for (const journey of journeys) {
+  //   const startDate = await this.parseDate(journey.startDate);
+  //   if (
+  //     startDate.year.toString() === dates.year.toString() &&
+  //     startDate.month.toString() === dates.month.toString()
+  //   ) {
+  //     monthlyJourneys.push(journey);
+  //   }
+  // }
+  // return monthlyJourneys;
 
   async getMonthlySchedule(journeys: JourneyEntity[], dates) {
     const monthlySchedule = await Promise.all(
       journeys.map(async (journey) => {
-        const schedule = await ScheduleEntity.findExistSchedule(journey);
-        const scheduleDate = await this.parseDate(schedule.date);
-        if (
-          scheduleDate.year.toString() === dates.year.toString() &&
-          scheduleDate.month.toString() === dates.month.toString()
-        ) {
-          return schedule;
+        const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+          journey,
+        );
+        const monthlySchedules = [];
+        for (const schedule of schedules) {
+          const scheduleDate = await this.parseDate(schedule.date);
+          if (
+            scheduleDate.year.toString() === dates.year.toString() &&
+            scheduleDate.month.toString() === dates.month.toString()
+          ) {
+            monthlySchedules.push(schedule);
+          }
         }
+        console.log(monthlySchedules);
+        return monthlySchedules;
       }),
     );
     return monthlySchedule;
   }
-  // const monthlySchedules = [];
-  // for (const journey of journeys) {
-  //   const schedule = await ScheduleEntity.findExistSchedule(journey);
-  //   const scheduleDate = await this.parseDate(schedule.date);
-  //   if (
-  //     scheduleDate.year.toString() === dates.year.toString() &&
-  //     scheduleDate.month.toString() === dates.month.toString()
-  //   ) {
-  //     monthlySchedules.push(schedule);
-  //   }
-  // }
-  // console.log(monthlySchedules);
-  // return monthlySchedules;
 
   async getMonthlyDetailSchedules(schedules: ScheduleEntity[]) {
     const monthlyDetailSchedules = [];
@@ -147,19 +116,21 @@ export class ScheduleService {
         await DetailScheduleEntity.findExistDetailByScheduleId(schedule);
       monthlyDetailSchedules.push(detailSchedules);
     }
+    console.log('detail', monthlyDetailSchedules);
     return monthlyDetailSchedules;
   }
 
-  async getMonthlyDiaries(schedules: ScheduleEntity[]) {
-    const diaries = schedules.map(async (schedule) => {
-      const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule);
-      if (diary.title === null) {
-        return false;
-      }
-      return true;
-    });
-    const existDiaries = await Promise.all(diaries);
-    return existDiaries;
+  async getMonthlyDiaries(schedules) {
+    const monthlyDiaries = await Promise.all(
+      schedules.map(async (schedule) => {
+        const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule);
+        if (diary.title === null) {
+          return false;
+        }
+        return true;
+      }),
+    );
+    return monthlyDiaries;
   }
 
   async parseDate(Date) {

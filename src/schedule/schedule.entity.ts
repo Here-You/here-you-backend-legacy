@@ -79,10 +79,10 @@ export class ScheduleEntity extends BaseEntity {
   }
 
   static async findExistScheduleByJourneyId(journey) {
-    const schedule = await ScheduleEntity.findOne({
-      where: { journey: { id: journey.id } },
-      select: ['id', 'title', 'date', 'location'],
-      relations: ['location'],
+    const schedule = await ScheduleEntity.find({
+      where: { journey: journey },
+      // select: ['id', 'title', 'date', 'location'],
+      relations: ['location', 'detailSchedules'],
     });
     return schedule;
   }

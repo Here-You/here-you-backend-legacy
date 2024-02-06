@@ -54,6 +54,7 @@ export class ScheduleController {
       year,
       month,
     };
+    console.log('dto', findMonthlyScheduleDto);
     const result = await this.scheduleService.getMonthlyCalender(
       user.id,
       findMonthlyScheduleDto,

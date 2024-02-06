@@ -32,7 +32,6 @@ export class JourneyEntity extends BaseEntity {
   @Column({ nullable: true })
   endDate: string;
 
-  @JoinColumn()
   @ManyToOne(() => UserEntity, (user) => user.journeys)
   user: UserEntity;
 
@@ -77,7 +76,6 @@ export class JourneyEntity extends BaseEntity {
       where: {
         user: { id: userId },
       },
-      select: ['id', 'title', 'startDate', 'endDate'],
     });
     return journeys;
   }
