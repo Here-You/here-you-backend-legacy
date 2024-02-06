@@ -6,6 +6,7 @@ import { IReqUser, IUserProfile } from './user.dto';
 import { UserProfileImageEntity } from './user.profile.image.entity';
 import { ResponseDto } from '../response/response.dto';
 import { ResponseCode } from '../response/response-code.enum';
+import { UserFollowingEntity } from './user.following.entity';
 
 @Injectable()
 export class UserService {
@@ -144,6 +145,28 @@ export class UserService {
     }
   }
 
+  async getFollowingList(userId: number) {
+    try {
+      const userFollowingEntity = await UserFollowingEntity.find({
+        where: { user: { id: userId } },
+        relations: ['user'],
+      });
+      return userFollowingEntity;
+    } catch (error) {
+      console.log('Error on getFollowingList: ' + error);
+    }
+  }
+
+  async getFollowerList(userId: number) {
+    try {
+      const userFollowerEntity = await UserFollowingEntity.find({
+        where: { followUser: { id: userId } },
+        relations: ['user'],
+      });
+      return userFollowerEntity;
+    } catch (error) {
+      console.log('Error on getFollowingList: ' + error);
+
   async updateUserVisibility(
     userId: number,
     visibility: 'PUBLIC' | 'PRIVATE' | 'MATE',
@@ -222,6 +245,7 @@ export class UserService {
     } catch (error) {
       console.log('Error on findFollowingMates: ', error);
       throw error;
+
     }
   }
 }

@@ -1,4 +1,13 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn } from 'typeorm';
+import { BaseEntity, 
+  Column, 
+  Entity, 
+  ManyToOne, 
+  PrimaryGeneratedColumn, 
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+} from 'typeorm';
 import { RuleMainEntity } from './rule.main.entity';
 
 @Entity()
@@ -15,4 +24,13 @@ export class RuleSubEntity extends BaseEntity {
   @ManyToOne(() => RuleMainEntity, ruleMain => ruleMain.rules)
   @JoinColumn({ name: 'rule_id'})
   main: RuleMainEntity;
+
+  @CreateDateColumn()
+  created: Date;
+
+  @UpdateDateColumn()
+  updated: Date;
+
+  @DeleteDateColumn()
+  deleted: Date;
 }
