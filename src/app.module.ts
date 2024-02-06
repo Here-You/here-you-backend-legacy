@@ -18,6 +18,7 @@ import { S3Module } from './utils/S3.module';
 import { FollowModule } from './follow/follow.module';
 import { MemberModule } from './member/member.module';
 import { SearchModule } from './search/search.module';
+import { MapModule } from './map/map.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { SearchModule } from './search/search.module';
     FollowModule,
     MemberModule,
     SearchModule,
+    MapModule,
   ],
   controllers: [AppController],
   providers: [AppService],
