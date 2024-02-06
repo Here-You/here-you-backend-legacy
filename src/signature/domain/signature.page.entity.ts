@@ -13,7 +13,6 @@ import {
 } from 'typeorm';
 import { SignatureEntity } from './signature.entity';
 import { PageSignatureDto } from '../dto/page-signature.dto';
-import { errorContext } from 'rxjs/internal/util/errorContext';
 
 @Entity()
 export class SignaturePageEntity extends BaseEntity {
@@ -45,11 +44,12 @@ export class SignaturePageEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
-  static async saveSignaturePages(
-    pageSignatureDto: PageSignatureDto,
-    signature: SignatureEntity,
-  ): Promise<SignaturePageEntity> {
-    const signaturePage: SignaturePageEntity = new SignaturePageEntity();
+
+  static async saveSignaturePage(
+    pageSignatureDto:PageSignatureDto,
+    signature:SignatureEntity):Promise<SignaturePageEntity> {
+
+    const signaturePage:SignaturePageEntity = new SignaturePageEntity();
 
     signaturePage.signature = signature;
     signaturePage.content = pageSignatureDto.content;
@@ -60,12 +60,12 @@ export class SignaturePageEntity extends BaseEntity {
     return await signaturePage.save();
   }
 
-  static async findThumbnail(id: number) {
+  static async findThumbnail(signatureId: number) {
     // 각 시그니처의 첫 번째 페이지의 이미지 가져오기
     try {
       const firstPage = await SignaturePageEntity.findOne({
         where: {
-          signature: { id: id },
+          signature: { id: signatureId },
           page: 1,
         },
       });

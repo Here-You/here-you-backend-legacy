@@ -15,6 +15,7 @@ import { RuleModule } from './rule/rule.module';
 
 import { DetailScheduleModule } from './detail-schedule/detail-schedule.module';
 import { S3Module } from './utils/S3.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { S3Module } from './utils/S3.module';
     SignatureModule,
     RuleModule,
     S3Module,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

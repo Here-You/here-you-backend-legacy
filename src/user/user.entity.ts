@@ -36,8 +36,6 @@ export class UserEntity extends BaseEntity {
   nickname: string;
 
   @Column({ type: 'text' })
-  bio: string;
-  @Column({ type: 'text' })
   introduction: string;
 
   @Column()

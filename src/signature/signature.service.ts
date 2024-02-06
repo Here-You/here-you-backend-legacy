@@ -1,11 +1,8 @@
 // signature.service.ts
 
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
-import bcrypt from 'bcrypt';
-import jsonwebtoken from 'jsonwebtoken';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSignatureDto } from './dto/create-signature.dto';
 import { SignatureEntity } from './domain/signature.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import { HomeSignatureDto } from './dto/home-signature.dto';
 import { UserEntity } from 'src/user/user.entity';
 import { SignaturePageEntity } from './domain/signature.page.entity';
@@ -15,21 +12,23 @@ import { AuthorSignatureDto } from './dto/author-signature.dto';
 import { HeaderSignatureDto } from './dto/header-signature.dto';
 import { UserService } from '../user/user.service';
 import { SignatureLikeEntity } from './domain/signature.like.entity';
+import { GetLikeListDto } from './dto/get-like-list.dto'
+import { LikeProfileDto } from './dto/like-profile.dto';
 
 @Injectable()
 export class SignatureService {
 
   constructor(private readonly userService: UserService) {}
 
-  async createSignature(createSignatureDto: CreateSignatureDto): Promise<number> {
+  async createSignature(createSignatureDto: CreateSignatureDto, userId: number): Promise<number> {
 
     // [1] 시그니처 저장
-    const signature: SignatureEntity = await SignatureEntity.createSignature(createSignatureDto);
+    const signature: SignatureEntity = await SignatureEntity.createSignature(createSignatureDto, userId);
 
     if (!signature) throw new BadRequestException();
     else{ // [2] 각 페이지 저장
       for(const pageSignatureDto of createSignatureDto.pages){
-        await SignaturePageEntity.saveSignaturePages(pageSignatureDto, signature);
+        await SignaturePageEntity.saveSignaturePage(pageSignatureDto, signature);
       }
     }
 
@@ -68,6 +67,7 @@ export class SignatureService {
 
       // [1] 시그니처 객체, 로그인 유저 객체 가져오기
       const signature:SignatureEntity = await SignatureEntity.findSignatureById(signatureId);
+      if(signature == null) return null;
       console.log("시그니처 정보: ", signature);
 
       const loginUser:UserEntity = await this.userService.findUserById(userId);
@@ -83,7 +83,7 @@ export class SignatureService {
       // 본인의 시그니처면 빈 객체를, 다르면 작성자의 프로필 정보를 담는다
       if(loginUser.id != signature.user.id) {
         authorDto._id = signature.user.id;
-        authorDto.name = signature.user.name;
+        authorDto.name = signature.user.nickname;
 
         const image = await this.userService.getProfileImage(signature.user.id);
         console.log("시그니처 작성자 프로필 이미지: ",image);
@@ -165,11 +165,11 @@ export class SignatureService {
     console.log("로그인한 유저 정보: ", loginUser);
 
     // [2] 좋아요 테이블에 인스턴스 추가하기
-    const signatureLike = await SignatureLikeEntity.createLike(signature,loginUser);
+    await SignatureLikeEntity.createLike(signature,loginUser);
 
     // [3] 해당 시그니처 좋아요 개수 추가하기
     signature.liked ++;
-    const newSignature = await SignatureEntity.save(signature);
+    await SignatureEntity.save(signature);
 
     return signature;
 
@@ -185,6 +185,115 @@ export class SignatureService {
     signature.liked --;
     const newSignature = await SignatureEntity.save(signature);
 
-    return signature
+    return signature;
   }
+
+  async deleteSignature(signature){
+    try{
+
+      // [1] 페이지부터 삭제
+      const deleteSignaturePages: SignaturePageEntity[] = await SignaturePageEntity.find({
+        where:{ signature:{ id: signature.id } }
+      });
+
+      for( const deletePage of deleteSignaturePages ){
+        await SignaturePageEntity.softRemove(deletePage);
+      }
+
+      // [2] 시그니처 삭제
+      await SignatureEntity.softRemove(signature);
+
+    }
+    catch(error){
+      console.log("Error on deleting Signature: ",error);
+      throw error;
+    }
+  }
+
+  async patchSignature(signatureId: number, patchSignatureDto: CreateSignatureDto) {
+
+    // [1] 시그니처 객체 가져오기
+    const signature:SignatureEntity = await SignatureEntity.findSignatureById(signatureId);
+    if(signature == null) return null;
+    console.log("시그니처 정보: ", signature);
+
+    // [2] 시그니처 수정
+    signature.title = patchSignatureDto.title;
+    await SignatureEntity.save(signature);
+
+    // [3] 기존 페이지 가져오기
+    const originalSignaturePages: SignaturePageEntity[] = await SignaturePageEntity.find({
+      where:{ signature:{ id: signature.id } }
+    });
+
+    // [4] 기존 페이지 수정 및 새로운 페이지 추가하기
+    for(const patchedPage of patchSignatureDto.pages){
+      if(!patchedPage._id){ // id가 없으면 새로 추가할 페이지
+        await SignaturePageEntity.saveSignaturePage(patchedPage,signature);
+      }
+      for( const originalPage of originalSignaturePages ){
+        if(patchedPage._id == originalPage.id){
+          originalPage.content = patchedPage.content;
+          originalPage.location = patchedPage.location;
+
+          // 이미지 수정 필요
+          originalPage.image = patchedPage.image;
+        }
+        await SignaturePageEntity.save(originalPage);
+      }
+    }
+
+    return signatureId;
+
+  }
+
+
+  async getSignatureLikeList(userId: number, signatureId: number): Promise<GetLikeListDto> {
+
+    try{
+
+      const signature = await SignatureEntity.findSignatureById(signatureId);
+      if(!signature) {
+        throw new NotFoundException(`Signature with ID ${signatureId} not found`);
+      }
+
+      const getLikeListDto: GetLikeListDto = new GetLikeListDto();
+
+      const signatureLikeEntities = await SignatureLikeEntity.findSignatureLikes(signatureId);
+
+      // 총 좋아요 개수
+      getLikeListDto.liked = signatureLikeEntities.length;
+
+      const likeProfileDtos: LikeProfileDto[] = [];
+
+      for(const signatureLikeEntity of signatureLikeEntities){
+        const likeProfileDto = new LikeProfileDto();
+
+
+        if (signatureLikeEntity.user) {
+          const image = await this.userService.getProfileImage(signatureLikeEntity.user.id);
+          likeProfileDto._id = signatureLikeEntity.user.id;
+          likeProfileDto.image = image.imageKey;
+          likeProfileDto.introduction = signatureLikeEntity.user.introduction;
+          likeProfileDto.nickname = signatureLikeEntity.user.nickname;
+
+          // 만약 좋아요 누른 사용자가 본인이 아니라면 is_followed 값을 체크하고 본인이면 null로 보내준다.
+          if(signatureLikeEntity.user.id != userId){
+            const loginUser= await this.userService.findUserById(userId);
+            likeProfileDto.is_followed = await this.userService.checkIfFollowing(loginUser,signatureLikeEntity.user.id);
+          }
+          else likeProfileDto.is_followed = null;
+          likeProfileDtos.push(likeProfileDto);
+        }
+      }
+      getLikeListDto.profiles = likeProfileDtos;
+
+      return getLikeListDto;
+
+    }catch(error){
+      console.log("Error on GetSignatureLikeList: ", error);
+      throw error;
+    }
+  }
+
 }
