@@ -47,11 +47,11 @@ export class DiaryService {
       schedules.map(async (schedule) => {
         const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule);
         if (!diary) {
-          return errResponse(BaseResponse.DIARY_NOT_FOUND);
+          return null;
         }
         const diaryImg = await DiaryImageEntity.findExistImgUrl(diary);
         if (!diaryImg) {
-          return errResponse(BaseResponse.DIARY_NOT_FOUND);
+          return null;
         }
         return {
           journeyId: journeyId,
