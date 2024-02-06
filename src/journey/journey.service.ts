@@ -8,6 +8,8 @@ import { DiaryEntity } from 'src/diary/models/diary.entity';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { CreateJourneyDto } from './dtos/create-journey.dto';
 import { FindMonthlyJourneyDto } from './dtos/find-monthly-journey.dto';
+import { LocationEntity } from 'src/location/location.entity';
+import { DiaryImageEntity } from 'src/diary/models/diary.image.entity';
 
 @Injectable()
 export class JourneyService {
@@ -55,6 +57,49 @@ export class JourneyService {
     return response(BaseResponse.GET_MONTHLY_JOURNEY_SUCCESS, journeyList);
   }
 
+  //지도에서 여정 정보 보여주기
+  async getJourneyPreview(journeyId) {
+    const journey = await this.getJourneyInfo(journeyId);
+    const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+      journeyId,
+    );
+    const locationList = await this.getJourneyList(schedules);
+    const journeyPreview = { journey, locationList };
+    return response(BaseResponse.GET_JOURNEY_PREVIEW_SUCCESS, journeyPreview);
+  }
+
+  //journeylist
+  async getJourneyList(schedules: ScheduleEntity[]) {
+    const locationList = await Promise.all(
+      schedules.map(async (schedule) => {
+        const location = await LocationEntity.findExistLocationById(
+          schedule.location,
+        );
+        const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule);
+        if (!diary) {
+          return errResponse(BaseResponse.DIARY_NOT_FOUND);
+        }
+        const diaryImg = await DiaryImageEntity.findExistImgUrl(diary);
+        if (!diaryImg) {
+          return errResponse(BaseResponse.DIARY_NOT_FOUND);
+        }
+        return {
+          date: schedule.date,
+          location: {
+            id: location.id,
+            latitude: location.latitude,
+            longitude: location.longitude,
+          },
+          diaryImage: {
+            id: diaryImg.id,
+            imageUrl: diaryImg.imageUrl,
+          },
+        };
+      }),
+    );
+    return locationList;
+  }
+
   //사용자의 월별 여정 가지고 오기
   async getMonthlyJourney(userId, dates: FindMonthlyJourneyDto) {
     const journeys = await JourneyEntity.findMonthlyJourney(userId, dates);
@@ -77,5 +122,15 @@ export class JourneyService {
       }
     }
     return diaryCount;
+  }
+
+  async getJourneyInfo(journeyId) {
+    const journey = await JourneyEntity.findExistJourney(journeyId);
+    return {
+      id: journey.id,
+      title: journey.title,
+      startDate: journey.startDate,
+      endDate: journey.endDate,
+    };
   }
 }

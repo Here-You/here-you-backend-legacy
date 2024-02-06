@@ -15,6 +15,11 @@ export const BaseResponse = {
     code: 200,
     message: '월별 여정을 불러오는데 성공했습니다.',
   },
+  GET_JOURNEY_PREVIEW_SUCCESS: {
+    success: true,
+    code: 200,
+    message: '여정을 불러오는데 성공했습니다.',
+  },
 
   /* 201 CREATED : 요청 성공, 자원 생성 */
   DATEGROUP_CREATED: {
