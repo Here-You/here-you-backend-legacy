@@ -4,6 +4,7 @@ import { ResponseCode } from '../response/response-code.enum';
 import { ResponseDto } from '../response/response.dto';
 import { UserEntity } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
+import { UserSearchDto} from "../user/user.search.dto";
 // import { UserGuard } from 'src/user/user.guard';
 
 // @UseGuards(UserGuard)
@@ -131,6 +132,33 @@ export class FollowController {
                 ResponseCode.GET_FOLLOWER_LIST_FAIL,
                 false,
                 "팔로워 리스트 불러오기 실패",
+                null
+            );
+        }
+    }
+
+    // [5] 메이트 검색
+    @Get('/:searchTerm')
+    async getSearchResult(
+        @Req() req: Request,
+        @Param('searchTerm') searchTerm: string): Promise<ResponseDto<any>> {
+        // 현재 로그인한 사용자 ID
+        // const userId = req.user.id;
+        const userId = 1;
+
+        try {
+            const userSearchDto : UserSearchDto[] = await this.userService.getSearchResult(userId, searchTerm)
+            return new ResponseDto(
+                ResponseCode.GET_SEARCH_RESULT_SUCCESS,
+                true,
+                "검색 결과 리스트 불러오기 성공",
+                userSearchDto
+            );
+        } catch (error) {
+            return new ResponseDto(
+                ResponseCode.GET_SEARCH_RESULT_FAIL,
+                false,
+                "검색 결과 리스트 불러오기 실패",
                 null
             );
         }

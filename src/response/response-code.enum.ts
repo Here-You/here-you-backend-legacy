@@ -15,6 +15,8 @@ export enum ResponseCode {
   GET_FOLLOWING_LIST_SUCCESS = 'OK',
   GET_MEMBER_LIST_SUCCESS = 'OK',
   DELETE_MEMBER_SUCCESS = 'OK',
+  RULE_EDIT_SUCCESS = 'OK',
+  GET_SEARCH_RESULT_SUCCESS = 'OK',
 
   
   
@@ -36,6 +38,7 @@ export enum ResponseCode {
   FOLLOW_CREATED = 'CREATED',
   INVITATION_CREATED = 'CREATED',
 
+
   
   
   /* 400 BAD_REQUEST : 잘못된 요청 */
@@ -56,6 +59,9 @@ export enum ResponseCode {
   IS_ALREADY_MEMBER = 'BAD_REQUEST',
   IS_NOT_MEMBER = 'BAD_REQUEST',
   DELETE_MEMBER_FAIL = 'BAD_REQUEST',
+  RULE_EDIT_FAIL = 'BAD_REQUEST',
+  GET_SEARCH_RESULT_FAIL = 'BAD_REQUEST',
+
 
 
 

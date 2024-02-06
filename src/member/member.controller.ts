@@ -4,6 +4,8 @@ import { ResponseDto } from '../response/response.dto';
 import { MemberService } from './member.service'; 
 import { RuleService } from 'src/rule/rule.service';
 import { RuleMainEntity } from 'src/rule/domain/rule.main.entity';
+import {UserSearchDto} from "../user/user.search.dto";
+import { UserService} from "../user/user.service";
 // import { UserGuard } from 'src/user/user.guard';
 
 // @UseGuards(UserGuard)
@@ -12,6 +14,7 @@ export class MemberController {
   constructor(
     private readonly memberService: MemberService,
     private readonly ruleService: RuleService,
+    private readonly userService: UserService,
   ) {}
 
   // [1] 여행 규칙 멤버 리스트 조회
@@ -104,4 +107,31 @@ export class MemberController {
         );
     }
   }
+
+    // [4] 초대할 여행 규칙 멤버 검색
+    @Get('/search/:searchTerm')
+    async getSearchResult(
+        @Req() req: Request,
+        @Param('searchTerm') searchTerm: string): Promise<ResponseDto<any>> {
+        // 현재 로그인한 사용자 ID
+        // const userId = req.user.id;
+        const userId = 1;
+
+        try {
+            const userSearchDto : UserSearchDto[] = await this.userService.getSearchResult(userId, searchTerm)
+            return new ResponseDto(
+                ResponseCode.GET_SEARCH_RESULT_SUCCESS,
+                true,
+                "검색 결과 리스트 불러오기 성공",
+                userSearchDto
+            );
+        } catch (error) {
+            return new ResponseDto(
+                ResponseCode.GET_SEARCH_RESULT_FAIL,
+                false,
+                "검색 결과 리스트 불러오기 실패",
+                null
+            );
+        }
+    }
 }
