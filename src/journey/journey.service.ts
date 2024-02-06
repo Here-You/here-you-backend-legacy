@@ -67,7 +67,7 @@ export class JourneyService {
       await ScheduleEntity.findMonthlySchedule(journeyId, dates);
     return schedules;
   }
-
+  //여정에 작성한 일지 개수 가지고 오기
   async getDiaryCount(schedules) {
     let diaryCount = 0;
     for (const schedule of schedules) {

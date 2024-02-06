@@ -54,6 +54,7 @@ export class ScheduleEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
+  //일정 작성하기
   static async createSchedule(journey, currentDate) {
     const schedule = new ScheduleEntity();
     schedule.date = currentDate.toISOString().split('T')[0];
@@ -61,16 +62,19 @@ export class ScheduleEntity extends BaseEntity {
     return await schedule.save();
   }
 
+  //일정 작성하기 : title
   static async updateScheduleTitle(schedule, updateScheduleDto) {
     schedule.title = updateScheduleDto.title;
     return await schedule.save();
   }
 
+  //일정 작성하기 : location
   static async updateScheduleLocation(schedule, location) {
     schedule.location = location.id;
     return await schedule.save();
   }
 
+  //일정 조회하기
   static async findExistSchedule(scheduleId) {
     const schedule = await ScheduleEntity.findOne({
       where: { id: scheduleId },
@@ -80,7 +84,7 @@ export class ScheduleEntity extends BaseEntity {
     }
     return schedule;
   }
-
+  // 월별 일정 조회하기
   static async findMonthlySchedule(
     journeyId,
     dates: FindMonthlyJourneyDto,

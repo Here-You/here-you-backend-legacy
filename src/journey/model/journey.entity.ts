@@ -66,6 +66,7 @@ export class JourneyEntity extends BaseEntity {
     }
   }
 
+  //사용자의 월별 여정 조회
   static async findMonthlyJourney(userId, dates: FindMonthlyJourneyDto) {
     const firstDate = new Date(`${dates.year}-${dates.month}-01`);
     const lastDate = new Date(`${dates.year}-${dates.month}-31`);
