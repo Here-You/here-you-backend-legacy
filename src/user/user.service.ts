@@ -165,7 +165,7 @@ export class UserService {
       });
       return userFollowerEntity;
     } catch (error) {
-      console.log('$Error on getFollowingList: ' + error);
+      console.log('Error on getFollowingList: ' + error);
     }
   }
   async updateUserVisibility(
