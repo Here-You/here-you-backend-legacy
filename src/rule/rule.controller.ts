@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import {Controller, Post, Body, Get, Param, Delete} from '@nestjs/common';
 import { RuleService } from './rule.service';
 import { CreateRuleDto } from './dto/create-rule.dto';
 import { ResponseCode } from '../response/response-code.enum';
@@ -55,5 +55,32 @@ export class RuleController {
         result
       );
     }
+  }
+
+  // 여행 규칙 나가기
+  @Delete('/:ruleId')
+  async deleteInvitation(@Param('ruleId') ruleId: number){
+
+    // 현재 로그인한 사용자 ID
+    // const userId = req.user.id;
+    const userId = 2;
+
+    try {
+      await this.ruleService.deleteInvitation(ruleId, userId);
+      return new ResponseDto(
+          ResponseCode.DELETE_INVITATION_SUCCESS,
+          true,
+          "여행 규칙 나가기 성공",
+          null
+      );
+    } catch (error) {
+      return new ResponseDto(
+          ResponseCode.DELETE_INVITATION_FAIL,
+          false,
+          "여행 규칙 나가기 실패",
+          null
+      );
+    }
+
   }
 }

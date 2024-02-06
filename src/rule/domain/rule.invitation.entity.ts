@@ -59,4 +59,18 @@ export class RuleInvitationEntity extends BaseEntity {
       throw error;
     }
   }
+
+  static async findInvitationByRuleAndUser(ruleId: number, userId: number) : Promise<RuleInvitationEntity> {
+    try {
+      const invitation = await RuleInvitationEntity.findOne({
+        where: [{rule: {id : ruleId}},
+          {invited: {id : userId}}]
+      });
+      console.log('invitation 조회 결과 : ', invitation);
+      return invitation;
+    } catch (error) {
+      console.log('Error on findInvitationByRuleId: ', error);
+      throw error;
+    }
+  }
 }
