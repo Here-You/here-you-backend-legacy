@@ -12,7 +12,7 @@ export const databaseProviders = [
         password: process.env.DB_PASS,
         database: process.env.DB_NAME,
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-        synchronize: false,
+        synchronize: process.env.DB_SYNC === 'true',
       });
 
       return dataSource.initialize();

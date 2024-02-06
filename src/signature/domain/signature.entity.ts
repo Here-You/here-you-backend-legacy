@@ -84,7 +84,6 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
       const signature: SignatureEntity = new SignatureEntity();
       signature.title = createSignatureDto.title;
 
-      // 현재 로그인한 사용자 아이디로 수정해야함
       const user: UserEntity = await UserEntity.findOne({
         where: { id: userId}
       });
@@ -105,24 +104,7 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
     }
   }
 
-  static async findMySignature(user_id: number):Promise<HomeSignatureDto[]> {
-    const mySignatureList:HomeSignatureDto[] = [];
-    const signatures = await SignatureEntity.find({
-      where: { user: { id: user_id} },
-    });
 
-    for(const signature of signatures){
-      const homeSignature:HomeSignatureDto = new HomeSignatureDto();
-
-      homeSignature._id = signature.id;
-      homeSignature.title = signature.title;
-      homeSignature.date = signature.created;
-      homeSignature.image = await SignaturePageEntity.findThumbnail(signature.id);
-
-      mySignatureList.push(homeSignature);
-    }
-    return mySignatureList;
-  }
 
   static async findSignatureById(signatureId: number): Promise<SignatureEntity> {
     const signature:SignatureEntity = await SignatureEntity.findOne({
