@@ -178,6 +178,37 @@ export class UserService {
     }
   }
 
+  async deleteAccount(userId: number) {
+    try {
+      const user = await UserEntity.findOne({
+        where: {
+          id: Number(userId),
+        },
+      });
+
+      await user.softRemove();
+
+      return new ResponseDto(
+        ResponseCode.DELETE_ACCOUNT_SUCCESS,
+        true,
+        '탈퇴 성공',
+        null,
+      );
+    } catch (error) {
+      this.logger.error(error);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      return new ResponseDto(
+        ResponseCode.INTERNAL_SERVEr_ERROR,
+        false,
+        '서버 내부 오류',
+        null,
+      );
+    }
+  }
+
   async findFollowingMates(userId: number) {
     try {
       // userId에 해당하는 유저가 팔로우하고 있는 메이트 목록 리턴

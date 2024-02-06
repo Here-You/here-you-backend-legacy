@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Post, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { IUserProfile } from './user.dto';
 import { UserGuard } from './user.guard';
@@ -38,5 +38,11 @@ export class UserController {
     @Req() req: Request,
   ) {
     return this.userService.updateUserVisibility(req.user.id, visibility);
+  }
+
+  @Delete('/profile/delete')
+  @UseGuards(UserGuard)
+  DeleteAccount(@Req() req: Request) {
+    return this.userService.deleteAccount(req.user.id);
   }
 }
