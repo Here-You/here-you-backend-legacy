@@ -143,17 +143,52 @@ export class UserService {
     }
   }
 
+  async updateUserVisibility(
+    userId: number,
+    visibility: 'PUBLIC' | 'PRIVATE' | 'MATE',
+  ) {
+    try {
+      const user = await UserEntity.findOne({
+        where: {
+          id: Number(userId),
+        },
+      });
+
+      user.visibility = visibility;
+      await user.save();
+
+      return new ResponseDto(
+        ResponseCode.UPDATE_PROFILE_SUCCESS,
+        true,
+        '공개범위 설정 성공',
+        null,
+      );
+    } catch (error) {
+      this.logger.error(error);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      return new ResponseDto(
+        ResponseCode.INTERNAL_SERVEr_ERROR,
+        false,
+        '서버 내부 오류',
+        null,
+      );
+    }
+  }
+
   async findFollowingMates(userId: number) {
-    try{
+    try {
       // userId에 해당하는 유저가 팔로우하고 있는 메이트 목록 리턴
       const followingMates = await UserEntity.find({
-        where:{
-          follower:{ user: { id: userId }}
-        }
+        where: {
+          follower: { user: { id: userId } },
+        },
       });
       return followingMates;
-    }catch (error){
-      console.log("Error on findFollowingMates: ", error);
+    } catch (error) {
+      console.log('Error on findFollowingMates: ', error);
       throw error;
     }
   }
