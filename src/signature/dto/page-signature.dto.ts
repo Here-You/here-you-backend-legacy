@@ -5,5 +5,5 @@ export class PageSignatureDto {
   page: number;
   content: string;
   location: string;
-  image: string;
+  image: Buffer;
 }
