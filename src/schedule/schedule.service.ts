@@ -4,11 +4,7 @@ import { BaseResponse } from 'src/response/response.status';
 import { LocationEntity } from 'src/location/location.entity';
 import { ScheduleEntity } from './schedule.entity';
 import { UserEntity } from 'src/user/user.entity';
-import { JourneyEntity } from 'src/journey/model/journey.entity';
-import { DiaryEntity } from 'src/diary/models/diary.entity';
 import { UpdateScheduleDto } from './dtos/update-schedule-dto';
-import { FindMonthlyScheduleDto } from './dtos/find-monthly-schedule.dto';
-import { DetailScheduleEntity } from 'src/detail-schedule/detail-schedule.entity';
 
 @Injectable()
 export class ScheduleService {

@@ -17,7 +17,7 @@ import { DetailScheduleEntity } from '../detail-schedule/detail-schedule.entity'
 import { LocationEntity } from 'src/location/location.entity';
 import { DiaryEntity } from 'src/diary/models/diary.entity';
 import { JourneyEntity } from 'src/journey/model/journey.entity';
-import { FindMonthlyJourneyDto } from 'src/journey/dtos/find-monthly-journey.dto';
+import { MonthInfoDto } from 'src/map/month-info.dto';
 
 @Entity()
 export class ScheduleEntity extends BaseEntity {
@@ -97,7 +97,7 @@ export class ScheduleEntity extends BaseEntity {
   // 월별 일정 조회하기
   static async findMonthlySchedule(
     journeyId,
-    dates: FindMonthlyJourneyDto,
+    dates: MonthInfoDto,
   ): Promise<ScheduleEntity[]> {
     const firstDate = new Date(`${dates.year}-${dates.month}-01`);
     const lastDate = new Date(`${dates.year}-${dates.month}-31`);

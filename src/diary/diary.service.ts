@@ -36,34 +36,4 @@ export class DiaryService {
     await DiaryImageEntity.createDiaryImg(diary, imageUrl);
     return response(BaseResponse.DIARY_IMG_URL_CREATED);
   }
-
-  /*일지 불러오기 - 지도*/
-  async getDiaryList(journeyId) {
-    const journey = await JourneyEntity.findExistJourney(journeyId);
-    const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
-      journey.id,
-    );
-    const diaryList = await Promise.all(
-      schedules.map(async (schedule) => {
-        const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule);
-        if (!diary) {
-          return null;
-        }
-        const diaryImg = await DiaryImageEntity.findExistImgUrl(diary);
-        if (!diaryImg) {
-          return null;
-        }
-        return {
-          journeyId: journeyId,
-          date: schedule.date,
-          diary: diary,
-          diaryImage: {
-            id: diaryImg.id,
-            imageUrl: diaryImg.imageUrl,
-          },
-        };
-      }),
-    );
-    return response(BaseResponse.GET_DIARY_SUCCESS, diaryList);
-  }
 }

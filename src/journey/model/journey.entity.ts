@@ -11,17 +11,12 @@ import {
   OneToMany,
   ManyToOne,
   Between,
-  JoinColumn,
-  MoreThanOrEqual,
-  LessThanOrEqual,
 } from 'typeorm';
 
 import { CreateJourneyDto } from '../dtos/create-journey.dto';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { UserEntity } from 'src/user/user.entity';
-import { FindMonthlyJourneyDto } from '../dtos/find-monthly-journey.dto';
-import { errResponse } from 'src/response/response';
-import { BaseResponse } from 'src/response/response.status';
+import { MonthInfoDto } from 'src/map/month-info.dto';
 
 @Entity()
 export class JourneyEntity extends BaseEntity {
@@ -77,7 +72,7 @@ export class JourneyEntity extends BaseEntity {
   }
 
   //사용자의 월별 여정 조회
-  static async findMonthlyJourney(userId, dates: FindMonthlyJourneyDto) {
+  static async findMonthlyJourney(userId, dates: MonthInfoDto) {
     const firstDate = new Date(`${dates.year}-${dates.month}-01`);
     const lastDate = new Date(`${dates.year}-${dates.month}-31`);
     const journeys: JourneyEntity[] = await JourneyEntity.find({

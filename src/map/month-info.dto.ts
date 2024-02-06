@@ -1,6 +1,6 @@
 import { IsInt } from 'class-validator';
 
-export class FindMonthlyJourneyDto {
+export class MonthInfoDto {
   @IsInt()
   year: number;
   @IsInt()

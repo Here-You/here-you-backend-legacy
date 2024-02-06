@@ -59,18 +59,4 @@ export class DiaryController {
     const result = await this.diaryService.getDiaryImgUrl(diaryId, fileName);
     return result;
   }
-
-  /*일지 불러오기 - 지도 */
-  @ApiOperation({
-    summary: '일지 불러오기 - 지도',
-    description: 'journeyId로 일지 불러오기',
-  })
-  @ApiOkResponse({
-    description: '성공 ',
-  })
-  @Get('get/:journeyId')
-  async getDiaryList(@Param('journeyId') journeyId: number) {
-    const result = await this.diaryService.getDiaryList(journeyId);
-    return result;
-  }
 }
