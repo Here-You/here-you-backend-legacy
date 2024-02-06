@@ -8,6 +8,7 @@ import { ResponseDto } from '../response/response.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { UserFollowingEntity } from './user.following.entity';
 import { UserSearchDto} from "./user.search.dto";
+import {Like} from "typeorm";
 
 @Injectable()
 export class UserService {
@@ -261,9 +262,14 @@ export class UserService {
     // 검색 결과로 보여줄 유저 객체 리스트
     const mates  = await UserEntity.find({
       where: [
-           {name: searchTerm}, {nickname: searchTerm},
+          {name: Like(`%${searchTerm}%`)},
+          {nickname: Like(`%${searchTerm}%`)},
       ],
-      relations : [ 'profileImage', 'following', 'follower' ],
+      relations : {
+        profileImage: true,
+        following: true,
+        follower: true,
+      }
     });
     console.log(mates);
 
