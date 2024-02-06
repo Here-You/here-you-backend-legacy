@@ -38,6 +38,9 @@ export class UserEntity extends BaseEntity {
   @Column({ type: 'text' })
   introduction: string;
 
+  @Column({ type: 'enum', enum: ['PUBLIC', 'PRIVATE', 'MATE'] })
+  visibility: 'PUBLIC' | 'PRIVATE' | 'MATE';
+
   @Column()
   age: number;
 

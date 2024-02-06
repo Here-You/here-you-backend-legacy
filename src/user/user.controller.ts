@@ -18,4 +18,13 @@ export class UserController {
   UpdateProfile(@Body() body: Partial<IUserProfile>, @Req() req: Request) {
     return this.userService.updateUserProfile(req.user.id, body);
   }
+
+  @Post('/profile/visibility')
+  @UseGuards(UserGuard)
+  UpdateUserVisibility(
+    @Body('visibility') visibility: 'PRIVATE' | 'PUBLIC' | 'MATE',
+    @Req() req: Request,
+  ) {
+    return this.userService.updateUserVisibility(req.user.id, visibility);
+  }
 }
