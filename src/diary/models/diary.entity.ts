@@ -93,4 +93,11 @@ export class DiaryEntity extends BaseEntity {
     }
     return diary;
   }
+
+  static async findExistDiaryByScheduleId(schedule) {
+    const diary = await DiaryEntity.findOne({
+      where: { schedule: { id: schedule.id } },
+    });
+    return diary;
+  }
 }

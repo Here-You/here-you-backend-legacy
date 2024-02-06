@@ -17,6 +17,7 @@ import { DetailScheduleModule } from './detail-schedule/detail-schedule.module';
 import { S3Module } from './utils/S3.module';
 import { FollowModule } from './follow/follow.module';
 import { MemberModule } from './member/member.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { MemberModule } from './member/member.module';
     S3Module,
     FollowModule,
     MemberModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],
