@@ -66,7 +66,7 @@ export class DiaryEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
-  /*일지 생성하기*/
+  //일지 생성하기
   static async createDiary(scheduleId, diaryInfo) {
     const diary = new DiaryEntity();
     diary.title = diaryInfo.title;
@@ -79,7 +79,7 @@ export class DiaryEntity extends BaseEntity {
 
     return await diary.save();
   }
-  /*일지 수정하기*/
+  //일지 수정하기
   static async updateDiary(diaryId, diaryInfo: PostDiaryDto) {
     const diary = await this.findExistDiary(diaryId);
     diary.title = diaryInfo.title;
@@ -91,6 +91,7 @@ export class DiaryEntity extends BaseEntity {
     return await diary.save();
   }
 
+  //일지 조회하기
   static async findExistDiary(diaryId) {
     const diary = await DiaryEntity.findOne({
       where: { id: diaryId },
@@ -101,6 +102,7 @@ export class DiaryEntity extends BaseEntity {
     return diary;
   }
 
+  //scheduleId로 일지 조회하기
   static async findExistDiaryByScheduleId(schedule) {
     const diary = await DiaryEntity.findOne({
       where: { schedule: { id: schedule.id } },
