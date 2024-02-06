@@ -256,10 +256,14 @@ export class UserService {
     const user = await this.findUserById(userId);
     console.log('현재 로그인한 유저 아이디 : ', user.id)
 
+    console.log(searchTerm);
+
     // 검색 결과로 보여줄 유저 객체 리스트
     const mates  = await UserEntity.find({
-      where: { name: searchTerm, nickname: searchTerm },
-      relations : { profileImage : true, following : true, follower : true},
+      where: [
+           {name: searchTerm}, {nickname: searchTerm},
+      ],
+      relations : [ 'profileImage', 'following', 'follower' ],
     });
     console.log(mates);
 
@@ -276,6 +280,8 @@ export class UserService {
 
       return userSearchDto;
     }));
+
+    console.log('검색 결과 : ', results);
 
     return results;
   }
