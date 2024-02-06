@@ -11,7 +11,7 @@ import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { DetailScheduleService } from './detail-schedule.service';
 import { DetailContentDto } from './detail-schedule-info.dto';
 
-@Controller('api/detail-schedule')
+@Controller('detail-schedule')
 export class DetailScheduleController {
   constructor(private readonly detailScheduleService: DetailScheduleService) {}
 
