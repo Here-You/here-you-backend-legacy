@@ -53,6 +53,7 @@ export class DiaryEntity extends BaseEntity {
   @OneToOne(() => DiaryImageEntity, (image) => image.diary, {})
   image: DiaryImageEntity;
 
+  @JoinColumn()
   @OneToOne(() => ScheduleEntity, (schedule) => schedule.diary)
   schedule: ScheduleEntity;
 
