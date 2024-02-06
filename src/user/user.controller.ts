@@ -19,6 +19,12 @@ export class UserController {
     return this.userService.updateUserProfile(req.user.id, body);
   }
 
+  @Post('/profile/nickname')
+  @UseGuards(UserGuard)
+  UpdateNickname(@Body('nickname') nickname: string, @Req() req: Request) {
+    return this.userService.updateUserProfile(req.user.id, { nickname });
+  }
+
   @Post('/profile/visibility')
   @UseGuards(UserGuard)
   UpdateUserVisibility(
