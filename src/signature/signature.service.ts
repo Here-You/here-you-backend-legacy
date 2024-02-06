@@ -15,6 +15,7 @@ import { SignatureLikeEntity } from './domain/signature.like.entity';
 import { GetLikeListDto } from './dto/get-like-list.dto'
 import { LikeProfileDto } from './dto/like-profile.dto';
 import { S3UtilService } from '../utils/S3.service';
+import { ResponsePageSignatureDto } from './dto/response-page-signature.dto';
 
 @Injectable()
 export class SignatureService {
@@ -65,7 +66,7 @@ export class SignatureService {
     const key = `signature/${this.s3Service.generateRandomImageKey('signaturePage.png')}`;
 
     // Base64 이미지 업로드
-    const uploadedImage = await this.s3Service.putObjectFromBase64(
+    const uploadedImage = await this.s3Service.putObject(
       key, pageSignatureDto.image
     );
     console.log(uploadedImage);
@@ -178,11 +179,11 @@ export class SignatureService {
       /****************************************/
 
       // [4] 각 페이지 내용 가져오기
-      const signaturePageDto: PageSignatureDto[] = [];
+      const signaturePageDto: ResponsePageSignatureDto[] = [];
       const pages: SignaturePageEntity[] = await SignaturePageEntity.findSignaturePages(signatureId);
 
       for(const page of pages){
-        const pageDto:PageSignatureDto = new PageSignatureDto();
+        const pageDto:ResponsePageSignatureDto = new ResponsePageSignatureDto();
         pageDto._id = page.id;
         pageDto.page = page.page;
         pageDto.content = page.content;
@@ -305,7 +306,7 @@ export class SignatureService {
           const key = `signature/${this.s3Service.generateRandomImageKey('signaturePage.png')}`;
 
           // Base64 이미지 업로드
-          const uploadedImage = await this.s3Service.putObjectFromBase64(
+          const uploadedImage = await this.s3Service.putObject(
             key, patchedPage.image
           );
 
