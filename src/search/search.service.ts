@@ -30,7 +30,7 @@ export class SearchService{
       const recentSignatures: SignatureEntity[] = await SignatureEntity.findRecentSignatures();
 
       // [2] 최근 시그니처들 리스트 좋아요 순으로 정렬
-      recentSignatures.sort((a,b) => a.liked - b.liked );
+      recentSignatures.sort((a,b) => b.liked - a.liked );
       console.log(recentSignatures);
 
       // [3] 그 중에서 20개만 리턴한다
@@ -66,7 +66,8 @@ export class SearchService{
       }
 
       // [3] 최신 순으로 정렬
-      totalNewSignatures.sort((a,b)=>a.created.getDate()-b.created.getDate());
+      totalNewSignatures.sort((a, b) => b.created.getTime() - a.created.getTime());
+
 
       // [4] 20개만 리턴
       return await this.getSignatureCoversForSearchMain(totalNewSignatures);
