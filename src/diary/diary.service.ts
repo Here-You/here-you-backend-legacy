@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { response } from 'src/response/response';
+import { response, errResponse } from 'src/response/response';
 import { BaseResponse } from 'src/response/response.status';
 import { DiaryEntity } from './models/diary.entity';
 import { DiaryImageEntity } from './models/diary.image.entity';
 import { PostDiaryDto } from './dtos/post-diary.dto';
 import { GetDiaryImgUrlDto } from './dtos/get-diary-img-url.dto';
 import { S3UtilService } from 'src/utils/S3.service';
+import { JourneyEntity } from 'src/journey/model/journey.entity';
+import { ScheduleEntity } from 'src/schedule/schedule.entity';
 
 @Injectable()
 export class DiaryService {
@@ -33,5 +35,35 @@ export class DiaryService {
     console.log('url', imageUrl);
     await DiaryImageEntity.createDiaryImg(diary, imageUrl);
     return response(BaseResponse.DIARY_IMG_URL_CREATED);
+  }
+
+  /*일지 불러오기 - 지도*/
+  async getDiaryList(journeyId) {
+    const journey = await JourneyEntity.findExistJourney(journeyId);
+    const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+      journey.id,
+    );
+    const diaryList = await Promise.all(
+      schedules.map(async (schedule) => {
+        const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule);
+        if (!diary) {
+          return null;
+        }
+        const diaryImg = await DiaryImageEntity.findExistImgUrl(diary);
+        if (!diaryImg) {
+          return null;
+        }
+        return {
+          journeyId: journeyId,
+          date: schedule.date,
+          diary: diary,
+          diaryImage: {
+            id: diaryImg.id,
+            imageUrl: diaryImg.imageUrl,
+          },
+        };
+      }),
+    );
+    return response(BaseResponse.GET_DIARY_SUCCESS, diaryList);
   }
 }

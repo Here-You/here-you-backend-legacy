@@ -1,5 +1,5 @@
 import { ApiOperation, ApiOkResponse } from '@nestjs/swagger';
-import { Controller, Put, Post, Body, Param } from '@nestjs/common';
+import { Controller, Put, Post, Get, Body, Param } from '@nestjs/common';
 import { DiaryService } from './diary.service';
 import { PostDiaryDto } from './dtos/post-diary.dto';
 import { GetDiaryImgUrlDto } from './dtos/get-diary-img-url.dto';
@@ -57,6 +57,20 @@ export class DiaryController {
     @Body('fileName') fileName: string,
   ) {
     const result = await this.diaryService.getDiaryImgUrl(diaryId, fileName);
+    return result;
+  }
+
+  /*일지 불러오기 - 지도 */
+  @ApiOperation({
+    summary: '일지 불러오기 - 지도',
+    description: 'journeyId로 일지 불러오기',
+  })
+  @ApiOkResponse({
+    description: '성공 ',
+  })
+  @Get('get/:journeyId')
+  async getDiaryList(@Param('journeyId') journeyId: number) {
+    const result = await this.diaryService.getDiaryList(journeyId);
     return result;
   }
 }
