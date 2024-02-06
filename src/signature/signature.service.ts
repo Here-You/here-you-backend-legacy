@@ -112,15 +112,15 @@ export class SignatureService {
   }
 
   async checkIfLiked(user: UserEntity, signatureId: number): Promise<boolean> {
-    // user가 해당 시그니처에 좋아요 눌렀는지 확인
+    const signatureLike = await SignatureLikeEntity.findOne({
+      where:{
+        user: { id: user.id },
+        signature: {id: signatureId}
+      }
+    });
+    if(signatureLike) return true;
+    else return false;
 
-    const likesArray = user.likes || [];
-
-    const isLiked = likesArray.some(
-      (signatureLike) => signatureLike.id === signatureId
-    );
-
-    return isLiked;
   }
 
   async detailSignature(userId: number, signatureId: number):Promise<DetailSignatureDto> {
