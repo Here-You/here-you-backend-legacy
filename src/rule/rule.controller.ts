@@ -1,9 +1,10 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import {Controller, Post, Body, Get, Param, Patch} from '@nestjs/common';
 import { RuleService } from './rule.service';
 import { CreateRuleDto } from './dto/create-rule.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { ResponseDto } from '../response/response.dto';
 import { MetaToBackDto } from './dto/meta-to-back.dto';
+import {UpdateRuleDto} from "./dto/update-rule-dto";
 
 @Controller('mate/rule')
 export class RuleController {
@@ -39,6 +40,7 @@ export class RuleController {
     
     const result = await this.ruleService.getDetail(ruleId, metaToBackDto);
 
+    console.log('여행 규칙');
     if(!result){
       return new ResponseDto(
         ResponseCode.GET_RULE_DETAIL_FAIL,
@@ -56,4 +58,32 @@ export class RuleController {
       );
     }
   }
+
+  // 여행 규칙 수정
+  /*
+  @Patch('/detail/:ruleId')
+  async updateRule(@Param('ruleId') ruleId: number, @Body() updateDto : UpdateRuleDto): Promise<ResponseDto<any>> {
+
+    try {
+      await this.ruleService.updateRule(ruleId, updateDto);
+      return new ResponseDto(
+          ResponseCode.RULE_EDIT_SUCCESS,
+          true,
+          "여행 규칙 수정 성공",
+          null
+      );
+    } catch (error) {
+      return new ResponseDto(
+          ResponseCode.RULE_EDIT_FAIL,
+          false,
+          "여행 규칙 수정 실패",
+          null
+      );
+    }
+  }
+*/
+
+
+
+  // 여행 규칙 삭제
 }

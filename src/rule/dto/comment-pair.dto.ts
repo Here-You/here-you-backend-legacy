@@ -16,4 +16,8 @@ export class CommentPairDto {
   @IsNotEmpty()
   @IsDate()
   created: Date;
+
+  @IsNotEmpty()
+  @IsString()
+  name: string;
 }

@@ -15,6 +15,7 @@ import { UserProfileImageEntity } from 'src/user/user.profile.image.entity';
 import { CommentEntity } from 'src/comment/domain/comment.entity';
 import { CommentPairDto } from './dto/comment-pair.dto';
 import { MetaToFrontDto } from './dto/meta-to-front.dto';
+import {UpdateRuleDto} from "./dto/update-rule-dto";
 
 @Injectable()
 export class RuleConverter {
@@ -110,4 +111,18 @@ export class RuleConverter {
 
         return detailPageDto;
     }
+
+    /*
+    // [3] 여행 규칙 수정 dto -> entity
+    async toUpdate(ruleId: number, updateDto: UpdateRuleDto) : Promise<> {
+
+        // 기존 여행 규칙 객체
+        const oldEntity = await RuleMainEntity.findMainById(ruleId);
+
+        // 수정
+        oldEntity.mainTitle = updateDto.mainTitle;
+
+    }
+*/
+
 }

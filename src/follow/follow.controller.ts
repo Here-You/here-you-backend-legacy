@@ -4,9 +4,10 @@ import { ResponseCode } from '../response/response-code.enum';
 import { ResponseDto } from '../response/response.dto';
 import { UserEntity } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
-// import { UserGuard } from 'src/user/user.guard';
+import { UserGuard } from 'src/user/user.guard';
+import { Request } from 'express';
+import {UserSearchDto} from "../user/user.search.dto";
 
-// @UseGuards(UserGuard)
 @Controller('mate/search')
 export class FollowController {
   constructor(
@@ -16,10 +17,13 @@ export class FollowController {
 
   // [1] 팔로우
   @Post('/:followingId')
-  async createFollow(@Param('followingId') followingId : number): Promise<ResponseDto<any>> {
+  @UseGuards(UserGuard)
+  async createFollow(
+      @Param('followingId') followingId : number,
+      @Req() req: Request
+  ): Promise<ResponseDto<any>> {
     // 현재 사용자 ID
-    // const userId = req.user.id;
-    const userId = 1;
+    const userId = req.user.id;
 
     // 이미 팔로우하는 사용자인지 검증
     const user : UserEntity = await this.userService.findUserById(userId);
@@ -54,7 +58,7 @@ export class FollowController {
 
   // [2] 언팔로우
   @Delete('/:followId')
-  async deleteFollow(@Param('followId') followId: number): Promise<ResponseDto<any>> {
+  async deleteFollow(@Param('followId') followId: number, @Req() req: Request): Promise<ResponseDto<any>> {
     // 현재 사용자 ID
     // const userId = req.user.id;
     const userId = 1;
@@ -136,4 +140,30 @@ export class FollowController {
         }
     }
 
+    // [5] 메이트 검색
+    @Get('/:searchTerm')
+    async getSearchResult(
+        @Req() req: Request,
+        @Param('searchTerm') searchTerm: string): Promise<ResponseDto<any>> {
+        // 현재 로그인한 사용자 ID
+        // const userId = req.user.id;
+        const userId = 1;
+
+        try {
+            const userSearchDto : UserSearchDto[] = await this.userService.getSearchResult(userId, searchTerm)
+            return new ResponseDto(
+                ResponseCode.GET_SEARCH_RESULT_SUCCESS,
+                true,
+                "검색 결과 리스트 불러오기 성공",
+                userSearchDto
+            );
+        } catch (error) {
+            return new ResponseDto(
+                ResponseCode.GET_SEARCH_RESULT_FAIL,
+                false,
+                "검색 결과 리스트 불러오기 실패",
+                null
+            );
+        }
+    }
 }

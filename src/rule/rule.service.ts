@@ -9,7 +9,7 @@ import { DetailRuleDto } from './dto/detail-rule.dto';
 import { DetailMemberDto } from './dto/detail-member.dto';
 import { DetailCommentDto } from './dto/detail-comment.dto';
 import { MetaToBackDto } from './dto/meta-to-back.dto';
-
+import { UpdateRuleDto} from "./dto/update-rule-dto";
 
 @Injectable()
 export class RuleService {
@@ -42,6 +42,20 @@ export class RuleService {
       throw new HttpException('Internal Server Error', 500);
     }
   }
+
+  // [3] 여행 규칙 수정
+  /*
+  async updateRule(ruleId : number, updateDto : UpdateRuleDto): Promise<null> {
+    try{
+      this.ruleConverter(ruleId, udpateDto);
+      console.log();
+    }
+    catch(error){
+      console.error('Error on updateRule : ', error);
+      throw new HttpException('Internal Server Error', 500);
+    }
+  }
+  */
  
   // [member] 초대 받은 멤버 리스트 생성
   async getInvitationList(ruleId: number) {

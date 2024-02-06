@@ -3,12 +3,16 @@ import { UserFollowingEntity } from 'src/user/user.following.entity';
 import { FollowListConverter } from './follow.list.converter';
 import { FollowerListConverter } from './follower.list.converter';
 import { FollowDto } from './dto/follow.dto';
+import {UserSearchDto} from "../user/user.search.dto";
+import {UserEntity} from "../user/user.entity";
+import { UserService} from "../user/user.service";
 
 @Injectable()
 export class FollowService {
     constructor(
         private followListConverter: FollowListConverter,
         private followerListConverter: FollowerListConverter,
+        private userService: UserService,
     ) {}
 
     // [1] 팔로우
