@@ -14,32 +14,72 @@ import { UserService } from '../user/user.service';
 import { SignatureLikeEntity } from './domain/signature.like.entity';
 import { GetLikeListDto } from './dto/get-like-list.dto'
 import { LikeProfileDto } from './dto/like-profile.dto';
+import { S3UtilService } from '../utils/S3.service';
 
 @Injectable()
 export class SignatureService {
 
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly s3Service: S3UtilService,
+  ) {}
 
   async createSignature(createSignatureDto: CreateSignatureDto, userId: number): Promise<number> {
+    try{
+      // [1] 시그니처 저장
+      const signature: SignatureEntity = await SignatureEntity.createSignature(createSignatureDto, userId);
 
-    // [1] 시그니처 저장
-    const signature: SignatureEntity = await SignatureEntity.createSignature(createSignatureDto, userId);
+      if (!signature) throw new BadRequestException();
+      else{
+        // [2] 각 페이지 저장
+        try{
+          for(const pageSignatureDto of createSignatureDto.pages){
+            await this.saveSignaturePage(pageSignatureDto,signature);
+          }
+          return signature.id;
 
-    if (!signature) throw new BadRequestException();
-    else{ // [2] 각 페이지 저장
-      for(const pageSignatureDto of createSignatureDto.pages){
-        await SignaturePageEntity.saveSignaturePage(pageSignatureDto, signature);
+        }catch (e){
+
+          // 만약 페이지 저장 중에 오류 발생해 저장이 중단되면 시그니처도 삭제하도록
+          await this.deleteSignature(signature);
+          console.log("Error on createSignatruePage: ", e);
+          throw e;
+        }
       }
     }
+    catch(e){
+      console.log("Error on createSignatrue: ", e);
+      throw e;
+    }
+  }
 
-    return signature.id;
+  async saveSignaturePage(pageSignatureDto:PageSignatureDto, signature:SignatureEntity){
+    const signaturePage:SignaturePageEntity = new SignaturePageEntity();
+
+    signaturePage.signature = signature;
+    signaturePage.content = pageSignatureDto.content;
+    signaturePage.location = pageSignatureDto.location;
+    signaturePage.page = pageSignatureDto.page;
+
+    // 랜덤 이미지 키 생성
+    const key = `signature/${this.s3Service.generateRandomImageKey('signaturePage.png')}`;
+
+    // Base64 이미지 업로드
+    const uploadedImage = await this.s3Service.putObjectFromBase64(
+      key, pageSignatureDto.image
+    );
+    console.log(uploadedImage);
+
+    signaturePage.image = key;
+
+    await signaturePage.save();
   }
 
 
   async homeSignature(userId: number): Promise<HomeSignatureDto[]> {
     try {
       console.log("userId; ",userId);
-      const homeSignatureList: HomeSignatureDto[] = await SignatureEntity.findMySignature(userId);
+      const homeSignatureList: HomeSignatureDto[] = await this.findMySignature(userId);
       return homeSignatureList;
 
     } catch (error) {
@@ -47,6 +87,28 @@ export class SignatureService {
       console.error('Error on HomeSignature: ', error);
       throw new HttpException('Internal Server Error', 500);
     }
+  }
+
+  async findMySignature(user_id: number):Promise<HomeSignatureDto[]> {
+    const mySignatureList:HomeSignatureDto[] = [];
+    const signatures = await SignatureEntity.find({
+      where: { user: { id: user_id} },
+    });
+
+    for(const signature of signatures){
+      const homeSignature:HomeSignatureDto = new HomeSignatureDto();
+
+      homeSignature._id = signature.id;
+      homeSignature.title = signature.title;
+      homeSignature.date = signature.created;
+
+      // 이미지 가져오기
+      const imageKey = await SignaturePageEntity.findThumbnail(signature.id);
+      homeSignature.image = await this.s3Service.getImageUrl(imageKey);
+
+      mySignatureList.push(homeSignature);
+    }
+    return mySignatureList;
   }
 
   async checkIfLiked(user: UserEntity, signatureId: number): Promise<boolean> {
@@ -86,9 +148,10 @@ export class SignatureService {
         authorDto.name = signature.user.nickname;
 
         const image = await this.userService.getProfileImage(signature.user.id);
-        console.log("시그니처 작성자 프로필 이미지: ",image);
-
-        authorDto.image = image.imageKey;
+        if(image == null) authorDto.image = null;
+        else{
+          authorDto.image = await this.s3Service.getImageUrl(image.imageKey);
+        }
 
         // 해당 시그니처 작성자를 팔로우하고 있는지 확인
         authorDto.is_followed = await this.userService.checkIfFollowing(loginUser,signature.user.id);
@@ -123,8 +186,10 @@ export class SignatureService {
         pageDto._id = page.id;
         pageDto.page = page.page;
         pageDto.content = page.content;
-        pageDto.image = page.image;
         pageDto.location = page.location;
+
+        //이미지 가져오기
+        pageDto.image = await this.s3Service.getImageUrl(page.image);
 
         signaturePageDto.push(pageDto);
       }
@@ -229,20 +294,29 @@ export class SignatureService {
     // [4] 기존 페이지 수정 및 새로운 페이지 추가하기
     for(const patchedPage of patchSignatureDto.pages){
       if(!patchedPage._id){ // id가 없으면 새로 추가할 페이지
-        await SignaturePageEntity.saveSignaturePage(patchedPage,signature);
+        await this.saveSignaturePage(patchedPage, signature);
       }
       for( const originalPage of originalSignaturePages ){
         if(patchedPage._id == originalPage.id){
           originalPage.content = patchedPage.content;
           originalPage.location = patchedPage.location;
 
-          // 이미지 수정 필요
-          originalPage.image = patchedPage.image;
+          // 랜덤 이미지 키 생성
+          const key = `signature/${this.s3Service.generateRandomImageKey('signaturePage.png')}`;
+
+          // Base64 이미지 업로드
+          const uploadedImage = await this.s3Service.putObjectFromBase64(
+            key, patchedPage.image
+          );
+
+          // 이미지 키 저장
+          console.log(uploadedImage);
+          originalPage.image = key;
+
         }
         await SignaturePageEntity.save(originalPage);
       }
     }
-
     return signatureId;
 
   }
@@ -251,7 +325,6 @@ export class SignatureService {
   async getSignatureLikeList(userId: number, signatureId: number): Promise<GetLikeListDto> {
 
     try{
-
       const signature = await SignatureEntity.findSignatureById(signatureId);
       if(!signature) {
         throw new NotFoundException(`Signature with ID ${signatureId} not found`);
@@ -271,11 +344,18 @@ export class SignatureService {
 
 
         if (signatureLikeEntity.user) {
-          const image = await this.userService.getProfileImage(signatureLikeEntity.user.id);
+
           likeProfileDto._id = signatureLikeEntity.user.id;
-          likeProfileDto.image = image.imageKey;
           likeProfileDto.introduction = signatureLikeEntity.user.introduction;
           likeProfileDto.nickname = signatureLikeEntity.user.nickname;
+
+          // 프로필 이미지 꺼내오기
+          const image = await this.userService.getProfileImage(signatureLikeEntity.user.id);
+          if(image == null)likeProfileDto.image = null;
+          else{
+            const userImageKey = image.imageKey;
+            likeProfileDto.image = await this.s3Service.getImageUrl(userImageKey);
+          }
 
           // 만약 좋아요 누른 사용자가 본인이 아니라면 is_followed 값을 체크하고 본인이면 null로 보내준다.
           if(signatureLikeEntity.user.id != userId){

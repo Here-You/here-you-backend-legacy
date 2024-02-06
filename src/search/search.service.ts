@@ -8,11 +8,15 @@ import { UserService } from '../user/user.service';
 import { exit } from '@nestjs/cli/actions';
 import { SignatureService } from '../signature/signature.service';
 import { Like } from 'typeorm';
+import { S3UtilService } from '../utils/S3.service';
 
 @Injectable()
 export class SearchService{
 
-  constructor( private readonly userService: UserService ) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly s3Service: S3UtilService,
+  ) {}
 
   async findHotSignatures(): Promise<CoverSignatureDto[]> {
     try{
@@ -30,9 +34,7 @@ export class SearchService{
       console.log(recentSignatures);
 
       // [3] 그 중에서 20개만 리턴한다
-      const hotSignatureCovers: CoverSignatureDto[] = await this.getSignatureCoversForSearchMain(recentSignatures);
-
-      return hotSignatureCovers;
+      return await this.getSignatureCoversForSearchMain(recentSignatures);
 
     }catch(error){
       console.log("Error on findHotSignatures: ", error);
@@ -67,9 +69,7 @@ export class SearchService{
       totalNewSignatures.sort((a,b)=>a.created.getDate()-b.created.getDate());
 
       // [4] 20개만 리턴
-      const newSignatureCovers: CoverSignatureDto[] = await this.getSignatureCoversForSearchMain(totalNewSignatures);
-
-      return newSignatureCovers;
+      return await this.getSignatureCoversForSearchMain(totalNewSignatures);
 
       }catch (error){
       console.log("Error on FindMatesNewSigs: "+error);
@@ -123,12 +123,19 @@ export class SearchService{
     signatureCover.liked = signature.liked;
     signatureCover.userName = signature.user.name;
 
+    // 시그니처 썸네일 이미지 가져오기
     signatureCover.date = await SignatureEntity.formatDateString(signature.created);
-    signatureCover.image = await SignaturePageEntity.findThumbnail(signature.id);
+    const signatureImageKey = await SignaturePageEntity.findThumbnail(signature.id);
+    signatureCover.image = await this.s3Service.getImageUrl(signatureImageKey);
 
+    // 시그니처 작성자 프로필 이미지 가져오기
     const userProfileImageEntity = await this.userService.getProfileImage(signature.user.id);
-    signatureCover.userImage = userProfileImageEntity.imageKey;
+    if(userProfileImageEntity == null) signatureCover.userImage = null;
+    else{
+      const userProfileImageKey = userProfileImageEntity.imageKey;
+      signatureCover.userImage = await this.s3Service.getImageUrl(userProfileImageKey);
 
+    }
     return signatureCover;
   }
 }

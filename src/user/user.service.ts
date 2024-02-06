@@ -84,6 +84,7 @@ export class UserService {
 
       console.log('겟프로필이미지: ', profileImageEntity);
       return profileImageEntity;
+
     } catch (error) {
       console.log('Error on getProfileImage: ' + error);
     }
