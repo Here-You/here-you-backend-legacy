@@ -9,6 +9,7 @@ import { DetailRuleDto } from './dto/detail-rule.dto';
 import { DetailMemberDto } from './dto/detail-member.dto';
 import { DetailCommentDto } from './dto/detail-comment.dto';
 import { MetaToBackDto } from './dto/meta-to-back.dto';
+import { TotalListDto } from './dto/total-list.dto';
 
 
 @Injectable()
@@ -30,7 +31,8 @@ export class RuleService {
     return savedMain.id;
   }
 
-  // [2] 여행 규칙 조회
+  // *수정
+  // [2] 여행 규칙 및 댓글 조회
   async getDetail(ruleId : number, metaToBackDto : MetaToBackDto): Promise<DetailPageDto> {
     try{
       const detailPageDto : DetailPageDto = new DetailPageDto();
@@ -42,6 +44,24 @@ export class RuleService {
       throw new HttpException('Internal Server Error', 500);
     }
   }
+
+  // *진행 중
+  // [3] 여행 규칙 전체 리스트 조회
+  async getTotalList(userId: number): Promise<TotalListDto[]> {
+    try{
+      console.log('service 진입');
+      const totalList : TotalListDto[] = await this.ruleConverter.toComplete(userId);
+      
+      return totalList;  
+    }
+    catch(error){
+      console.error('Error on GetTotalList : ', error);
+      throw new HttpException('Internal Server Error', 500);
+    }
+  }
+
+  // [4] 여행 규칙 삭제
+  // async deleteRule(userId: number): Promise<TotalListDto[]> {return }
  
   // [member] 초대 받은 멤버 리스트 생성
   async getInvitationList(ruleId: number) {

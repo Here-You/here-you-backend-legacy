@@ -16,6 +16,7 @@ import { SignatureLikeEntity } from '../signature/domain/signature.like.entity';
 import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
 import { CommentEntity } from 'src/comment/domain/comment.entity';
 import { JourneyEntity } from 'src/journey/model/journey.entity';
+import { RuleMainEntity } from 'src/rule/domain/rule.main.entity';
 
 @Entity()
 export class UserEntity extends BaseEntity {
@@ -38,7 +39,7 @@ export class UserEntity extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   bio: string;
   */
- 
+
   @Column({ type: 'text' })
   introduction: string;
 
@@ -92,4 +93,37 @@ export class UserEntity extends BaseEntity {
 
   @DeleteDateColumn()
   deleted: Date;
+
+  static async findUserById(userId: number): Promise<UserEntity> {
+    try {
+      const user: UserEntity = await UserEntity.findOne({
+        where: { id: userId },
+        relations: { invitationsSent : { rule: true }, invitationsReceived : { rule: true }},
+      });
+      return user;
+    } catch (error) {
+      console.log('Error on findUserById: ', error);
+      throw error;
+    }
+  }
+
+  static async findRuleByUserId(userId: number): Promise<RuleInvitationEntity[]> {
+    try {
+
+      /*
+      const rules: RuleMainEntity[] = await RuleMainEntity.find({
+        where: { UserEntity.invitationsSent: { inviter: {id : userId} }},
+      });
+      */
+     const user = await UserEntity.findUserById(userId);
+     const invitations : RuleInvitationEntity[] = [...user.invitationsReceived, ...user.invitationsSent];
+
+     // 초대 리스트에서 inviter
+  
+      return invitations;
+    } catch (error) {
+      console.log('Error on findRuleByUserId: ', error);
+      throw error;
+    }
+  }
 }

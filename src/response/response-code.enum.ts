@@ -16,6 +16,7 @@ export enum ResponseCode {
   GET_FOLLOWING_LIST_SUCCESS = 'OK',
   GET_MEMBER_LIST_SUCCESS = 'OK',
   DELETE_MEMBER_SUCCESS = 'OK',
+  GET_TOTAL_RULE_SUCCESS = 'OK',
 
   
   /* 201 CREATED : 요청 성공, 자원 생성 */
@@ -46,6 +47,7 @@ export enum ResponseCode {
   IS_ALREADY_MEMBER = 'BAD_REQUEST',
   IS_NOT_MEMBER = 'BAD_REQUEST',
   DELETE_MEMBER_FAIL = 'BAD_REQUEST',
+  GET_TOTAL_RULE_FAIL = 'BAD_REQUEST',
 
 
 

@@ -15,6 +15,8 @@ import { UserProfileImageEntity } from 'src/user/user.profile.image.entity';
 import { CommentEntity } from 'src/comment/domain/comment.entity';
 import { CommentPairDto } from './dto/comment-pair.dto';
 import { MetaToFrontDto } from './dto/meta-to-front.dto';
+// d
+import { TotalListDto } from './dto/total-list.dto';
 
 @Injectable()
 export class RuleConverter {
@@ -109,5 +111,56 @@ export class RuleConverter {
 
 
         return detailPageDto;
+    }
+
+    async toComplete(userId: number) : Promise<TotalListDto[]> {
+
+        console.log('converter 진입');
+
+        // 현재 로그인한 사용자
+        /*
+        const user : UserEntity = await UserEntity.findUserById(userId);
+        console.log('현재 로그인한 사용자 : ', user);
+        */
+
+        // 유저가 참여하는 규칙 정보 모두 가져오기
+        const invitations : RuleInvitationEntity[] = await UserEntity.findRuleByUserId(userId);
+
+        const results = await Promise.all(invitations.map(async (invitations) => {
+            const data : TotalListDto = await this.toTotalList(rule.id, members);
+
+            return data;
+        }))
+        return results;
+    }
+
+    async toTotalList(ruleId: number, members: number) :Promise<TotalListDto> {
+
+        const rule : RuleMainEntity = await RuleMainEntity.findRuleById(ruleId);
+        console.log('rule : ', rule);
+        const totalListDto : TotalListDto = new TotalListDto();
+
+        // 채워야 하는 정보들
+        totalListDto.title = rule.mainTitle;
+        totalListDto.updated = rule.updated;
+        // * 수정 필요
+        totalListDto.memberCnt = members;
+
+        // [member-pair-dto] 팀원 멤버 정보
+        const results = await Promise.all(rule.invitations.map(async (invitation) => {
+            const user : UserEntity = invitation.invited;
+            const member : MemberPairDto = new MemberPairDto();
+
+            member.memberId = user.id;
+            member.name = user.name;
+            member.image = user.profileImage.imageKey;
+
+            return member;
+        }))
+        // *수정 필요
+        // [member-pair-dto] 팀장 멤버 정보
+        // const user : UserEntity = rule.invitations.;
+
+        return totalListDto;
     }
 }
