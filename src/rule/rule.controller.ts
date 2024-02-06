@@ -1,9 +1,10 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Patch } from '@nestjs/common';
 import { RuleService } from './rule.service';
 import { CreateRuleDto } from './dto/create-rule.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { ResponseDto } from '../response/response.dto';
 import { MetaToBackDto } from './dto/meta-to-back.dto';
+// import { EditRuleDto} from "./dto/edit-rule.dto";
 
 @Controller('mate/rule')
 export class RuleController {
@@ -56,4 +57,28 @@ export class RuleController {
       );
     }
   }
+
+  // 여행 규칙 수정
+  /*
+  @Patch('/edit')
+  async editRule(@Body() editRuleDto: EditRuleDto): Promise<ResponseDto<any>> {
+    const result = await this.ruleService.createRule(createRuleDto);
+
+    if(!result){
+      return new ResponseDto(
+          ResponseCode.RULE_CREATION_FAIL,
+          false,
+          "여행 규칙 생성 실패",
+          null);
+
+    }
+    else{
+      return new ResponseDto(
+          ResponseCode.RULE_CREATED,
+          true,
+          "여행 규칙 생성 성공",
+          result);
+    }
+   */
+
 }
