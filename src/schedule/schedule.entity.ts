@@ -8,6 +8,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  OneToOne,
 } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { BaseResponse } from 'src/response/response.status';
@@ -39,7 +40,7 @@ export class ScheduleEntity extends BaseEntity {
   )
   detailSchedules: DetailScheduleEntity[];
 
-  @OneToMany(() => DiaryEntity, (diary) => diary.schedule)
+  @OneToOne(() => DiaryEntity, (diary) => diary.schedule)
   diary: DiaryEntity[];
 
   @CreateDateColumn()

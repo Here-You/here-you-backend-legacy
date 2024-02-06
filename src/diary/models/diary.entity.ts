@@ -53,7 +53,7 @@ export class DiaryEntity extends BaseEntity {
   @OneToOne(() => DiaryImageEntity, (image) => image.diary, {})
   image: DiaryImageEntity;
 
-  @ManyToOne(() => ScheduleEntity, (schedule) => schedule.diary)
+  @OneToOne(() => ScheduleEntity, (schedule) => schedule.diary)
   schedule: ScheduleEntity;
 
   @CreateDateColumn()
@@ -66,14 +66,20 @@ export class DiaryEntity extends BaseEntity {
   deleted: Date;
 
   /*일지 생성하기*/
-  static async createDiary(schedule) {
+  static async createDiary(scheduleId, diaryInfo) {
     const diary = new DiaryEntity();
-    diary.schedule = schedule.id;
+    diary.title = diaryInfo.title;
+    diary.place = diaryInfo.place;
+    diary.weather = diaryInfo.weather;
+    diary.mood = diaryInfo.mood;
+    diary.content = diaryInfo.content;
+
+    diary.schedule = scheduleId;
 
     return await diary.save();
   }
-  /*일지 작성하기*/
-  static async postDiary(diaryId, diaryInfo: PostDiaryDto) {
+  /*일지 수정하기*/
+  static async updateDiary(diaryId, diaryInfo: PostDiaryDto) {
     const diary = await this.findExistDiary(diaryId);
     diary.title = diaryInfo.title;
     diary.place = diaryInfo.place;

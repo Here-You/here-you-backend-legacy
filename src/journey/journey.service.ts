@@ -23,14 +23,12 @@ export class JourneyService {
         journey,
         currentDate,
       );
-      //일지 생성하기
-      const diary = await DiaryEntity.createDiary(schedule);
       currentDate = new Date(currentDate);
       currentDate.setDate(currentDate.getDate() + 1);
+      //   //일지 생성하기
+      //   const diary = await DiaryEntity.createDiary(schedule);
     }
 
     return response(BaseResponse.JOURNEY_CREATED);
   }
-
-  async getDateRange(startDate, endDate) {}
 }
