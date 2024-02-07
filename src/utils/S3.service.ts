@@ -41,7 +41,7 @@ export class S3UtilService {
   }
 
   public async getPresignedUrl(key: string) {
-    return this.s3.getSignedUrlPromise('getObject', {
+    return this.s3.getSignedUrlPromise('putObject', {
       Bucket: process.env.S3_BUCKET_NAME,
       Key: key,
       Expires: 60,
