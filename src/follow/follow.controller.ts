@@ -5,9 +5,9 @@ import { ResponseDto } from '../response/response.dto';
 import { UserEntity } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
 import { UserSearchDto} from "../user/user.search.dto";
-// import { UserGuard } from 'src/user/user.guard';
+import { UserGuard } from '../user/user.guard';
+import { Request } from 'express';
 
-// @UseGuards(UserGuard)
 @Controller('mate/search')
 export class FollowController {
   constructor(
@@ -17,13 +17,14 @@ export class FollowController {
 
   // [1] 팔로우
   @Post('/:followingId')
-  async createFollow(@Param('followingId') followingId : number): Promise<ResponseDto<any>> {
+  @UseGuards(UserGuard)
+  async createFollow(@Req() req: Request, @Param('followingId') followingId : number): Promise<ResponseDto<any>> {
     // 현재 사용자 ID
     // const userId = req.user.id;
-    const userId = 1;
+    // const userId = 1;
 
     // 이미 팔로우하는 사용자인지 검증
-    const user : UserEntity = await this.userService.findUserById(userId);
+    const user : UserEntity = await this.userService.findUserById(req.user.id);
     const isAlreadyFollow = this.userService.checkIfFollowing(user, followingId);
 
     if (isAlreadyFollow) {
@@ -36,7 +37,7 @@ export class FollowController {
     }
 
     try {
-        await this.followService.createFollow(userId, followingId);
+        await this.followService.createFollow(req.user.id, followingId);
         return new ResponseDto(
           ResponseCode.FOLLOW_CREATED,
           true,
@@ -55,10 +56,11 @@ export class FollowController {
 
   // [2] 언팔로우
   @Delete('/:followId')
-  async deleteFollow(@Param('followId') followId: number): Promise<ResponseDto<any>> {
+  @UseGuards(UserGuard)
+  async deleteFollow(@Req() req: Request, @Param('followId') followId: number): Promise<ResponseDto<any>> {
     // 현재 사용자 ID
     // const userId = req.user.id;
-    const userId = 1;
+    // const userId = 1;
 
     try {
         const result = await this.followService.deleteFollow(followId);
@@ -89,13 +91,14 @@ export class FollowController {
 
     // [3] 팔로우 리스트 조회
     @Get('/followList')
-    async getFollowList(): Promise<ResponseDto<any>> {
+    @UseGuards(UserGuard)
+    async getFollowList(@Req() req: Request): Promise<ResponseDto<any>> {
         // 현재 로그인한 사용자 ID
         // const userId = req.user.id;
-        const userId = 1;
+        // const userId = 1;
 
         try {
-            const followList = await this.followService.getFollowList(userId);
+            const followList = await this.followService.getFollowList(req.user.id);
             return new ResponseDto(
             ResponseCode.GET_FOLLOWING_LIST_SUCCESS,
             true,
@@ -114,13 +117,14 @@ export class FollowController {
 
     // [4] 팔로워 리스트 조회
     @Get('/followerList')
-    async getFollowerList(): Promise<ResponseDto<any>> {
+    @UseGuards(UserGuard)
+    async getFollowerList(@Req() req: Request): Promise<ResponseDto<any>> {
         // 현재 로그인한 사용자 ID
         // const userId = req.user.id;
-        const userId = 1;
+        // const userId = 1;
 
         try {
-            const followerList = await this.followService.getFollowerList(userId);
+            const followerList = await this.followService.getFollowerList(req.user.id);
             return new ResponseDto(
             ResponseCode.GET_FOLLOWER_LIST_SUCCESS,
             true,
@@ -139,15 +143,16 @@ export class FollowController {
 
     // [5] 메이트 검색
     @Get('/:searchTerm')
+    @UseGuards(UserGuard)
     async getSearchResult(
         @Req() req: Request,
         @Param('searchTerm') searchTerm: string): Promise<ResponseDto<any>> {
         // 현재 로그인한 사용자 ID
         // const userId = req.user.id;
-        const userId = 1;
+        // const userId = 1;
 
         try {
-            const userSearchDto : UserSearchDto[] = await this.userService.getSearchResult(userId, searchTerm)
+            const userSearchDto : UserSearchDto[] = await this.userService.getSearchResult(req.user.id, searchTerm)
             return new ResponseDto(
                 ResponseCode.GET_SEARCH_RESULT_SUCCESS,
                 true,

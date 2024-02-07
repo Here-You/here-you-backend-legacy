@@ -3,9 +3,9 @@ import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { ResponseDto } from '../response/response.dto';
-// import { UserGuard } from 'src/user/user.guard';
+import { UserGuard } from '../user/user.guard';
+import { Request } from 'express';
 
-// @UseGuards(UserGuard)
 @Controller('mate/rule')
 export class CommentController {
   constructor(
@@ -14,8 +14,9 @@ export class CommentController {
 
   // 여행 규칙 코멘트 생성
   @Post('/:ruleId')
-  async createComment(@Body() createCommentDto: CreateCommentDto, @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
-    const result = await this.commentService.createComment(createCommentDto, ruleId);
+  @UseGuards(UserGuard)
+  async createComment(@Body() createCommentDto: CreateCommentDto, @Param('ruleId') ruleId: number, @Req() req: Request): Promise<ResponseDto<any>> {
+    const result = await this.commentService.createComment(createCommentDto, ruleId, req.user.id);
 
     if(!result){
       return new ResponseDto(
