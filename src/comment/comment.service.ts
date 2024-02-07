@@ -1,19 +1,30 @@
-import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { CommentConverter } from './comment.converter';
 import { CommentEntity } from './domain/comment.entity';
+import {RuleMainEntity} from "../rule/domain/rule.main.entity";
+import {UserEntity} from "../user/user.entity";
 
 @Injectable()
 export class CommentService {
-  constructor(
-    private commentConverter: CommentConverter
-  ) {}
 
-  async createComment(createCommentDto: CreateCommentDto, ruleId: number, userId: number): Promise<number> {
-    const comment = await this.commentConverter.toEntity(createCommentDto, ruleId, userId);
+  async createComment(dto: CreateCommentDto, ruleId: number, userId: number): Promise<number> {
 
-    const savedComment = await CommentEntity.save(comment);
+    const comment = new CommentEntity();
 
-    return savedComment.id;
+    const user = await UserEntity.findOneOrFail({ where: { id: userId } });
+    const rule = await RuleMainEntity.findOneOrFail({ where: { id: ruleId } });
+
+    if(!user || !rule){
+      throw new Error('Data not found');
+    }
+    else{
+      console.log("user name: "+ user.name);
+      comment.user = user;
+      console.log("rule id: "+ rule.id);
+      comment.rule = rule;
+      comment.content = dto.content;
+      await comment.save();
+    }
+    return comment.id;
   }
 }
