@@ -66,7 +66,7 @@ export class SignatureService {
     const key = `signature/${this.s3Service.generateRandomImageKey('signaturePage.png')}`;
 
     // Base64 이미지 업로드
-    const uploadedImage = await this.s3Service.putObject(
+    const uploadedImage = await this.s3Service.putObjectFromBase64(
       key, pageSignatureDto.image
     );
     console.log(uploadedImage);
@@ -306,7 +306,7 @@ export class SignatureService {
           const key = `signature/${this.s3Service.generateRandomImageKey('signaturePage.png')}`;
 
           // Base64 이미지 업로드
-          const uploadedImage = await this.s3Service.putObject(
+          const uploadedImage = await this.s3Service.putObjectFromBase64(
             key, patchedPage.image
           );
 

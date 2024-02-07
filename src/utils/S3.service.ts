@@ -1,6 +1,7 @@
 import * as S3 from 'aws-sdk/clients/s3.js';
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
+import { S3PresignedUrlDto } from './S3.presignedUrl.dto';
 
 @Injectable()
 export class S3UtilService {
@@ -58,5 +59,22 @@ export class S3UtilService {
     const uuid = uuidv4();
 
     return `${uuid}.${ext}`;
+  }
+
+  public async GetPresignedUrlForSignature(): Promise<S3PresignedUrlDto> {
+
+    const s3PresignedUrlDto:S3PresignedUrlDto= new S3PresignedUrlDto();
+
+    // 이미지 키 생성: 프론트에서는 업로드 후 백엔드에 키값을 보내줘야함
+    s3PresignedUrlDto.key = `signature/${this.generateRandomImageKey('signature.png')}`;
+
+    // 프론트에서 이미지를 업로드할 presignedUrl
+    s3PresignedUrlDto.url = await this.getPresignedUrl(s3PresignedUrlDto.key);
+
+    return s3PresignedUrlDto;
+  }
+
+  async TestImageUrlWithKey(key: string) {
+    return await this.getImageUrl(key);
   }
 }
