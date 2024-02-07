@@ -53,7 +53,15 @@ export class MapService {
       };
     });
 
-    return response(BaseResponse.GET_JOURNEY_PREVIEW_SUCCESS, scheduleList);
+    return response(BaseResponse.GET_JOURNEY_PREVIEW_SUCCESS, {
+      journey: {
+        journeyId: journey.id,
+        title: journey.title,
+        startDate: journey.startDate,
+        endDate: journey.endDate,
+      },
+      scheduleList,
+    });
   }
 
   async getScheduleList(schedules: ScheduleEntity[]) {
@@ -91,6 +99,7 @@ export class MapService {
     );
     return locationList;
   }
+  //이미지 리스트 불러오기
 
   async getDiaryImageList(schedules: ScheduleEntity[]) {
     const diaryImageList = await Promise.all(
@@ -107,39 +116,6 @@ export class MapService {
       }),
     );
     return diaryImageList;
-  }
-
-  //journeylist
-  async getJourneyList(schedules: ScheduleEntity[]) {
-    const locationList = await Promise.all(
-      schedules.map(async (schedule) => {
-        const location = await ScheduleEntity.findExistLocation(schedule.id);
-        if (!location) {
-          return { location: null };
-        }
-        const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule);
-        if (!diary) {
-          return { diary: null };
-        }
-        const diaryImg = await DiaryImageEntity.findExistImgUrl(diary);
-        if (!diaryImg) {
-          return { diaryImg: null };
-        }
-        return {
-          date: schedule.date,
-          location: {
-            id: location.id,
-            latitude: location.latitude,
-            longitude: location.longitude,
-          },
-          diaryImage: {
-            id: diaryImg.id,
-            imageUrl: diaryImg.imageUrl,
-          },
-        };
-      }),
-    );
-    return locationList;
   }
 
   //사용자의 월별 여정 가지고 오기
@@ -169,6 +145,7 @@ export class MapService {
     return diaryCount;
   }
 
+  //여정 정보 불러오기
   async getJourneyInfo(journeyId) {
     const journey = await JourneyEntity.findExistJourney(journeyId);
     return {
