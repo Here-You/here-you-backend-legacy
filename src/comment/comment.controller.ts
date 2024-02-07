@@ -15,16 +15,16 @@ export class CommentController {
   // 여행 규칙 코멘트 생성
   @Post('/:ruleId')
   @UseGuards(UserGuard)
-  async createComment(@Body() createCommentDto: CreateCommentDto, @Param('ruleId') ruleId: number, @Req() req: Request): Promise<ResponseDto<any>> {
-    const result = await this.commentService.createComment(createCommentDto, ruleId, req.user.id);
+  async createComment(@Body() dto: CreateCommentDto, @Param('ruleId') ruleId: number, @Req() req: Request): Promise<ResponseDto<any>> {
+    const result = await this.commentService.createComment(dto, ruleId, req.user.id);
 
+    console.log('controller 진입')
     if(!result){
       return new ResponseDto(
         ResponseCode.COMMENT_CREATION_FAIL,
         false,
         "여행 규칙 코멘트 생성 실패",
         null);
-
     }
     else{
       return new ResponseDto(
