@@ -25,6 +25,11 @@ export const BaseResponse = {
     code: 200,
     message: '일지를 불러오는데 성공했습니다.',
   },
+  GET_SCHEDULE_SUCCESS: {
+    success: true,
+    code: 200,
+    message: '일정를 불러오는데 성공했습니다.',
+  },
 
   /* 201 CREATED : 요청 성공, 자원 생성 */
   DATEGROUP_CREATED: {
