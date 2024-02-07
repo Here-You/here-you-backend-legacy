@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { JourneyEntity } from '../journey/model/journey.entity';
 import { errResponse, response } from 'src/response/response';
 import { BaseResponse } from 'src/response/response.status';
@@ -11,7 +11,7 @@ import { DiaryImageEntity } from 'src/diary/models/diary.image.entity';
 
 @Injectable()
 export class MapService {
-  //지도에서 사용자의 월별 여정 불러오기
+  /*지도에서 사용자의 월별 여정 불러오기*/
   async getMonthlyJourneyMap(userId: number, monthInfoDto: MonthInfoDto) {
     const user = await UserEntity.findExistUser(userId);
     const monthlyJourney = await this.getMonthlyJourney(user.id, monthInfoDto);
@@ -38,7 +38,7 @@ export class MapService {
     return response(BaseResponse.GET_MONTHLY_JOURNEY_SUCCESS, journeyList);
   }
 
-  //지도에서 여정 정보 보여주기
+  /*지도에서 여정 정보 보여주기*/
   async getJourneyPreview(journeyId) {
     const journey = await this.getJourneyInfo(journeyId);
     const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
@@ -64,6 +64,58 @@ export class MapService {
     });
   }
 
+  /*작성한 일지 불러오기 - 지도*/
+  async getDiaryList(journeyId) {
+    const journey = await JourneyEntity.findExistJourney(journeyId);
+    const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+      journey.id,
+    );
+    const diaryList = await Promise.all(
+      schedules.map(async (schedule) => {
+        const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule);
+        if (!diary) {
+          return null;
+        }
+        const diaryImg = await DiaryImageEntity.findExistImgUrl(diary);
+        if (!diaryImg) {
+          return null;
+        }
+        return {
+          journeyId: journeyId,
+          date: schedule.date,
+          diary: diary,
+          diaryImage: {
+            id: diaryImg.id,
+            imageUrl: diaryImg.imageUrl,
+          },
+        };
+      }),
+    );
+    return response(BaseResponse.GET_DIARY_SUCCESS, diaryList);
+  }
+
+  /* 지도에서 세부 여정 확인하기 */
+  async getDetailJourneyList(journeyId) {
+    const journey = await this.getJourneyInfo(journeyId);
+    const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+      journey.id,
+    );
+    const scheduleInfoList = await this.getScheduleList(schedules);
+    const locationList = await this.getLocationList(schedules);
+    const imageList = await this.getDiaryImageList(schedules);
+    const diaryStatus = await this.getDiaryStatus(schedules);
+    const detailJourneyList = schedules.map((schedule, index) => {
+      return {
+        schedule: scheduleInfoList[index],
+        location: locationList[index],
+        diaryImage: imageList[index],
+        diary: diaryStatus[index],
+      };
+    });
+    return response(BaseResponse.GET_SCHEDULE_SUCCESS, detailJourneyList);
+  }
+
+  //일정 정보 불러오기
   async getScheduleList(schedules: ScheduleEntity[]) {
     const scheduleInfoList = await Promise.all(
       schedules.map(async (schedule) => {
@@ -80,8 +132,7 @@ export class MapService {
     return scheduleInfoList;
   }
 
-  //위치 불러오기
-
+  //위치 정보 불러오기
   async getLocationList(schedules: ScheduleEntity[]) {
     const locationList = await Promise.all(
       schedules.map(async (schedule) => {
@@ -99,8 +150,8 @@ export class MapService {
     );
     return locationList;
   }
-  //이미지 리스트 불러오기
 
+  //이미지 리스트 불러오기
   async getDiaryImageList(schedules: ScheduleEntity[]) {
     const diaryImageList = await Promise.all(
       schedules.map(async (schedule) => {
@@ -145,44 +196,31 @@ export class MapService {
     return diaryCount;
   }
 
+  //일지 작성 여부 가져오기
+  async getDiaryStatus(schedules) {
+    const diaryStatusList = await Promise.all(
+      schedules.map(async (schedule) => {
+        const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule);
+        if (!diary) {
+          return false;
+        }
+      }),
+    );
+
+    return diaryStatusList;
+  }
+
   //여정 정보 불러오기
   async getJourneyInfo(journeyId) {
     const journey = await JourneyEntity.findExistJourney(journeyId);
+    if (!journey) {
+      throw new NotFoundException(BaseResponse.JOURNEY_NOT_FOUND);
+    }
     return {
       id: journey.id,
       title: journey.title,
       startDate: journey.startDate,
       endDate: journey.endDate,
     };
-  }
-
-  /*일지 불러오기 - 지도*/
-  async getDiaryList(journeyId) {
-    const journey = await JourneyEntity.findExistJourney(journeyId);
-    const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
-      journey.id,
-    );
-    const diaryList = await Promise.all(
-      schedules.map(async (schedule) => {
-        const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule);
-        if (!diary) {
-          return null;
-        }
-        const diaryImg = await DiaryImageEntity.findExistImgUrl(diary);
-        if (!diaryImg) {
-          return null;
-        }
-        return {
-          journeyId: journeyId,
-          date: schedule.date,
-          diary: diary,
-          diaryImage: {
-            id: diaryImg.id,
-            imageUrl: diaryImg.imageUrl,
-          },
-        };
-      }),
-    );
-    return response(BaseResponse.GET_DIARY_SUCCESS, diaryList);
   }
 }

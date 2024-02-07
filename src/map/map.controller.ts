@@ -62,4 +62,18 @@ export class MapController {
     const result = await this.mapService.getDiaryList(journeyId);
     return result;
   }
+
+  /*세부 여정 불러오기 - 지도 */
+  @ApiOperation({
+    summary: '세부 여정 불러오기 - 지도',
+    description: 'journeyId로 일정 불러오기',
+  })
+  @ApiOkResponse({
+    description: '성공 ',
+  })
+  @Get('get-schedules/:journeyId')
+  async getDetailJourneyList(@Param('journeyId') journeyId: number) {
+    const result = await this.mapService.getDetailJourneyList(journeyId);
+    return result;
+  }
 }
