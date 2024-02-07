@@ -1,5 +1,20 @@
 export const BaseResponse = {
   /* 200 OK : 요청 성공 */
+  DELETE_JOURNEY_SUCCESS: {
+    success: true,
+    code: 200,
+    message: '여정을 삭제했습니다.',
+  },
+  DELETE_SCHEDULE_SUCCESS: {
+    success: true,
+    code: 200,
+    message: '일정을 삭제했습니다.',
+  },
+  DELETE_DIARY_SUCCESS: {
+    success: true,
+    code: 200,
+    message: '일지를 삭제했습니다.',
+  },
   DELETE_DETAIL_SCHEDULE_SUCCESS: {
     success: true,
     code: 200,

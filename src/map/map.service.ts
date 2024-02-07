@@ -25,12 +25,15 @@ export class MapService {
           journey.id,
           monthInfoDto,
         );
+        const locations = await this.getLocationList(schedules);
+
         const diaryCount = await this.getDiaryCount(schedules);
         return {
           journeyId: journey.id,
           title: journey.title,
           startDate: journey.startDate,
           endDate: journey.endDate,
+          location: locations,
           diaryCount: diaryCount,
         };
       }),
@@ -184,6 +187,7 @@ export class MapService {
       await ScheduleEntity.findMonthlySchedule(journeyId, monthInfoDto);
     return schedules;
   }
+
   //여정에 작성한 일지 개수 가지고 오기
   async getDiaryCount(schedules) {
     let diaryCount = 0;

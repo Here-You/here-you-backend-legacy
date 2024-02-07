@@ -33,9 +33,7 @@ export class ScheduleEntity extends BaseEntity {
   @ManyToOne(() => LocationEntity, (location) => location.schedules)
   location: LocationEntity;
 
-  @ManyToOne(() => JourneyEntity, (journey) => journey.schedules, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => JourneyEntity, (journey) => journey.schedules)
   journey: JourneyEntity;
 
   @OneToMany(
