@@ -32,7 +32,7 @@ export class ScheduleService {
       await ScheduleEntity.updateScheduleLocation(schedule, existLocation);
     } else if (schedule.location) {
       const location = LocationEntity.updateLocation(
-        schedule,
+        schedule.location,
         updateScheduleDto,
       );
       console.log(location);

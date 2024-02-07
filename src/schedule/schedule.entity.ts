@@ -30,7 +30,7 @@ export class ScheduleEntity extends BaseEntity {
   @Column({ nullable: true })
   title: string;
 
-  @ManyToOne(() => LocationEntity, (location) => location.schedule)
+  @ManyToOne(() => LocationEntity, (location) => location.schedules)
   location: LocationEntity;
 
   @ManyToOne(() => JourneyEntity, (journey) => journey.schedules)
@@ -55,22 +55,28 @@ export class ScheduleEntity extends BaseEntity {
   deleted: Date;
 
   //일정 작성하기
-  static async createSchedule(journey, currentDate) {
+  static async createSchedule(journey: JourneyEntity, currentDate) {
     const schedule = new ScheduleEntity();
     schedule.date = currentDate.toISOString().split('T')[0];
-    schedule.journey = journey.id;
+    schedule.journey = journey;
     return await schedule.save();
   }
 
   //일정 작성하기 : title
-  static async updateScheduleTitle(schedule, updateScheduleDto) {
+  static async updateScheduleTitle(
+    schedule: ScheduleEntity,
+    updateScheduleDto,
+  ) {
     schedule.title = updateScheduleDto.title;
     return await schedule.save();
   }
 
   //일정 작성하기 : location
-  static async updateScheduleLocation(schedule, location) {
-    schedule.location = location.id;
+  static async updateScheduleLocation(
+    schedule: ScheduleEntity,
+    location: LocationEntity,
+  ) {
+    schedule.location = location;
     return await schedule.save();
   }
 
@@ -78,11 +84,20 @@ export class ScheduleEntity extends BaseEntity {
   static async findExistSchedule(scheduleId): Promise<ScheduleEntity> {
     const schedule = await ScheduleEntity.findOne({
       where: { id: scheduleId },
+      relations: ['location'],
     });
     if (!schedule) {
       throw new NotFoundException(BaseResponse.SCHEDULE_NOT_FOUND);
     }
     return schedule;
+  }
+
+  static async findExistLocation(scheduleId): Promise<LocationEntity> {
+    const schedule = await ScheduleEntity.findOne({
+      where: { id: scheduleId },
+      relations: ['location'],
+    });
+    return schedule.location;
   }
 
   //journeyId로 일정 조회하기
@@ -91,6 +106,7 @@ export class ScheduleEntity extends BaseEntity {
   ): Promise<ScheduleEntity[]> {
     const schedules = await ScheduleEntity.find({
       where: { journey: { id: journeyId } },
+      relations: ['location'],
     });
     return schedules;
   }

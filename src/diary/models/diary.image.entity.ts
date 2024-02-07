@@ -33,13 +33,14 @@ export class DiaryImageEntity extends BaseEntity {
   deleted: Date;
 
   //사진 URL 저장
-  static async createDiaryImg(diary, ImgUrl: string) {
+  static async createDiaryImg(diary: DiaryEntity, ImgUrl: string) {
     const diaryImg = new DiaryImageEntity();
     diaryImg.imageUrl = ImgUrl;
-    diaryImg.diary = diary.id;
+    diaryImg.diary = diary;
     console.log(diaryImg.diary);
     await diaryImg.save();
   }
+
   //사진 URL 불러오기
   static async findExistImgUrl(diary: DiaryEntity) {
     const imgUrl = await DiaryImageEntity.findOne({

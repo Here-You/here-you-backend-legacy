@@ -53,7 +53,7 @@ export class JourneyEntity extends BaseEntity {
       journey.title = createJourneyDto.title;
       journey.startDate = createJourneyDto.startDate;
       journey.endDate = createJourneyDto.endDate;
-      journey.user = user.id;
+      journey.user = user;
 
       return await journey.save();
     } catch (error) {

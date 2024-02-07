@@ -15,4 +15,7 @@ export class PostDiaryDto {
 
   @IsString()
   content: string;
+
+  @IsString()
+  fileName: string;
 }

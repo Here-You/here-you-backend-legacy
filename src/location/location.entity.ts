@@ -7,7 +7,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  OneToOne,
+  OneToMany,
 } from 'typeorm';
 
 @Entity()
@@ -21,8 +21,8 @@ export class LocationEntity extends BaseEntity {
   @Column({ type: 'decimal', precision: 10, scale: 6 })
   longitude: number;
 
-  @OneToOne(() => ScheduleEntity, (schedule) => schedule.location)
-  schedule: ScheduleEntity;
+  @OneToMany(() => ScheduleEntity, (schedule) => schedule.location)
+  schedules: ScheduleEntity[];
 
   @CreateDateColumn()
   created: Date;
@@ -45,15 +45,15 @@ export class LocationEntity extends BaseEntity {
     }
   }
 
-  static async updateLocation(schedule, updateScheduleDto) {
+  static async updateLocation(location: LocationEntity, updateScheduleDto) {
     try {
-      const location = await LocationEntity.findOneOrFail({
-        where: { id: schedule.locationId },
+      const updateLocation = await LocationEntity.findOneOrFail({
+        where: { id: location.id },
       });
-      location.latitude = updateScheduleDto.latitude;
-      location.longitude = updateScheduleDto.longitude;
+      updateLocation.latitude = updateScheduleDto.latitude;
+      updateLocation.longitude = updateScheduleDto.longitude;
 
-      return await location.save();
+      return await updateLocation.save();
     } catch (error) {
       throw new Error(error);
     }
@@ -71,10 +71,10 @@ export class LocationEntity extends BaseEntity {
     return location;
   }
 
-  static async findExistLocationById(locationId) {
-    const location = await LocationEntity.findOne({
-      where: { id: locationId },
+  static async findExistLocationById(schedule) {
+    const existLocation = await LocationEntity.findOne({
+      where: { schedules: {} },
     });
-    return location;
+    return existLocation;
   }
 }

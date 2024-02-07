@@ -44,25 +44,86 @@ export class MapService {
     const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
       journeyId,
     );
-    const locationList = await this.getJourneyList(schedules);
-    const journeyPreview = { journey, locationList };
-    return response(BaseResponse.GET_JOURNEY_PREVIEW_SUCCESS, journeyPreview);
+    const locationList = await this.getLocationList(schedules);
+    const imageList = await this.getDiaryImageList(schedules);
+    const scheduleList = schedules.map((schedule, index) => {
+      return {
+        location: locationList[index],
+        diaryImage: imageList[index],
+      };
+    });
+
+    return response(BaseResponse.GET_JOURNEY_PREVIEW_SUCCESS, scheduleList);
+  }
+
+  async getScheduleList(schedules: ScheduleEntity[]) {
+    const scheduleInfoList = await Promise.all(
+      schedules.map(async (schedule) => {
+        const scheduleInfo = await ScheduleEntity.findExistSchedule(
+          schedule.id,
+        );
+        return {
+          scheduleId: scheduleInfo.id,
+          title: scheduleInfo.title,
+          date: scheduleInfo.date,
+        };
+      }),
+    );
+    return scheduleInfoList;
+  }
+
+  //위치 불러오기
+
+  async getLocationList(schedules: ScheduleEntity[]) {
+    const locationList = await Promise.all(
+      schedules.map(async (schedule) => {
+        const location = await ScheduleEntity.findExistLocation(schedule.id);
+        console.log(location);
+        if (!location) {
+          return { location: null };
+        }
+        return {
+          locationId: location.id,
+          latitude: location.latitude,
+          longitude: location.longitude,
+        };
+      }),
+    );
+    return locationList;
+  }
+
+  async getDiaryImageList(schedules: ScheduleEntity[]) {
+    const diaryImageList = await Promise.all(
+      schedules.map(async (schedule) => {
+        const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule);
+        if (!diary) {
+          return null;
+        }
+        const diaryImage = await DiaryImageEntity.findExistImgUrl(diary);
+        return {
+          imageId: diaryImage.id,
+          imageUrl: diaryImage.imageUrl,
+        };
+      }),
+    );
+    return diaryImageList;
   }
 
   //journeylist
   async getJourneyList(schedules: ScheduleEntity[]) {
     const locationList = await Promise.all(
       schedules.map(async (schedule) => {
-        const location = await LocationEntity.findExistLocationById(
-          schedule.location,
-        );
+        const location = await ScheduleEntity.findExistLocation(schedule.id);
+        if (!location) {
+          return { location: null };
+        }
         const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule);
         if (!diary) {
-          return null;
+          return { diary: null };
         }
         const diaryImg = await DiaryImageEntity.findExistImgUrl(diary);
         if (!diaryImg) {
-          return null;
+          return { diaryImg: null };
         }
         return {
           date: schedule.date,
