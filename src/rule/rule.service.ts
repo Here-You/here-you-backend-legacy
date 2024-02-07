@@ -1,4 +1,4 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import {Injectable, HttpException, BadRequestException} from '@nestjs/common';
 import { CreateRuleDto } from './dto/create-rule.dto';
 import { RuleConverter } from './rule.converter';
 import { RuleMainEntity } from './domain/rule.main.entity';
@@ -9,7 +9,7 @@ import { DetailRuleDto } from './dto/detail-rule.dto';
 import { DetailMemberDto } from './dto/detail-member.dto';
 import { DetailCommentDto } from './dto/detail-comment.dto';
 import { MetaToBackDto } from './dto/meta-to-back.dto';
-
+import { UserEntity} from "../user/user.entity";
 
 @Injectable()
 export class RuleService {
@@ -18,16 +18,38 @@ export class RuleService {
   ) {}
 
   // [1] 여행 규칙 생성
-  async createRule(createRuleDto: CreateRuleDto): Promise<number> {
-    const { main, rules, invitations } = await this.ruleConverter.toEntity(createRuleDto);
+  async createRule(dto: CreateRuleDto, userId: number): Promise<number> {
+    // main 저장
+    const main = new RuleMainEntity();
+    main.mainTitle = dto.mainTitle;
+    await main.save();
 
-    const savedMain = await RuleMainEntity.save(main);
+    //rule 저장
+    const subs = dto.rulePairs.map(async pair => {
+      const sub = new RuleSubEntity();
+      sub.ruleTitle = pair.ruleTitle;
+      sub.ruleDetail = pair.ruleDetail;
+      sub.main = main;
 
-    const savedRules = await RuleSubEntity.save(rules);
+      await sub.save();
+      return sub;
+    });
 
-    const savedInvitations = await RuleInvitationEntity.save(invitations);
+    // invitation 저장
+    const inviterEntity = await UserEntity.findOneOrFail({ where: { id: userId } });
+    const invitations = await Promise.all(dto.invitedId.map(async invited => {
+      const invitation = new RuleInvitationEntity();
 
-    return savedMain.id;
+      const invitedEntity = await UserEntity.findOneOrFail({ where: { id: invited } });
+      invitation.rule = main;
+      invitation.invited = invitedEntity;
+      invitation.inviter = inviterEntity;
+
+      await invitation.save();
+      return invitation;
+    }));
+
+    return main.id;
   }
 
   // [2] 여행 규칙 조회
