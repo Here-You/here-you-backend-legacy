@@ -26,14 +26,20 @@ export class MapService {
           monthInfoDto,
         );
         const locations = await this.getLocationList(schedules);
-
+        const images = await this.getDiaryImageList(schedules);
+        const mapInfo = schedules.map((schedule, index) => {
+          return {
+            location: locations[index],
+            diaryImage: images[index],
+          };
+        });
         const diaryCount = await this.getDiaryCount(schedules);
         return {
           journeyId: journey.id,
           title: journey.title,
           startDate: journey.startDate,
           endDate: journey.endDate,
-          location: locations,
+          map: mapInfo,
           diaryCount: diaryCount,
         };
       }),
