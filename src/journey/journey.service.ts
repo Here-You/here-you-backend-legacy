@@ -1,10 +1,12 @@
 // journey.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { JourneyEntity } from './model/journey.entity';
 import { errResponse, response } from 'src/response/response';
 import { BaseResponse } from 'src/response/response.status';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { CreateJourneyDto } from './dtos/create-journey.dto';
+import { DetailScheduleEntity } from 'src/detail-schedule/detail-schedule.entity';
+import { DiaryEntity } from 'src/diary/models/diary.entity';
 
 @Injectable()
 export class JourneyService {
@@ -28,4 +30,40 @@ export class JourneyService {
 
     return errResponse(BaseResponse.JOURNEY_CREATED);
   }
+
+  //여정 삭제하기 - 일정, 일지,
+
+  async deleteJourney(journeyId: number) {
+    const journey = await JourneyEntity.findExistJourney(journeyId);
+    if (!journey) {
+      throw new NotFoundException(BaseResponse.JOURNEY_NOT_FOUND);
+    }
+    const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+      journey.id,
+    );
+    for (const schedule of schedules) {
+      await this.deleteScheduleRelations(schedule);
+    }
+
+    const deleteJourney = await JourneyEntity.deleteJourney(journey);
+    return response(BaseResponse.DELETE_JOURNEY_SUCCESS);
+  }
+  async deleteScheduleRelations(schedule) {
+    const deleteSchedule = await ScheduleEntity.findExistSchedule(schedule.id);
+
+    //세부 일정 지우기
+    const detailSchedules =
+      await DetailScheduleEntity.findExistDetailByScheduleId(schedule);
+    for (const detailSchedule of detailSchedules) {
+      await DetailScheduleEntity.deleteDetailSchedule(detailSchedule);
+    }
+
+    //일지 지우기
+    const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule.id);
+    await this.deleteDiaryRelations(diary);
+
+    await ScheduleEntity.deleteSchedule(deleteSchedule);
+  }
+
+  async deleteDiaryRelations(diary) {}
 }

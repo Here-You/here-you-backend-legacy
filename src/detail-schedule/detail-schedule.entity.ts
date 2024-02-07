@@ -55,7 +55,7 @@ export class DetailScheduleEntity extends BaseEntity {
   }
   //세부 일정 삭제하기
   static async deleteDetailSchedule(detailSchedule) {
-    return await DetailScheduleEntity.softRemove(detailSchedule);
+    return await DetailScheduleEntity.remove(detailSchedule);
   }
 
   static async findExistDetail(detailId: number) {

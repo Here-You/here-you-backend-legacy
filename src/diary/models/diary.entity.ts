@@ -91,6 +91,11 @@ export class DiaryEntity extends BaseEntity {
     return await diary.save();
   }
 
+  //세부 일정 삭제하기
+  static async deleteDiary(diary) {
+    return await DiaryEntity.softRemove(diary);
+  }
+
   //일지 조회하기
   static async findExistDiary(diaryId) {
     const diary = await DiaryEntity.findOne({

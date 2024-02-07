@@ -47,6 +47,7 @@ export class JourneyEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
+  //여정 생성하기
   static async createJourney(user, createJourneyDto) {
     try {
       const journey: JourneyEntity = new JourneyEntity();
@@ -59,6 +60,11 @@ export class JourneyEntity extends BaseEntity {
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  //여정 삭제하기
+  static async deleteJourney(journey) {
+    return await JourneyEntity.remove(journey);
   }
 
   //여정 조회

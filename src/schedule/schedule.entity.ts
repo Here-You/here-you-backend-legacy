@@ -33,7 +33,9 @@ export class ScheduleEntity extends BaseEntity {
   @ManyToOne(() => LocationEntity, (location) => location.schedules)
   location: LocationEntity;
 
-  @ManyToOne(() => JourneyEntity, (journey) => journey.schedules)
+  @ManyToOne(() => JourneyEntity, (journey) => journey.schedules, {
+    onDelete: 'CASCADE',
+  })
   journey: JourneyEntity;
 
   @OneToMany(
@@ -78,6 +80,11 @@ export class ScheduleEntity extends BaseEntity {
   ) {
     schedule.location = location;
     return await schedule.save();
+  }
+
+  //일정 삭제하기
+  static async deleteSchedule(schedule) {
+    return await ScheduleEntity.remove(schedule);
   }
 
   //일정 조회하기
