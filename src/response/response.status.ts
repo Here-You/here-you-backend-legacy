@@ -118,4 +118,10 @@ export const BaseResponse = {
     code: 404,
     message: '일지가 없습니다.',
   },
+  /* 409 CONFLICT : Resource 의 현재 상태와 충돌. 보통 중복된 데이터 존재 */
+  JOURNEY_DUPLICATION: {
+    success: false,
+    code: 409,
+    message: '이미 여정이 있습니다.',
+  },
 };

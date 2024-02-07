@@ -17,6 +17,8 @@ import { CreateJourneyDto } from '../dtos/create-journey.dto';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { MonthInfoDto } from 'src/map/month-info.dto';
+import { ConflictException } from '@nestjs/common';
+import { BaseResponse } from 'src/response/response.status';
 
 @Entity()
 export class JourneyEntity extends BaseEntity {
@@ -74,6 +76,17 @@ export class JourneyEntity extends BaseEntity {
         id: journeyId,
       },
     });
+    return journey;
+  }
+
+  static async findExistJourneyByDate(createJourneyDto) {
+    const journey: JourneyEntity = await JourneyEntity.findOne({
+      where: {
+        startDate: createJourneyDto.startDate,
+        endDate: createJourneyDto.endDate,
+      },
+    });
+    console.log(journey.startDate);
     return journey;
   }
 

@@ -1,5 +1,9 @@
 // journey.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { JourneyEntity } from './model/journey.entity';
 import { errResponse, response } from 'src/response/response';
 import { BaseResponse } from 'src/response/response.status';
@@ -12,6 +16,19 @@ import { DiaryEntity } from 'src/diary/models/diary.entity';
 export class JourneyService {
   //여정 생성하기 - 일정, 일지 함께 생성
   async createJourney(user, createJourneyDto: CreateJourneyDto) {
+    // const firstJourneyDate = await this.formatDateString(
+    //   createJourneyDto.startDate,
+    // );
+    // const lastJourneyDate = await this.formatDateString(
+    //   createJourneyDto.endDate,
+    // );
+    // console.log(lastJourneyDate);
+    const existJourney = await JourneyEntity.findExistJourneyByDate(
+      createJourneyDto,
+    );
+    if (existJourney) {
+      return errResponse(BaseResponse.JOURNEY_DUPLICATION);
+    }
     //여정 제목, 날짜 저장하기
     const journey = await JourneyEntity.createJourney(user, createJourneyDto);
 
@@ -35,6 +52,7 @@ export class JourneyService {
 
   async deleteJourney(journeyId: number) {
     const journey = await JourneyEntity.findExistJourney(journeyId);
+
     if (!journey) {
       throw new NotFoundException(BaseResponse.JOURNEY_NOT_FOUND);
     }
@@ -66,4 +84,17 @@ export class JourneyService {
   }
 
   async deleteDiaryRelations(diary) {}
+
+  // async formatDateString(dateString) {
+  //   // 주어진 문자열을 파싱하여 Date 객체로 변환
+  //   const dateObject = new Date(dateString);
+
+  //   // Date 객체에서 년, 월, 일을 추출
+  //   const year = dateObject.getFullYear();
+  //   const month = String(dateObject.getMonth() + 1).padStart(2, '0');
+  //   const day = String(dateObject.getDate()).padStart(2, '0');
+
+  //   // YYYY-MM-DD 형식의 문자열로 변환하여 반환
+  //   return new Date(`${year}-${month}-${day}`);
+  // }
 }
