@@ -17,7 +17,7 @@ export class RuleController {
   @Post('/write')
   @UseGuards(UserGuard)
   async createRule(@Req() req: Request, @Body() createRuleDto: CreateRuleDto): Promise<ResponseDto<any>> {
-    const result = await this.ruleService.createRule(createRuleDto);
+    const result = await this.ruleService.createRule(createRuleDto, req.user.id);
 
     if(!result){
       return new ResponseDto(

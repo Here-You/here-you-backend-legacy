@@ -19,26 +19,30 @@ import { MetaToFrontDto } from './dto/meta-to-front.dto';
 @Injectable()
 export class RuleConverter {
 
-    async toEntity(dto: CreateRuleDto): Promise<{ main: RuleMainEntity, rules: RuleSubEntity[], invitations: RuleInvitationEntity[] }> {
+    async toEntity(dto: CreateRuleDto, userId:number): Promise<{ main: RuleMainEntity, rules: RuleSubEntity[], invitations: RuleInvitationEntity[] }> {
+        // main 저장
         const main = new RuleMainEntity();
         main.mainTitle = dto.mainTitle;
 
+        //rule 저장
         const rules = dto.rulePairs.map(pair => {
             const sub = new RuleSubEntity();
             sub.ruleTitle = pair.ruleTitle;
             sub.ruleDetail = pair.ruleDetail;
+            sub.main = main;
             return sub;
         });
 
-        const inviter = await UserEntity.findOneOrFail({ where: { id: dto.inviterId } });
-        const rule = await RuleMainEntity.findOneOrFail({ where: { id: dto.inviterId } });
-        const invitations = await Promise.all(dto.invitedId.map(async invitedId => {
-            const invited = await UserEntity.findOneOrFail({ where: { id: invitedId } });
-
+        // invitation 저장
+        const inviterEntity = await UserEntity.findOneOrFail({ where: { id: userId } });
+        const invitations = await Promise.all(dto.invitedId.map(async invited => {
             const invitation = new RuleInvitationEntity();
-            invitation.inviter = inviter;
-            invitation.rule = rule;
-            invitation.invited = invited;
+
+            const invitedEntity = await UserEntity.findOneOrFail({ where: { id: invited } });
+            invitation.rule = main;
+            invitation.invited = invitedEntity;
+            invitation.inviter = inviterEntity;
+
             return invitation;
         }));
 
