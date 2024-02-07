@@ -34,15 +34,23 @@ export class RuleService {
   async getDetail(ruleId : number, metaToBackDto : MetaToBackDto): Promise<DetailPageDto> {
     try{
       const detailPageDto : DetailPageDto = new DetailPageDto();
-      
-      return detailPageDto;  
+
+      return detailPageDto;
     }
     catch(error){
       console.error('Error on GetDetail : ', error);
       throw new HttpException('Internal Server Error', 500);
     }
   }
- 
+
+  // [3] 여행 규칙 나가기
+  // -1) 초대 받은 팀원 -> 초대 삭제
+  async deleteInvitation(ruleId: number, userId: number): Promise<RuleInvitationEntity> {
+    const invitation : RuleInvitationEntity = await RuleInvitationEntity.findInvitationByRuleAndUser(ruleId, userId);
+
+    return invitation.softRemove();
+  }
+
   // [member] 초대 받은 멤버 리스트 생성
   async getInvitationList(ruleId: number) {
     try {

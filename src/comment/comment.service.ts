@@ -9,8 +9,8 @@ export class CommentService {
     private commentConverter: CommentConverter
   ) {}
 
-  async createComment(createCommentDto: CreateCommentDto, ruleId: number): Promise<number> {
-    const comment = await this.commentConverter.toEntity(createCommentDto, ruleId);
+  async createComment(createCommentDto: CreateCommentDto, ruleId: number, userId: number): Promise<number> {
+    const comment = await this.commentConverter.toEntity(createCommentDto, ruleId, userId);
 
     const savedComment = await CommentEntity.save(comment);
 

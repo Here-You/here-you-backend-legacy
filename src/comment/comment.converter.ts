@@ -7,7 +7,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 @Injectable()
 export class CommentConverter {
 
-    async toEntity(dto: CreateCommentDto, ruleId:number): Promise<CommentEntity> {
+    async toEntity(dto: CreateCommentDto, ruleId:number, userId: number): Promise<CommentEntity> {
         const comment = new CommentEntity();
 
         comment.content = dto.content;
@@ -15,7 +15,7 @@ export class CommentConverter {
         const rule = await RuleMainEntity.findOneOrFail({ where: { id: ruleId } });
         comment.rule = rule;
         console.log(comment.rule);
-        const user = await UserEntity.findOneOrFail({ where: { id: dto.userId } });
+        const user = await UserEntity.findOneOrFail({ where: { id: userId } });
         comment.user = user;
 
         return comment;

@@ -6,7 +6,8 @@ import { RuleService } from 'src/rule/rule.service';
 import { RuleMainEntity } from 'src/rule/domain/rule.main.entity';
 import {UserSearchDto} from "../user/user.search.dto";
 import { UserService} from "../user/user.service";
-// import { UserGuard } from 'src/user/user.guard';
+import { UserGuard } from '../user/user.guard';
+import { Request } from 'express';
 
 // @UseGuards(UserGuard)
 @Controller('mate/rule/member')
@@ -19,13 +20,14 @@ export class MemberController {
 
   // [1] 여행 규칙 멤버 리스트 조회
   @Get('/:ruleId')
-  async getMember(@Param('ruleId') ruleId : number) : Promise<ResponseDto<any>> {
+  @UseGuards(UserGuard)
+  async getMember(@Req() req: Request, @Param('ruleId') ruleId : number) : Promise<ResponseDto<any>> {
     // 현재 로그인한 사용자 ID
     // const userId = req.user.id;
-    const userId = 2;
+    // const userId = 2;
 
     try {
-        const memberList = await this.memberService.getMemberList(userId, ruleId);
+        const memberList = await this.memberService.getMemberList(req.user.id, ruleId);
         return new ResponseDto(
             ResponseCode.GET_MEMBER_LIST_SUCCESS,
             true,
@@ -44,10 +46,11 @@ export class MemberController {
 
   // [2] 여행 규칙 멤버 초대
   @Post('/:ruleId/:invitedId')
-  async createInvitation(@Param('ruleId') ruleId : number, @Param('invitedId') invitedId : number) : Promise<ResponseDto<any>> {
+  @UseGuards(UserGuard)
+  async createInvitation(@Req() req: Request, @Param('ruleId') ruleId : number, @Param('invitedId') invitedId : number) : Promise<ResponseDto<any>> {
     // 현재 로그인한 사용자 ID
     // const userId = req.user.id;
-    const userId = 2;
+    // const userId = 2;
 
     // 이미 초대된 멤버인지 확인
     const ruleEntity = await RuleMainEntity.findRuleById(ruleId);
@@ -66,7 +69,7 @@ export class MemberController {
 
     // 멤버 초대
     try {
-        await this.memberService.createInvitation(ruleId, userId, invitedId);
+        await this.memberService.createInvitation(ruleId, req.user.id, invitedId);
         return new ResponseDto(
             ResponseCode.INVITATION_CREATED,
             true,
@@ -85,10 +88,11 @@ export class MemberController {
 
   // [3] 여행 규칙 멤버 삭제
   @Delete('/:ruleId/:memberId')
-  async deleteMember(@Param('ruleId') ruleId : number, @Param('memberId') memberId : number) : Promise<ResponseDto<any>> {
+  @UseGuards(UserGuard)
+  async deleteMember(@Req() req: Request, @Param('ruleId') ruleId : number, @Param('memberId') memberId : number) : Promise<ResponseDto<any>> {
     // 현재 로그인한 사용자 ID
     // const userId = req.user.id;
-    const userId = 2;
+    // const userId = 2;
 
     try {
         await this.memberService.deleteMember(ruleId, memberId);
@@ -110,15 +114,16 @@ export class MemberController {
 
     // [4] 초대할 여행 규칙 멤버 검색
     @Get('/search/:searchTerm')
+    @UseGuards(UserGuard)
     async getSearchResult(
         @Req() req: Request,
         @Param('searchTerm') searchTerm: string): Promise<ResponseDto<any>> {
         // 현재 로그인한 사용자 ID
         // const userId = req.user.id;
-        const userId = 1;
+        // const userId = 1;
 
         try {
-            const userSearchDto : UserSearchDto[] = await this.userService.getSearchResult(userId, searchTerm)
+            const userSearchDto : UserSearchDto[] = await this.userService.getSearchResult(req.user.id, searchTerm)
             return new ResponseDto(
                 ResponseCode.GET_SEARCH_RESULT_SUCCESS,
                 true,
