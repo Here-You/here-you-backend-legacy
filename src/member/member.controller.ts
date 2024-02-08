@@ -20,14 +20,9 @@ export class MemberController {
 
   // [1] 여행 규칙 멤버 리스트 조회
   @Get('/:ruleId')
-  @UseGuards(UserGuard)
-  async getMember(@Req() req: Request, @Param('ruleId') ruleId : number) : Promise<ResponseDto<any>> {
-    // 현재 로그인한 사용자 ID
-    // const userId = req.user.id;
-    // const userId = 2;
-
+  async getMember(@Param('ruleId') ruleId : number) : Promise<ResponseDto<any>> {
     try {
-        const memberList = await this.memberService.getMemberList(req.user.id, ruleId);
+        const memberList = await this.memberService.getMemberList(ruleId);
         return new ResponseDto(
             ResponseCode.GET_MEMBER_LIST_SUCCESS,
             true,
@@ -46,12 +41,7 @@ export class MemberController {
 
   // [2] 여행 규칙 멤버 초대
   @Post('/:ruleId/:invitedId')
-  @UseGuards(UserGuard)
-  async createInvitation(@Req() req: Request, @Param('ruleId') ruleId : number, @Param('invitedId') invitedId : number) : Promise<ResponseDto<any>> {
-    // 현재 로그인한 사용자 ID
-    // const userId = req.user.id;
-    // const userId = 2;
-
+  async createInvitation(@Param('ruleId') ruleId : number, @Param('invitedId') invitedId : number) : Promise<ResponseDto<any>> {
     // 이미 초대된 멤버인지 확인
     const ruleEntity = await RuleMainEntity.findRuleById(ruleId);
     console.log('--이미 참여하는 사용자인지 검증 시작--')
@@ -69,7 +59,7 @@ export class MemberController {
 
     // 멤버 초대
     try {
-        await this.memberService.createInvitation(ruleId, req.user.id, invitedId);
+        await this.memberService.createInvitation(ruleId, invitedId);
         return new ResponseDto(
             ResponseCode.INVITATION_CREATED,
             true,
@@ -88,12 +78,7 @@ export class MemberController {
 
   // [3] 여행 규칙 멤버 삭제
   @Delete('/:ruleId/:memberId')
-  @UseGuards(UserGuard)
-  async deleteMember(@Req() req: Request, @Param('ruleId') ruleId : number, @Param('memberId') memberId : number) : Promise<ResponseDto<any>> {
-    // 현재 로그인한 사용자 ID
-    // const userId = req.user.id;
-    // const userId = 2;
-
+  async deleteMember(@Param('ruleId') ruleId : number, @Param('memberId') memberId : number) : Promise<ResponseDto<any>> {
     try {
         await this.memberService.deleteMember(ruleId, memberId);
         return new ResponseDto(

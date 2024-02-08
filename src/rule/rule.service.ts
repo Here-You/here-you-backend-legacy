@@ -3,7 +3,7 @@ import { CreateRuleDto } from './dto/create-rule.dto';
 import { RuleConverter } from './rule.converter';
 import { RuleMainEntity } from './domain/rule.main.entity';
 import { RuleSubEntity } from './domain/rule.sub.entity';
-import { RuleMemberEntity } from './domain/rule.member.entity';
+import { RuleInvitationEntity } from './domain/rule.invitation.entity';
 import { DetailPageDto } from './dto/detail-page.dto';
 import { DetailRuleDto } from './dto/detail-rule.dto';
 import { DetailMemberDto } from './dto/detail-member.dto';
@@ -35,17 +35,17 @@ export class RuleService {
       return sub;
     });
 
-    // member 저장
+    // invitation 저장
     const inviterEntity = await UserEntity.findOneOrFail({ where: { id: userId } });
-    let members = await Promise.all(dto.membersId.map(async (memberId) : Promise<RuleMemberEntity> => {
-      const ruleMemberEntity = new RuleMemberEntity();
+    let members = await Promise.all(dto.membersId.map(async (memberId) : Promise<RuleInvitationEntity> => {
+      const ruleInvitationEntity = new RuleInvitationEntity();
 
       const userEntity = await UserEntity.findOneOrFail({ where: { id: memberId } });
-      ruleMemberEntity.rule = main;
-      ruleMemberEntity.member = userEntity;
+      ruleInvitationEntity.rule = main;
+      ruleInvitationEntity.member = userEntity;
 
-      await ruleMemberEntity.save();
-      return ruleMemberEntity;
+      await ruleInvitationEntity.save();
+      return ruleInvitationEntity;
     }));
 
     return main.id;
@@ -66,8 +66,8 @@ export class RuleService {
 
   // [3] 여행 규칙 나가기
   // -1) 초대 받은 팀원 -> 초대 삭제
-  async deleteInvitation(ruleId: number, userId: number): Promise<RuleMemberEntity> {
-    const invitation : RuleMemberEntity = await RuleMemberEntity.findInvitationByRuleAndUser(ruleId, userId);
+  async deleteInvitation(ruleId: number, userId: number): Promise<RuleInvitationEntity> {
+    const invitation : RuleInvitationEntity = await RuleInvitationEntity.findInvitationByRuleAndUser(ruleId, userId);
 
     return invitation.softRemove();
   }
@@ -75,7 +75,7 @@ export class RuleService {
   // [member] 초대 받은 멤버 리스트 생성
   async getInvitationList(ruleId: number) {
     try {
-      const invitationEntity = await RuleMemberEntity.find({
+      const invitationEntity = await RuleInvitationEntity.find({
         where: { id : ruleId },
         relations: ['invited'],
       });

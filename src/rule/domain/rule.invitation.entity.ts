@@ -11,11 +11,11 @@ import { UserEntity } from 'src/user/user.entity';
 import { RuleMainEntity } from './rule.main.entity'
 
 @Entity()
-export class RuleMemberEntity extends BaseEntity {
+export class RuleInvitationEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => RuleMainEntity, ruleMain => ruleMain.members)
+  @ManyToOne(() => RuleMainEntity, ruleMain => ruleMain.invitations)
   @JoinColumn({name: 'rule_id'})
   rule: RuleMainEntity;
 
@@ -42,9 +42,9 @@ export class RuleMemberEntity extends BaseEntity {
     return { memberId, name };
   }
 
-  static async findInvitationByRuleId(ruleId: number, memberId: number): Promise<RuleMemberEntity> {
+  static async findInvitationByRuleId(ruleId: number, memberId: number): Promise<RuleInvitationEntity> {
     try {
-      const invitation = await RuleMemberEntity.findOne({
+      const invitation = await RuleInvitationEntity.findOne({
         where: [{ rule : { id : ruleId }},
           { member : { id : memberId }}]
       });
@@ -56,9 +56,9 @@ export class RuleMemberEntity extends BaseEntity {
     }
   }
 
-  static async findInvitationByRuleAndUser(ruleId: number, userId: number) : Promise<RuleMemberEntity> {
+  static async findInvitationByRuleAndUser(ruleId: number, userId: number) : Promise<RuleInvitationEntity> {
     try {
-      const invitation = await RuleMemberEntity.findOne({
+      const invitation = await RuleInvitationEntity.findOne({
         where: [{rule: {id : ruleId}},
           {member: {id : userId}}]
       });
