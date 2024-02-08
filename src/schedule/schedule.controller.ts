@@ -8,11 +8,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
-import { Request } from 'express';
-import { UserGuard } from 'src/user/user.guard';
 import { ScheduleService } from './schedule.service';
 import { UpdateScheduleDto } from './dtos/update-schedule-dto';
-import { FindMonthlyScheduleDto } from './dtos/find-monthly-schedule.dto';
 
 @Controller('schedule')
 export class ScheduleController {

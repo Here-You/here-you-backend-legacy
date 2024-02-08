@@ -12,19 +12,11 @@ import { CreateJourneyDto } from './dtos/create-journey.dto';
 import { DetailScheduleEntity } from 'src/detail-schedule/detail-schedule.entity';
 import { DiaryEntity } from 'src/diary/models/diary.entity';
 import { DiaryImageEntity } from 'src/diary/models/diary.image.entity';
-import { UserEntity } from 'src/user/user.entity';
 
 @Injectable()
 export class JourneyService {
   //여정 생성하기 - 일정, 일지 함께 생성
   async createJourney(user, createJourneyDto: CreateJourneyDto) {
-    // const firstJourneyDate = await this.formatDateString(
-    //   createJourneyDto.startDate,
-    // );
-    // const lastJourneyDate = await this.formatDateString(
-    //   createJourneyDto.endDate,
-    // );
-    // console.log(lastJourneyDate);
     const existJourney = await JourneyEntity.findExistJourneyByDate(
       createJourneyDto,
     );
@@ -74,7 +66,7 @@ export class JourneyService {
       await DetailScheduleEntity.deleteDetailSchedule(detailSchedule);
     }
 
-    //일지 지우기
+    //일정 지우기
     const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule.id);
     if (diary) {
       await DiaryEntity.deleteDiary(diary);
@@ -83,6 +75,7 @@ export class JourneyService {
     await ScheduleEntity.deleteSchedule(deleteSchedule);
   }
 
+  //일지 지우기
   async deleteDiaryRelations(diary) {
     if (!diary) {
       return; // 일지가 없으면 삭제할 필요 없음

@@ -4,10 +4,7 @@ import { BaseResponse } from 'src/response/response.status';
 import { DiaryEntity } from './models/diary.entity';
 import { DiaryImageEntity } from './models/diary.image.entity';
 import { PostDiaryDto } from './dtos/post-diary.dto';
-import { GetDiaryImgUrlDto } from './dtos/get-diary-img-url.dto';
 import { S3UtilService } from 'src/utils/S3.service';
-import { JourneyEntity } from 'src/journey/model/journey.entity';
-import { ScheduleEntity } from 'src/schedule/schedule.entity';
 
 @Injectable()
 export class DiaryService {

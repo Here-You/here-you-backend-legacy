@@ -14,7 +14,6 @@ import { NotFoundException } from '@nestjs/common';
 import { BaseResponse } from 'src/response/response.status';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { UserEntity } from '../../user/user.entity';
-import { JourneyEntity } from 'src/journey/model/journey.entity';
 import { DiaryImageEntity } from './diary.image.entity';
 import { PostDiaryDto } from '../dtos/post-diary.dto';
 

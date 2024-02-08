@@ -13,12 +13,9 @@ import {
   Between,
 } from 'typeorm';
 
-import { CreateJourneyDto } from '../dtos/create-journey.dto';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { MonthInfoDto } from 'src/map/month-info.dto';
-import { ConflictException } from '@nestjs/common';
-import { BaseResponse } from 'src/response/response.status';
 
 @Entity()
 export class JourneyEntity extends BaseEntity {

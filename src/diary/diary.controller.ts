@@ -2,7 +2,6 @@ import { ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 import { Controller, Put, Post, Get, Body, Param } from '@nestjs/common';
 import { DiaryService } from './diary.service';
 import { PostDiaryDto } from './dtos/post-diary.dto';
-import { GetDiaryImgUrlDto } from './dtos/get-diary-img-url.dto';
 
 @Controller('diary')
 export class DiaryController {
