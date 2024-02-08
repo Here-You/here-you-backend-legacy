@@ -59,6 +59,7 @@ export class UserService {
     // user가 targetUser를 팔로우하고 있는지 확인
 
     const followingArray = user.following || [];
+    console.log('사용자가 팔로우하는 유저', user.following);
 
     const isFollowing = followingArray.some(
       (following) => following.followUser.id === targetUserId,
@@ -290,5 +291,20 @@ export class UserService {
     console.log('검색 결과 : ', results);
 
     return results;
+  }
+
+  async isAlreadyFollowing(userId:number, followingId: number) {
+    const userEntity = await this.findUserById(userId);
+    const followingEntity = await this.findUserById(followingId);
+    console.log('현재 로그인한 사용자 : ', userEntity.id);
+    console.log('팔로우 대상 사용자 : ', followingEntity.id);
+
+    const isFollowing = await UserFollowingEntity.findOne({
+      where: {
+        user : {id : userId}, followUser : {id : followingId},
+      }});
+
+    // 팔로우 관계 : true 반환
+    return !!isFollowing;
   }
 }
