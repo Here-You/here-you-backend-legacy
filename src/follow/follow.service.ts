@@ -3,11 +3,13 @@ import { UserFollowingEntity } from 'src/user/user.following.entity';
 import { FollowDto } from './dto/follow.dto';
 import { UserEntity } from "../user/user.entity";
 import { UserService } from "../user/user.service";
+import { S3UtilService } from "../utils/S3.service";
 
 @Injectable()
 export class FollowService {
     constructor(
         private readonly userService: UserService,
+        private readonly s3Service: S3UtilService,
     ) {}
 
     // [1] 팔로우
@@ -66,8 +68,14 @@ export class FollowService {
             followDto.email = mateEntity.email;
             followDto.introduction = mateEntity.introduction;
             followDto.isFollowing = !!follow.id;
+
+            // 사용자 프로필 이미지
             const image = await this.userService.getProfileImage(mateEntity.id);
-            followDto.image = image.imageKey;
+            if(image == null) followDto.image = null;
+            else{
+                const userImageKey = image.imageKey;
+                followDto.image = await this.s3Service.getImageUrl(userImageKey);
+            }
 
             return followDto;
         }))
@@ -95,8 +103,14 @@ export class FollowService {
             followDto.email = mateEntity.email;
             followDto.introduction = mateEntity.introduction;
             followDto.isFollowing = !!follow.id;
+
+            // 사용자 프로필 이미지
             const image = await this.userService.getProfileImage(mateEntity.id);
-            followDto.image = image.imageKey;
+            if(image == null) followDto.image = null;
+            else{
+                const userImageKey = image.imageKey;
+                followDto.image = await this.s3Service.getImageUrl(userImageKey);
+            }
 
             return followDto;
         }))
