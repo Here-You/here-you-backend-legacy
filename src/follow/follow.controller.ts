@@ -16,60 +16,51 @@ export class FollowController {
     private readonly userService: UserService,
   ) {}
 
-  // [1] 팔로우
-  @Patch('/:followingId')
-  @UseGuards(UserGuard)
-  async createFollow(@Req() req: Request, @Param('followingId') followingId : number): Promise<ResponseDto<any>> {
+    // [1] 팔로우
+    @Patch('/follow/:followingId')
+    @UseGuards(UserGuard)
+    async createFollow(@Req() req: Request, @Param('followingId') followingId : number): Promise<ResponseDto<any>> {
 
-      try {
-          const user: UserEntity = await this.userService.findUserById(req.user.id);
-          console.log('현재 로그인한 사용자 : ', user.id);
-          const following: UserEntity = await this.userService.findUserById(followingId);
-          console.log('팔로우 대상 사용자 : ', following.id);
+        try {
+            // 팔로우 관계 확인
+            const isAlreadyFollowing = await this.userService.isAlreadyFollowing(req.user.id, followingId);
+            console.log('Is already following? : ', isAlreadyFollowing);
 
-          // 팔로우 관계 확인
-          const checkIfFollowing = this.userService.checkIfFollowing(user, followingId);
-          console.log('checkIfFollowing : ', checkIfFollowing);
-
-          // 이미 팔로우 한 사이, 언팔로우
-          if (!checkIfFollowing) {
-              console.log('언팔로우 service 호출');
-              await this.followService.deleteFollow(req.user.id, followingId);
-              return new ResponseDto(
-                  ResponseCode.UNFOLLOW_SUCCESS,
-                  true,
-                  "언팔로우 성공",
-                  null
-              );
-          } else {
-              // 팔로우
-              console.log('팔로우 service 호출');
-              await this.followService.createFollow(req.user.id, followingId);
-              return new ResponseDto(
-                  ResponseCode.FOLLOW_CREATED,
-                  true,
-                  "팔로우 성공",
-                  null
-              );
-          }
-      } catch(error) {
-          return new ResponseDto(
-              ResponseCode.UNFOLLOW_FAIL,
-              false,
-              "처리 실패",
-              null
-          );
-      }
-  }
+            // -1) 이미 팔로우 한 사이, 팔로우 취소
+            if (isAlreadyFollowing) {
+                console.log('언팔로우 service 호출');
+                await this.followService.deleteFollow(req.user.id, followingId);
+                return new ResponseDto(
+                    ResponseCode.UNFOLLOW_SUCCESS,
+                    true,
+                    "언팔로우 성공",
+                    null
+                );
+            } else {
+                // -2) 팔로우
+                console.log('팔로우 service 호출');
+                await this.followService.createFollow(req.user.id, followingId);
+                return new ResponseDto(
+                    ResponseCode.FOLLOW_CREATED,
+                    true,
+                    "팔로우 성공",
+                    null
+                );
+            }
+        } catch(error) {
+            return new ResponseDto(
+                ResponseCode.UNFOLLOW_FAIL,
+                false,
+                "처리 실패",
+                null
+            );
+        }
+    }
 
     // [2] 팔로우 리스트 조회
     @Get('/followList')
     @UseGuards(UserGuard)
     async getFollowList(@Req() req: Request): Promise<ResponseDto<any>> {
-        // 현재 로그인한 사용자 ID
-        // const userId = req.user.id;
-        // const userId = 1;
-
         try {
             const followList = await this.followService.getFollowList(req.user.id);
             return new ResponseDto(
@@ -141,5 +132,4 @@ export class FollowController {
             );
         }
     }
-
 }

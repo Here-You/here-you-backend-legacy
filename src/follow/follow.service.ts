@@ -37,9 +37,10 @@ export class FollowService {
 
     // [2] 언팔로우
     async deleteFollow(userId: number, followingId:number): Promise<UserFollowingEntity> {
-        const userEntity = await this.userService.findUserById(userId);
-        const followingEntity = await this.userService.findUserById(followingId);
-        const followEntity : UserFollowingEntity = await UserFollowingEntity.findOneOrFail({ where: { user : userEntity, followUser : followingEntity }});
+        console.log('언팔로우 서비스 호출');
+        const followEntity : UserFollowingEntity = await UserFollowingEntity.findOneOrFail({ where:
+                { user : {id : userId}, followUser : {id : followingId}}
+        });
 
         try{
             return followEntity.softRemove();
