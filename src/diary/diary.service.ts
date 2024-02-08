@@ -16,7 +16,7 @@ export class DiaryService {
   async createDiary(scheduleId, diaryInfo: PostDiaryDto) {
     const diary = await DiaryEntity.createDiary(scheduleId, diaryInfo);
     const diaryImg = await this.getDiaryImgUrl(diary, diaryInfo.fileName);
-    console.log(diary);
+    await DiaryImageEntity.createDiaryImg(diary, diaryImg);
     return response(BaseResponse.DIARY_CREATED);
   }
 
@@ -24,16 +24,17 @@ export class DiaryService {
   async updateDiary(diaryId, diaryInfo: PostDiaryDto) {
     const diary = await DiaryEntity.updateDiary(diaryId, diaryInfo);
     const diaryImg = await this.getDiaryImgUrl(diary, diaryInfo.fileName);
+    await DiaryImageEntity.updateDiaryImg(diary, diaryImg);
     return response(BaseResponse.DIARY_CREATED);
   }
 
-  /*일지 사진 S3에 업로드 후 url 받기*/
+  /*일지 사진 S3에 업로드 후 url 받기- 생성 */
   async getDiaryImgUrl(diary, fileName: string) {
     const imageKey = `diary/${this.s3UtilService.generateRandomImageKey(
       fileName,
     )}`;
     await this.s3UtilService.putObjectFromBase64(imageKey, fileName);
-    await DiaryImageEntity.createDiaryImg(diary, imageKey);
+    return imageKey;
   }
 
   /*캘린더에서 일지 불러오기*/

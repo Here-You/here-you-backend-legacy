@@ -43,6 +43,16 @@ export class DiaryImageEntity extends BaseEntity {
     await diaryImg.save();
   }
 
+  //사진 URL 수정
+  static async updateDiaryImg(diary: DiaryEntity, ImgUrl: string) {
+    const diaryImg = await DiaryImageEntity.findOne({
+      where: { diary: { id: diary.id } },
+    });
+    diaryImg.imageUrl = ImgUrl;
+    diaryImg.diary = diary;
+    await diaryImg.save();
+  }
+
   //사진 URL 불러오기
   static async findExistImgUrl(diary: DiaryEntity) {
     const imgUrl = await DiaryImageEntity.findOne({
