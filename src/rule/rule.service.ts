@@ -35,18 +35,17 @@ export class RuleService {
       return sub;
     });
 
-    // invitation 저장
+    // member 저장
     const inviterEntity = await UserEntity.findOneOrFail({ where: { id: userId } });
-    const invitations = await Promise.all(dto.invitedId.map(async invited => {
-      const invitation = new RuleMemberEntity();
+    let members = await Promise.all(dto.membersId.map(async (memberId) : Promise<RuleMemberEntity> => {
+      const ruleMemberEntity = new RuleMemberEntity();
 
-      const invitedEntity = await UserEntity.findOneOrFail({ where: { id: invited } });
-      invitation.rule = main;
-      invitation.member = invitedEntity;
-      invitation.inviter = inviterEntity;
+      const userEntity = await UserEntity.findOneOrFail({ where: { id: memberId } });
+      ruleMemberEntity.rule = main;
+      ruleMemberEntity.member = userEntity;
 
-      await invitation.save();
-      return invitation;
+      await ruleMemberEntity.save();
+      return ruleMemberEntity;
     }));
 
     return main.id;
