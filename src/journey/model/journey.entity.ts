@@ -91,7 +91,7 @@ export class JourneyEntity extends BaseEntity {
         endDate: createJourneyDto.endDate,
       },
     });
-    console.log(journey.startDate);
+
     return journey;
   }
 
