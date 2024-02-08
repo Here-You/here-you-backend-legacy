@@ -152,7 +152,7 @@ export class UserService {
     try {
       const userFollowingEntity = await UserFollowingEntity.find({
         where: { user: { id: userId } },
-        relations: ['user'],
+        relations: ['followUser'],
       });
       return userFollowingEntity;
     } catch (error) {
