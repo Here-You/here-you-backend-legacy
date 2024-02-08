@@ -27,11 +27,10 @@ export class DiaryService {
 
   /*일지 사진 S3에 업로드 후 url 받기*/
   async getDiaryImgUrl(diary, fileName: string) {
-    const imageKey = this.s3UtilService.generateRandomImageKey(fileName);
-    // await this.s3UtilService.putObjectFromBase64(imageKey, fileName);
-    const imageUrl = await this.s3UtilService.getImageUrl(imageKey);
-    console.log('url', imageUrl);
-    await DiaryImageEntity.createDiaryImg(diary, imageUrl);
-    return imageUrl;
+    const imageKey = `diary/${this.s3UtilService.generateRandomImageKey(
+      fileName,
+    )}`;
+    await this.s3UtilService.putObjectFromBase64(imageKey, fileName);
+    await DiaryImageEntity.createDiaryImg(diary, imageKey);
   }
 }
