@@ -22,10 +22,6 @@ export class MemberController {
   @Get('/:ruleId')
   @UseGuards(UserGuard)
   async getMember(@Req() req: Request, @Param('ruleId') ruleId : number) : Promise<ResponseDto<any>> {
-    // 현재 로그인한 사용자 ID
-    // const userId = req.user.id;
-    // const userId = 2;
-
     try {
         const memberList = await this.memberService.getMemberList(req.user.id, ruleId);
         return new ResponseDto(

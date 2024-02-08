@@ -1,21 +1,40 @@
 import { Injectable, HttpException } from '@nestjs/common';
-import { MemberListConverter } from './member.list.converter';
 import { MemberDto } from './dto/member.dto';
 import { RuleInvitationEntity } from 'src/rule/domain/rule.invitation.entity';
 import { RuleService } from 'src/rule/rule.service';
+import { UserService } from "../user/user.service";
+import { UserEntity } from "../user/user.entity";
+import {RuleMainEntity} from "../rule/domain/rule.main.entity";
 
 @Injectable()
 export class MemberService {
     constructor(
-        private memberListConverter: MemberListConverter,
         private ruleService: RuleService,
+        private userService : UserService,
     ) {}
 
     // [1] 여행 규칙 멤버 리스트 조회
     async getMemberList(userId: number, ruleId: number): Promise<MemberDto[]> {
-        const memberDto: MemberDto[] = await this.memberListConverter.toDto(userId, ruleId);
 
-        return memberDto;
+        const ruleEntity = await RuleMainEntity.findOne({
+            where : {id : ruleId},
+            relations : ['invitations']
+        });
+
+        const invitations = ruleEntity.invitations;
+        let members : UserEntity[] = await Promise.all(invitations.map(async (invitation) : Promise<UserEntity> => {
+            const memberEntity : UserEntity = invitation.invited;
+
+            return memberEntity;
+        }));
+
+        // 팀장 정보 추가
+        const inviter = await RuleInvitationEntity.findOne({
+            where : {invited : {id : userId}},
+            relations : ['inviter']
+        });
+        members.push();
+
     }
 
     // [2] 여행 규칙 멤버 초대
