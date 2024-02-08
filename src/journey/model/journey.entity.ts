@@ -79,6 +79,14 @@ export class JourneyEntity extends BaseEntity {
     return journey;
   }
 
+  static async findExistJourneyByUserId(userId) {
+    const journeys: JourneyEntity[] = await JourneyEntity.find({
+      where: { user: { id: userId } },
+    });
+
+    return journeys;
+  }
+
   static async findExistJourneyByDate(createJourneyDto) {
     const journey: JourneyEntity = await JourneyEntity.findOne({
       where: {

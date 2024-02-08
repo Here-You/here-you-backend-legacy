@@ -11,6 +11,8 @@ import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { CreateJourneyDto } from './dtos/create-journey.dto';
 import { DetailScheduleEntity } from 'src/detail-schedule/detail-schedule.entity';
 import { DiaryEntity } from 'src/diary/models/diary.entity';
+import { DiaryImageEntity } from 'src/diary/models/diary.image.entity';
+import { UserEntity } from 'src/user/user.entity';
 
 @Injectable()
 export class JourneyService {
@@ -52,10 +54,6 @@ export class JourneyService {
 
   async deleteJourney(journeyId: number) {
     const journey = await JourneyEntity.findExistJourney(journeyId);
-
-    if (!journey) {
-      throw new NotFoundException(BaseResponse.JOURNEY_NOT_FOUND);
-    }
     const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
       journey.id,
     );
@@ -78,23 +76,21 @@ export class JourneyService {
 
     //일지 지우기
     const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule.id);
-    await this.deleteDiaryRelations(diary);
+    if (diary) {
+      await DiaryEntity.deleteDiary(diary);
+    }
 
     await ScheduleEntity.deleteSchedule(deleteSchedule);
   }
 
-  async deleteDiaryRelations(diary) {}
+  async deleteDiaryRelations(diary) {
+    if (!diary) {
+      return; // 일지가 없으면 삭제할 필요 없음
+    }
+    const diaryImg = await DiaryImageEntity.findExistImgUrl(diary);
 
-  // async formatDateString(dateString) {
-  //   // 주어진 문자열을 파싱하여 Date 객체로 변환
-  //   const dateObject = new Date(dateString);
+    await DiaryImageEntity.deleteDiaryImg(diaryImg);
 
-  //   // Date 객체에서 년, 월, 일을 추출
-  //   const year = dateObject.getFullYear();
-  //   const month = String(dateObject.getMonth() + 1).padStart(2, '0');
-  //   const day = String(dateObject.getDate()).padStart(2, '0');
-
-  //   // YYYY-MM-DD 형식의 문자열로 변환하여 반환
-  //   return new Date(`${year}-${month}-${day}`);
-  // }
+    await DiaryEntity.deleteDiary(diary);
+  }
 }

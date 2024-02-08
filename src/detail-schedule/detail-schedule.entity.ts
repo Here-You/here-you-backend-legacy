@@ -25,7 +25,9 @@ export class DetailScheduleEntity extends BaseEntity {
   @Column({ default: false })
   isDone: boolean;
 
-  @ManyToOne(() => ScheduleEntity, (schedule) => schedule.detailSchedules)
+  @ManyToOne(() => ScheduleEntity, (schedule) => schedule.detailSchedules, {
+    onDelete: 'CASCADE',
+  })
   schedule: ScheduleEntity;
 
   @CreateDateColumn()
