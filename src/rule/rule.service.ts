@@ -3,7 +3,7 @@ import { CreateRuleDto } from './dto/create-rule.dto';
 import { RuleConverter } from './rule.converter';
 import { RuleMainEntity } from './domain/rule.main.entity';
 import { RuleSubEntity } from './domain/rule.sub.entity';
-import { RuleInvitationEntity } from './domain/rule.invitation.entity';
+import { RuleMemberEntity } from './domain/rule.member.entity';
 import { DetailPageDto } from './dto/detail-page.dto';
 import { DetailRuleDto } from './dto/detail-rule.dto';
 import { DetailMemberDto } from './dto/detail-member.dto';
@@ -38,11 +38,11 @@ export class RuleService {
     // invitation 저장
     const inviterEntity = await UserEntity.findOneOrFail({ where: { id: userId } });
     const invitations = await Promise.all(dto.invitedId.map(async invited => {
-      const invitation = new RuleInvitationEntity();
+      const invitation = new RuleMemberEntity();
 
       const invitedEntity = await UserEntity.findOneOrFail({ where: { id: invited } });
       invitation.rule = main;
-      invitation.invited = invitedEntity;
+      invitation.member = invitedEntity;
       invitation.inviter = inviterEntity;
 
       await invitation.save();
@@ -67,8 +67,8 @@ export class RuleService {
 
   // [3] 여행 규칙 나가기
   // -1) 초대 받은 팀원 -> 초대 삭제
-  async deleteInvitation(ruleId: number, userId: number): Promise<RuleInvitationEntity> {
-    const invitation : RuleInvitationEntity = await RuleInvitationEntity.findInvitationByRuleAndUser(ruleId, userId);
+  async deleteInvitation(ruleId: number, userId: number): Promise<RuleMemberEntity> {
+    const invitation : RuleMemberEntity = await RuleMemberEntity.findInvitationByRuleAndUser(ruleId, userId);
 
     return invitation.softRemove();
   }
@@ -76,7 +76,7 @@ export class RuleService {
   // [member] 초대 받은 멤버 리스트 생성
   async getInvitationList(ruleId: number) {
     try {
-      const invitationEntity = await RuleInvitationEntity.find({
+      const invitationEntity = await RuleMemberEntity.find({
         where: { id : ruleId },
         relations: ['invited'],
       });
@@ -88,10 +88,10 @@ export class RuleService {
 
   // [member] 멤버인지 확인
   async checkMember(rule: RuleMainEntity, targetUserId: number): Promise<boolean> {
-    const invitedArray = rule.invitations || [];
+    const invitedArray = rule.members || [];
 
     const isMember = invitedArray.some(
-      (invitations) => invitations.invited.id  === targetUserId,
+      (invitations) => invitations.member.id  === targetUserId,
     );
 
     console.log('테스트 결과 : ', isMember);

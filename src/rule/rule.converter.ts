@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RuleMainEntity } from './domain/rule.main.entity';
 import { RuleSubEntity } from './domain/rule.sub.entity';
-import { RuleInvitationEntity } from './domain/rule.invitation.entity';
+import { RuleMemberEntity } from './domain/rule.member.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { CreateRuleDto } from './dto/create-rule.dto';
 import { DetailPageDto } from './dto/detail-page.dto';
@@ -19,7 +19,7 @@ import { MetaToFrontDto } from './dto/meta-to-front.dto';
 @Injectable()
 export class RuleConverter {
 
-    async toEntity(dto: CreateRuleDto, userId:number): Promise<{ main: RuleMainEntity, rules: RuleSubEntity[], invitations: RuleInvitationEntity[] }> {
+    async toEntity(dto: CreateRuleDto, userId:number): Promise<{ main: RuleMainEntity, rules: RuleSubEntity[], invitations: RuleMemberEntity[] }> {
         // main 저장
         const main = new RuleMainEntity();
         main.mainTitle = dto.mainTitle;
@@ -36,11 +36,11 @@ export class RuleConverter {
         // invitation 저장
         const inviterEntity = await UserEntity.findOneOrFail({ where: { id: userId } });
         const invitations = await Promise.all(dto.invitedId.map(async invited => {
-            const invitation = new RuleInvitationEntity();
+            const invitation = new RuleMemberEntity();
 
             const invitedEntity = await UserEntity.findOneOrFail({ where: { id: invited } });
             invitation.rule = main;
-            invitation.invited = invitedEntity;
+            invitation.member = invitedEntity;
             invitation.inviter = inviterEntity;
 
             return invitation;
@@ -76,12 +76,12 @@ export class RuleConverter {
         });
 
         // [2] detailMemberDto
-        const ruleInvitation : RuleInvitationEntity[] = ruleMain.invitations;
+        const ruleInvitation : RuleMemberEntity[] = ruleMain.members;
         detailMemberDto.memberPairs = await Promise.all(ruleInvitation.map(async (invitation) => {
             const memberPairDto: MemberPairDto = new MemberPairDto();
             const id = invitation.id;
 
-            const { memberId, name} = await RuleInvitationEntity.findNameById(id);
+            const { memberId, name} = await RuleMemberEntity.findNameById(id);
             memberPairDto.memberId = memberId;
             memberPairDto.name = name;
 

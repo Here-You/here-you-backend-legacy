@@ -3,7 +3,7 @@ import { UserEntity } from 'src/user/user.entity';
 import { MemberDto } from './dto/member.dto';
 import { UserService } from 'src/user/user.service';
 import { RuleService } from 'src/rule/rule.service';
-import { RuleInvitationEntity } from 'src/rule/domain/rule.invitation.entity';
+import { RuleMemberEntity } from 'src/rule/domain/rule.member.entity';
 
 @Injectable()
 export class MemberListConverter {
@@ -18,13 +18,13 @@ export class MemberListConverter {
     async toDto(userId: number,ruleId: number): Promise<MemberDto[]> {
 
         // 여행 초대 객체 생성
-        const invitations : RuleInvitationEntity[] = await this.ruleService.getInvitationList(ruleId);
+        const invitations : RuleMemberEntity[] = await this.ruleService.getInvitationList(ruleId);
 
         // 여행 참여 멤버 정보 리스트 생성
         // -1. 팀원 멤버 (invited) 정보 추가
         const informs = await Promise.all(invitations.map(async (invitaiton) => {
             const memberDto : MemberDto = new MemberDto();
-            const invited : UserEntity = invitaiton.invited; 
+            const invited : UserEntity = invitaiton.member;
 
             memberDto.memberId = invited.id;
             memberDto.name = invited.name;

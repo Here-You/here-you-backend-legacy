@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { MemberListConverter } from './member.list.converter';
 import { MemberDto } from './dto/member.dto';
-import { RuleInvitationEntity } from 'src/rule/domain/rule.invitation.entity';
+import { RuleMemberEntity } from 'src/rule/domain/rule.member.entity';
 import { RuleService } from 'src/rule/rule.service';
 
 @Injectable()
@@ -19,10 +19,10 @@ export class MemberService {
     }
 
     // [2] 여행 규칙 멤버 초대
-    async createInvitation(ruleId: number, userId: number, invitedId: number): Promise<RuleInvitationEntity> {
+    async createInvitation(ruleId: number, userId: number, invitedId: number): Promise<RuleMemberEntity> {
   
         // invitation 객체 생성
-        const invitation = RuleInvitationEntity.create({
+        const invitation = RuleMemberEntity.create({
             rule: { id : ruleId },
             inviter: { id : userId},
             invited: { id : invitedId},
@@ -31,8 +31,8 @@ export class MemberService {
     }
     
     // [3] 여행 규칙 멤버 삭제
-    async deleteMember(ruleId: number, memberId: number): Promise<RuleInvitationEntity> {
-        const invitation : RuleInvitationEntity = await RuleInvitationEntity.findInvitationByRuleId(ruleId, memberId);
+    async deleteMember(ruleId: number, memberId: number): Promise<RuleMemberEntity> {
+        const invitation : RuleMemberEntity = await RuleMemberEntity.findInvitationByRuleId(ruleId, memberId);
 
         return invitation.softRemove();
     }

@@ -8,7 +8,7 @@ import { BaseEntity,
   DeleteDateColumn, 
 } from 'typeorm';
 import { RuleSubEntity } from './rule.sub.entity';
-import { RuleInvitationEntity } from './rule.invitation.entity'
+import { RuleMemberEntity } from './rule.member.entity'
 import { CommentEntity } from 'src/comment/domain/comment.entity';
 
 @Entity()
@@ -31,8 +31,8 @@ export class RuleMainEntity extends BaseEntity {
   @OneToMany(() => RuleSubEntity, ruleSub => ruleSub.main)
   rules: RuleSubEntity[];
 
-  @OneToMany(() => RuleInvitationEntity, ruleInvitation => ruleInvitation.rule)
-  invitations: RuleInvitationEntity[];
+  @OneToMany(() => RuleMemberEntity, ruleInvitation => ruleInvitation.rule)
+  members: RuleMemberEntity[];
 
   @OneToMany(() => CommentEntity, comment => comment.rule)
   comments: CommentEntity[];

@@ -13,7 +13,7 @@ import { UserProfileImageEntity } from './user.profile.image.entity';
 import { UserFollowingEntity } from './user.following.entity';
 import { SignatureEntity } from '../signature/domain/signature.entity';
 import { SignatureLikeEntity } from '../signature/domain/signature.like.entity';
-import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
+import { RuleMemberEntity } from '../rule/domain/rule.member.entity';
 import { CommentEntity } from 'src/comment/domain/comment.entity';
 import { JourneyEntity } from 'src/journey/model/journey.entity';
 import { NotFoundException } from '@nestjs/common';
@@ -72,11 +72,11 @@ export class UserEntity extends BaseEntity {
   )
   likes: SignatureLikeEntity[];
 
-  @OneToMany(() => RuleInvitationEntity, (invitation) => invitation.inviter)
-  invitationsSent: RuleInvitationEntity[];
+  @OneToMany(() => RuleMemberEntity, (invitation) => invitation.inviter)
+  invitationsSent: RuleMemberEntity[];
 
-  @OneToMany(() => RuleInvitationEntity, (invitation) => invitation.invited)
-  invitationsReceived: RuleInvitationEntity[];
+  @OneToMany(() => RuleMemberEntity, (invitation) => invitation.member)
+  ruleParticipate: RuleMemberEntity[];
 
   @OneToMany(() => CommentEntity, (comment) => comment.user)
   comments: CommentEntity[];

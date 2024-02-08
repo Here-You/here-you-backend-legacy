@@ -11,21 +11,17 @@ import { UserEntity } from 'src/user/user.entity';
 import { RuleMainEntity } from './rule.main.entity'
 
 @Entity()
-export class RuleInvitationEntity extends BaseEntity {
+export class RuleMemberEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => RuleMainEntity, ruleMain => ruleMain.invitations)
+  @ManyToOne(() => RuleMainEntity, ruleMain => ruleMain.members)
   @JoinColumn({name: 'rule_id'})
   rule: RuleMainEntity;
 
-  @ManyToOne(() => UserEntity, user => user.invitationsSent)  @JoinColumn({name: 'inviter_id'})
-  @JoinColumn({name: 'inviter_id'})
-  inviter: UserEntity;
-
-  @ManyToOne(() => UserEntity, user => user.invitationsReceived)
-  @JoinColumn({name: 'invited_id'})
-  invited: UserEntity;
+  @ManyToOne(() => UserEntity, user => user.ruleParticipate)
+  @JoinColumn({name: 'member_id'})
+  member: UserEntity;
 
   @CreateDateColumn()
   created: Date;
@@ -46,11 +42,11 @@ export class RuleInvitationEntity extends BaseEntity {
     return { memberId, name };
   }
 
-  static async findInvitationByRuleId(ruleId: number, memberId: number): Promise<RuleInvitationEntity> {
+  static async findInvitationByRuleId(ruleId: number, memberId: number): Promise<RuleMemberEntity> {
     try {
-      const invitation = await RuleInvitationEntity.findOne({
+      const invitation = await RuleMemberEntity.findOne({
         where: [{ rule : { id : ruleId }},
-          { invited : { id : memberId }}]
+          { member : { id : memberId }}]
       });
       console.log('invitation 조회 결과 : ', invitation);
       return invitation;
@@ -60,11 +56,11 @@ export class RuleInvitationEntity extends BaseEntity {
     }
   }
 
-  static async findInvitationByRuleAndUser(ruleId: number, userId: number) : Promise<RuleInvitationEntity> {
+  static async findInvitationByRuleAndUser(ruleId: number, userId: number) : Promise<RuleMemberEntity> {
     try {
-      const invitation = await RuleInvitationEntity.findOne({
+      const invitation = await RuleMemberEntity.findOne({
         where: [{rule: {id : ruleId}},
-          {invited: {id : userId}}]
+          {member: {id : userId}}]
       });
       console.log('invitation 조회 결과 : ', invitation);
       return invitation;
