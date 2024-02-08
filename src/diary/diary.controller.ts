@@ -33,7 +33,7 @@ export class DiaryController {
     description: '성공 ',
   })
   @Put('update/:diaryId')
-  async updateJourney(
+  async updateDiary(
     @Param('diaryId') diaryId: number,
     @Body() body: PostDiaryDto,
   ) {
@@ -41,21 +41,17 @@ export class DiaryController {
     return result;
   }
 
-  /*일지 사진 url 발급 */
-  /*일지 사진 업로드*/
+  /*일지 불러오기-캘린더*/
   @ApiOperation({
-    summary: '일지 사진 업로드 위한 presigned Url 발급',
-    description: '일지를 작성하고 저장한 상태',
+    summary: '일지 불러오기 - 캘린더 ',
+    description: '일지가 존재하는 경우 id,date,내용',
   })
   @ApiOkResponse({
     description: '성공 ',
   })
-  @Post('image-url/:diaryId')
-  async getDiaryImageUrl(
-    @Param('diaryId') diaryId: number,
-    @Body('fileName') fileName: string,
-  ) {
-    const result = await this.diaryService.getDiaryImgUrl(diaryId, fileName);
+  @Get('get/:scheduleId')
+  async getDiary(@Param('scheduleId') scheduleId: number) {
+    const result = await this.diaryService.getDiary(scheduleId);
     return result;
   }
 }
