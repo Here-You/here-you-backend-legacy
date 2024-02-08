@@ -1,4 +1,4 @@
-import { Controller, Post, Req, UseGuards, Param, Delete, Get } from '@nestjs/common';
+import {Controller, Post, Req, UseGuards, Param, Delete, Get, Patch} from '@nestjs/common';
 import { FollowService } from './follow.service';
 import { ResponseCode } from '../response/response-code.enum';
 import { ResponseDto } from '../response/response.dto';
@@ -7,6 +7,7 @@ import { UserService } from 'src/user/user.service';
 import { UserSearchDto} from "../user/user.search.dto";
 import { UserGuard } from '../user/user.guard';
 import { Request } from 'express';
+import {UserFollowingEntity} from "../user/user.following.entity";
 
 @Controller('mate/search')
 export class FollowController {
@@ -16,80 +17,52 @@ export class FollowController {
   ) {}
 
   // [1] 팔로우
-  @Post('/:followingId')
+  @Patch('/:followingId')
   @UseGuards(UserGuard)
   async createFollow(@Req() req: Request, @Param('followingId') followingId : number): Promise<ResponseDto<any>> {
-    // 현재 사용자 ID
-    // const userId = req.user.id;
-    // const userId = 1;
 
-    // 이미 팔로우하는 사용자인지 검증
-    const user : UserEntity = await this.userService.findUserById(req.user.id);
-    const isAlreadyFollow = this.userService.checkIfFollowing(user, followingId);
+      try {
+          const user: UserEntity = await this.userService.findUserById(req.user.id);
+          console.log('현재 로그인한 사용자 : ', user.id);
+          const following: UserEntity = await this.userService.findUserById(followingId);
+          console.log('팔로우 대상 사용자 : ', following.id);
 
-    if (isAlreadyFollow) {
-        return new ResponseDto(
-            ResponseCode.IS_ALREADY_FOLLOW,
-            false,
-            "이미 팔로우하는 사용자입니다",
-            null
-        );
-    }
+          // 팔로우 관계 확인
+          const checkIfFollowing = this.userService.checkIfFollowing(user, followingId);
+          console.log('checkIfFollowing : ', checkIfFollowing);
 
-    try {
-        await this.followService.createFollow(req.user.id, followingId);
-        return new ResponseDto(
-          ResponseCode.FOLLOW_CREATED,
-          true,
-          "팔로우 성공",
-          null
-        );
-      } catch (error) {
-        return new ResponseDto(
-          ResponseCode.FOLLOW_CREATION_FAIL,
-          false,
-          "팔로우 실패",
-          null
-        );
-      }
-    }
-
-  // [2] 언팔로우
-  @Delete('/:followId')
-  @UseGuards(UserGuard)
-  async deleteFollow(@Req() req: Request, @Param('followId') followId: number): Promise<ResponseDto<any>> {
-    // 현재 사용자 ID
-    // const userId = req.user.id;
-    // const userId = 1;
-
-    try {
-        const result = await this.followService.deleteFollow(followId);
-        if (result) {
+          // 이미 팔로우 한 사이, 언팔로우
+          if (!checkIfFollowing) {
+              console.log('언팔로우 service 호출');
+              await this.followService.deleteFollow(req.user.id, followingId);
+              return new ResponseDto(
+                  ResponseCode.UNFOLLOW_SUCCESS,
+                  true,
+                  "언팔로우 성공",
+                  null
+              );
+          } else {
+              // 팔로우
+              console.log('팔로우 service 호출');
+              await this.followService.createFollow(req.user.id, followingId);
+              return new ResponseDto(
+                  ResponseCode.FOLLOW_CREATED,
+                  true,
+                  "팔로우 성공",
+                  null
+              );
+          }
+      } catch(error) {
           return new ResponseDto(
-            ResponseCode.UNFOLLOW_SUCCESS,
-            true,
-            "언팔로우 성공",
-            null
+              ResponseCode.UNFOLLOW_FAIL,
+              false,
+              "처리 실패",
+              null
           );
-        } else {
-          return new ResponseDto(
-            ResponseCode.UNFOLLOW_FAIL,
-            false,
-            "언팔로우 실패",
-            null
-          );
-        }
-      } catch (error) {
-        return new ResponseDto(
-          ResponseCode.UNFOLLOW_FAIL,
-          false,
-          "언팔로우 실패",
-          null
-        );
       }
-    }
+  }
 
-    // [3] 팔로우 리스트 조회
+    // [2] 팔로우 리스트 조회
     @Get('/followList')
     @UseGuards(UserGuard)
     async getFollowList(@Req() req: Request): Promise<ResponseDto<any>> {
