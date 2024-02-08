@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsEnum } from 'class-validator';
 
 export class PostDiaryDto {
   @IsString()

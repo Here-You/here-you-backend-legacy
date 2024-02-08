@@ -13,7 +13,6 @@ import {
   Between,
 } from 'typeorm';
 
-import { CreateJourneyDto } from '../dtos/create-journey.dto';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { MonthInfoDto } from 'src/map/month-info.dto';
@@ -47,6 +46,7 @@ export class JourneyEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
+  //여정 생성하기
   static async createJourney(user, createJourneyDto) {
     try {
       const journey: JourneyEntity = new JourneyEntity();
@@ -61,6 +61,11 @@ export class JourneyEntity extends BaseEntity {
     }
   }
 
+  //여정 삭제하기
+  static async deleteJourney(journey) {
+    return await JourneyEntity.remove(journey);
+  }
+
   //여정 조회
   static async findExistJourney(journeyId: number) {
     const journey: JourneyEntity = await JourneyEntity.findOne({
@@ -68,6 +73,25 @@ export class JourneyEntity extends BaseEntity {
         id: journeyId,
       },
     });
+    return journey;
+  }
+
+  static async findExistJourneyByUserId(userId) {
+    const journeys: JourneyEntity[] = await JourneyEntity.find({
+      where: { user: { id: userId } },
+    });
+
+    return journeys;
+  }
+
+  static async findExistJourneyByDate(createJourneyDto) {
+    const journey: JourneyEntity = await JourneyEntity.findOne({
+      where: {
+        startDate: createJourneyDto.startDate,
+        endDate: createJourneyDto.endDate,
+      },
+    });
+    console.log(journey.startDate);
     return journey;
   }
 

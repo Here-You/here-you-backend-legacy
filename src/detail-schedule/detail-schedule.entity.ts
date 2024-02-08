@@ -25,7 +25,9 @@ export class DetailScheduleEntity extends BaseEntity {
   @Column({ default: false })
   isDone: boolean;
 
-  @ManyToOne(() => ScheduleEntity, (schedule) => schedule.detailSchedules)
+  @ManyToOne(() => ScheduleEntity, (schedule) => schedule.detailSchedules, {
+    onDelete: 'CASCADE',
+  })
   schedule: ScheduleEntity;
 
   @CreateDateColumn()
@@ -55,7 +57,7 @@ export class DetailScheduleEntity extends BaseEntity {
   }
   //세부 일정 삭제하기
   static async deleteDetailSchedule(detailSchedule) {
-    return await DetailScheduleEntity.softRemove(detailSchedule);
+    return await DetailScheduleEntity.remove(detailSchedule);
   }
 
   static async findExistDetail(detailId: number) {

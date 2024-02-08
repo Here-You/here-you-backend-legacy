@@ -1,15 +1,28 @@
 // journey.service.ts
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { JourneyEntity } from './model/journey.entity';
 import { errResponse, response } from 'src/response/response';
 import { BaseResponse } from 'src/response/response.status';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { CreateJourneyDto } from './dtos/create-journey.dto';
+import { DetailScheduleEntity } from 'src/detail-schedule/detail-schedule.entity';
+import { DiaryEntity } from 'src/diary/models/diary.entity';
+import { DiaryImageEntity } from 'src/diary/models/diary.image.entity';
 
 @Injectable()
 export class JourneyService {
   //여정 생성하기 - 일정, 일지 함께 생성
   async createJourney(user, createJourneyDto: CreateJourneyDto) {
+    const existJourney = await JourneyEntity.findExistJourneyByDate(
+      createJourneyDto,
+    );
+    if (existJourney) {
+      return errResponse(BaseResponse.JOURNEY_DUPLICATION);
+    }
     //여정 제목, 날짜 저장하기
     const journey = await JourneyEntity.createJourney(user, createJourneyDto);
 
@@ -27,5 +40,50 @@ export class JourneyService {
     }
 
     return errResponse(BaseResponse.JOURNEY_CREATED);
+  }
+
+  //여정 삭제하기 - 일정, 일지,
+
+  async deleteJourney(journeyId: number) {
+    const journey = await JourneyEntity.findExistJourney(journeyId);
+    const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+      journey.id,
+    );
+    for (const schedule of schedules) {
+      await this.deleteScheduleRelations(schedule);
+    }
+
+    const deleteJourney = await JourneyEntity.deleteJourney(journey);
+    return response(BaseResponse.DELETE_JOURNEY_SUCCESS);
+  }
+  async deleteScheduleRelations(schedule) {
+    const deleteSchedule = await ScheduleEntity.findExistSchedule(schedule.id);
+
+    //세부 일정 지우기
+    const detailSchedules =
+      await DetailScheduleEntity.findExistDetailByScheduleId(schedule);
+    for (const detailSchedule of detailSchedules) {
+      await DetailScheduleEntity.deleteDetailSchedule(detailSchedule);
+    }
+
+    //일정 지우기
+    const diary = await DiaryEntity.findExistDiaryByScheduleId(schedule.id);
+    if (diary) {
+      await DiaryEntity.deleteDiary(diary);
+    }
+
+    await ScheduleEntity.deleteSchedule(deleteSchedule);
+  }
+
+  //일지 지우기
+  async deleteDiaryRelations(diary) {
+    if (!diary) {
+      return; // 일지가 없으면 삭제할 필요 없음
+    }
+    const diaryImg = await DiaryImageEntity.findExistImgUrl(diary);
+
+    await DiaryImageEntity.deleteDiaryImg(diaryImg);
+
+    await DiaryEntity.deleteDiary(diary);
   }
 }

@@ -20,7 +20,9 @@ export class DiaryImageEntity extends BaseEntity {
   imageUrl: string;
 
   @JoinColumn()
-  @OneToOne(() => DiaryEntity, (diary) => diary.image)
+  @OneToOne(() => DiaryEntity, (diary) => diary.image, {
+    onDelete: 'CASCADE',
+  })
   diary: DiaryEntity;
 
   @CreateDateColumn()
@@ -47,5 +49,10 @@ export class DiaryImageEntity extends BaseEntity {
       where: { diary: { id: diary.id } },
     });
     return imgUrl;
+  }
+
+  //세부 일정 삭제하기
+  static async deleteDiaryImg(diaryImg) {
+    return await DiaryImageEntity.remove(diaryImg);
   }
 }

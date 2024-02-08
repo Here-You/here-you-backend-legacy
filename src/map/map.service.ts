@@ -25,12 +25,21 @@ export class MapService {
           journey.id,
           monthInfoDto,
         );
+        const locations = await this.getLocationList(schedules);
+        const images = await this.getDiaryImageList(schedules);
+        const mapInfo = schedules.map((schedule, index) => {
+          return {
+            location: locations[index],
+            diaryImage: images[index],
+          };
+        });
         const diaryCount = await this.getDiaryCount(schedules);
         return {
           journeyId: journey.id,
           title: journey.title,
           startDate: journey.startDate,
           endDate: journey.endDate,
+          map: mapInfo,
           diaryCount: diaryCount,
         };
       }),
@@ -184,6 +193,7 @@ export class MapService {
       await ScheduleEntity.findMonthlySchedule(journeyId, monthInfoDto);
     return schedules;
   }
+
   //여정에 작성한 일지 개수 가지고 오기
   async getDiaryCount(schedules) {
     let diaryCount = 0;

@@ -1,5 +1,20 @@
 export const BaseResponse = {
   /* 200 OK : 요청 성공 */
+  DELETE_JOURNEY_SUCCESS: {
+    success: true,
+    code: 200,
+    message: '여정을 삭제했습니다.',
+  },
+  DELETE_SCHEDULE_SUCCESS: {
+    success: true,
+    code: 200,
+    message: '일정을 삭제했습니다.',
+  },
+  DELETE_DIARY_SUCCESS: {
+    success: true,
+    code: 200,
+    message: '일지를 삭제했습니다.',
+  },
   DELETE_DETAIL_SCHEDULE_SUCCESS: {
     success: true,
     code: 200,
@@ -102,5 +117,11 @@ export const BaseResponse = {
     success: false,
     code: 404,
     message: '일지가 없습니다.',
+  },
+  /* 409 CONFLICT : Resource 의 현재 상태와 충돌. 보통 중복된 데이터 존재 */
+  JOURNEY_DUPLICATION: {
+    success: false,
+    code: 409,
+    message: '이미 여정이 있습니다.',
   },
 };
