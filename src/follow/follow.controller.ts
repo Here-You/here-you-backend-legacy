@@ -79,14 +79,10 @@ export class FollowController {
         }
     }
 
-    // [4] 팔로워 리스트 조회
+    // [3] 팔로워 리스트 조회
     @Get('/followerList')
     @UseGuards(UserGuard)
     async getFollowerList(@Req() req: Request): Promise<ResponseDto<any>> {
-        // 현재 로그인한 사용자 ID
-        // const userId = req.user.id;
-        // const userId = 1;
-
         try {
             const followerList = await this.followService.getFollowerList(req.user.id);
             return new ResponseDto(
@@ -105,16 +101,12 @@ export class FollowController {
         }
     }
 
-    // [5] 메이트 검색
+    // [4] 메이트 검색
     @Get('/:searchTerm')
     @UseGuards(UserGuard)
     async getSearchResult(
         @Req() req: Request,
         @Param('searchTerm') searchTerm: string): Promise<ResponseDto<any>> {
-        // 현재 로그인한 사용자 ID
-        // const userId = req.user.id;
-        // const userId = 1;
-
         try {
             const userSearchDto : UserSearchDto[] = await this.userService.getSearchResult(req.user.id, searchTerm)
             return new ResponseDto(

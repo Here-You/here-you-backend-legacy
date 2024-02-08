@@ -1,7 +1,5 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { UserFollowingEntity } from 'src/user/user.following.entity';
-import { FollowListConverter } from './follow.list.converter';
-import { FollowerListConverter } from './follower.list.converter';
 import { FollowDto } from './dto/follow.dto';
 import { UserEntity } from "../user/user.entity";
 import { UserService } from "../user/user.service";
@@ -9,8 +7,6 @@ import { UserService } from "../user/user.service";
 @Injectable()
 export class FollowService {
     constructor(
-        private readonly followListConverter: FollowListConverter,
-        private readonly followerListConverter: FollowerListConverter,
         private readonly userService: UserService,
     ) {}
 
@@ -52,15 +48,59 @@ export class FollowService {
 
     // [3] 팔로우 리스트 조회
     async getFollowList(userId: number): Promise<FollowDto[]> {
-        const followDto: FollowDto[] = await this.followListConverter.toDto(userId);
+        // 현재 로그인한 사용자
+        const user : UserEntity = await this.userService.findUserById(userId);
+        console.log('현재 로그인한 사용자 : ',user.id);
 
-        return followDto;
+        // 로그인한 사용자 = 팔로우하는 user
+        const follows : UserFollowingEntity[] = await this.userService.getFollowingList(userId);
+
+        // 팔로우 사용자들 정보 리스트
+        const informs = await Promise.all(follows.map(async (follow) => {
+            const followDto : FollowDto = new FollowDto();
+            const mateEntity : UserEntity = follow.followUser;
+            console.log('팔로우 사용자의 ID : ', mateEntity.id);
+
+            followDto.nickName = mateEntity.nickname;
+            followDto.mateId = mateEntity.id;
+            followDto.email = mateEntity.email;
+            followDto.introduction = mateEntity.introduction;
+            followDto.isFollowing = !!follow.id;
+            const image = await this.userService.getProfileImage(mateEntity.id);
+            followDto.image = image.imageKey;
+
+            return followDto;
+        }))
+
+        return informs;
     }
 
     // [4] 팔로워 리스트 조회
     async getFollowerList(userId: number): Promise<FollowDto[]> {
-        const followerDto: FollowDto[] = await this.followerListConverter.toDto(userId);
+        // 현재 로그인한 사용자
+        const user : UserEntity = await this.userService.findUserById(userId);
+        console.log('현재 로그인한 사용자 : ',user.id);
 
-        return followerDto;
+        // 로그인한 사용자 = 팔로워
+        const follows : UserFollowingEntity[] = await this.userService.getFollowerList(userId);
+
+        // 팔로워 사용자들 정보 리스트
+        const informs = await Promise.all(follows.map(async (follow) => {
+            const followDto : FollowDto = new FollowDto();
+            const mateEntity : UserEntity = follow.user;
+            console.log('팔로워 사용자 ID : ', mateEntity.id);
+
+            followDto.nickName = mateEntity.nickname;
+            followDto.mateId = mateEntity.id;
+            followDto.email = mateEntity.email;
+            followDto.introduction = mateEntity.introduction;
+            followDto.isFollowing = !!follow.id;
+            const image = await this.userService.getProfileImage(mateEntity.id);
+            followDto.image = image.imageKey;
+
+            return followDto;
+        }))
+
+        return informs;
     }
 }
