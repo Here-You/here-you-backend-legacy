@@ -71,6 +71,7 @@ export class UserService {
     try {
       const user: UserEntity = await UserEntity.findOne({
         where: { id: userId },
+        relations: [ 'profileImage' ],
       });
       return user;
     } catch (error) {

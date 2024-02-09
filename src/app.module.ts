@@ -19,6 +19,7 @@ import { FollowModule } from './follow/follow.module';
 import { MemberModule } from './member/member.module';
 import { SearchModule } from './search/search.module';
 import { MapModule } from './map/map.module';
+import { MateModule } from './mate/mate.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { MapModule } from './map/map.module';
     MemberModule,
     SearchModule,
     MapModule,
+    MateModule,
   ],
   controllers: [AppController],
   providers: [AppService],

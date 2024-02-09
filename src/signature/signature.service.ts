@@ -377,4 +377,16 @@ export class SignatureService {
     }
   }
 
+  async getMyRecentSignatures(userId: number) { // 가장 최신 시그니처 두 개 반환
+    // 1. 메이트 탐색의 기준이 될 장소 가져오기 = 사용자의 가장 최신 시그니처의 첫 번째 페이지 장소
+    return await SignatureEntity.find({
+      where: {
+        user:{ id: userId },
+      },
+      order: {
+        created: 'DESC' // 'created'를 내림차순으로 정렬해서 가장 최근꺼 가져오기
+      },
+      take: 2,          // 최신 시그니처 두 개 가져오기
+    });
+  }
 }
