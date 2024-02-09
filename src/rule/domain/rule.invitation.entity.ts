@@ -69,4 +69,15 @@ export class RuleInvitationEntity extends BaseEntity {
       throw error;
     }
   }
+
+  // [member] 멤버인지 확인
+  static async isAlreadyMember(ruleId: number, targetUserId: number) :Promise<boolean> {
+    const isAlreadyMember = await RuleInvitationEntity.findOne({
+      where : {member: {id : targetUserId}, rule: {id : ruleId}}
+    })
+    console.log(isAlreadyMember);
+
+    if (!!isAlreadyMember) return true;
+    else return false;
+  }
 }

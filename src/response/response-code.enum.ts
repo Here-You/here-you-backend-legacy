@@ -88,7 +88,9 @@ export enum ResponseCode {
   /* 404 NOT_FOUND : Resource 를 찾을 수 없음 */
   ACCOUNT_NOT_FOUND = 'NOT_FOUND',
   REFRESH_TOKEN_NOT_FOUND = 'NOT_FOUND',
+  USER_NOT_FOUND = 'NOT_FOUND',
   SIGNATURE_NOT_FOUND = 'NOT_FOUND',
+  INVITATION_NOT_FOUND = 'NOT_FOUND',
 
   /* 409 CONFLICT : Resource 의 현재 상태와 충돌. 보통 중복된 데이터 존재 */
   EMAIL_DUPLICATION = 'CONFLICT',

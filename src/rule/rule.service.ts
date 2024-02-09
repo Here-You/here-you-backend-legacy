@@ -1,21 +1,14 @@
 import {Injectable, HttpException, BadRequestException} from '@nestjs/common';
 import { CreateRuleDto } from './dto/create-rule.dto';
-import { RuleConverter } from './rule.converter';
 import { RuleMainEntity } from './domain/rule.main.entity';
 import { RuleSubEntity } from './domain/rule.sub.entity';
 import { RuleInvitationEntity } from './domain/rule.invitation.entity';
 import { DetailPageDto } from './dto/detail-page.dto';
-import { DetailRuleDto } from './dto/detail-rule.dto';
-import { DetailMemberDto } from './dto/detail-member.dto';
-import { DetailCommentDto } from './dto/detail-comment.dto';
 import { MetaToBackDto } from './dto/meta-to-back.dto';
 import { UserEntity} from "../user/user.entity";
 
 @Injectable()
 export class RuleService {
-  constructor(
-    private ruleConverter: RuleConverter,
-  ) {}
 
   // [1] 여행 규칙 생성
   async createRule(dto: CreateRuleDto, userId: number): Promise<number> {
@@ -23,9 +16,10 @@ export class RuleService {
     const main = new RuleMainEntity();
     main.mainTitle = dto.mainTitle;
     await main.save();
+    console.log(main);
 
     //rule 저장
-    const subs = dto.rulePairs.map(async pair => {
+    const subs = dto.rulePairs.map(async (pair) => {
       const sub = new RuleSubEntity();
       sub.ruleTitle = pair.ruleTitle;
       sub.ruleDetail = pair.ruleDetail;
@@ -34,10 +28,11 @@ export class RuleService {
       await sub.save();
       return sub;
     });
+    console.log(subs);
+
 
     // invitation 저장
-    const inviterEntity = await UserEntity.findOneOrFail({ where: { id: userId } });
-    let members = await Promise.all(dto.membersId.map(async (memberId) : Promise<RuleInvitationEntity> => {
+    const members = dto.membersId.map(async (memberId) : Promise<RuleInvitationEntity> => {
       const ruleInvitationEntity = new RuleInvitationEntity();
 
       const userEntity = await UserEntity.findOneOrFail({ where: { id: memberId } });
@@ -46,7 +41,15 @@ export class RuleService {
 
       await ruleInvitationEntity.save();
       return ruleInvitationEntity;
-    }));
+    });
+
+    // 여행 규칙 글 작성자 정보 저장
+    const writerEntity = new RuleInvitationEntity();
+
+    const inviterEntity = await UserEntity.findOneOrFail({ where: { id: userId } });
+    writerEntity.member = inviterEntity;
+    writerEntity.rule = main;
+    await writerEntity.save();
 
     return main.id;
   }
@@ -87,7 +90,7 @@ export class RuleService {
 
   // [member] 멤버인지 확인
   async checkMember(rule: RuleMainEntity, targetUserId: number): Promise<boolean> {
-    const invitedArray = rule.members || [];
+    const invitedArray = rule.invitations || [];
 
     const isMember = invitedArray.some(
       (invitations) => invitations.member.id  === targetUserId,
