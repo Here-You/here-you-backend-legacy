@@ -15,7 +15,6 @@ import { UserGuard } from '../user/user.guard';
 import { Request } from 'express';
 
 @Controller('signature')
-//@UseGuards(new AuthGuard())
 export class SignatureController {
   constructor(private readonly signatureService: SignatureService) {}
 
@@ -70,7 +69,7 @@ export class SignatureController {
 
   @Patch('/like/:signatureId') // 시그니처 좋아요 등록 or 취소
   @UseGuards(UserGuard)
-  async addSignatureLike(
+  async patchSignatureLike(
     @Param('signatureId') signatureId: number,
     @Req() req: Request
   ): Promise<ResponseDto<LikeSignatureDto>> {
