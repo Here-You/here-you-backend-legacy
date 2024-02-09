@@ -3,7 +3,6 @@ import { RuleService } from './rule.service';
 import { CreateRuleDto } from './dto/create-rule.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { ResponseDto } from '../response/response.dto';
-import { MetaToBackDto } from './dto/meta-to-back.dto';
 import { UserGuard } from '../user/user.guard';
 import { Request } from 'express';
 
@@ -36,12 +35,12 @@ export class RuleController {
     }
   }
 
-  // 여행 규칙 및 댓글 조회
+  // 여행 규칙 조회
   @Get('/detail/:ruleId')
   @UseGuards(UserGuard)
-  async getDetail(@Req() req: Request, @Param('ruleId') ruleId: number, @Body() metaToBackDto: MetaToBackDto): Promise<ResponseDto<any>> {
+  async getDetail(@Req() req: Request, @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
     
-    const result = await this.ruleService.getDetail(ruleId, metaToBackDto);
+    const result = await this.ruleService.getDetail(ruleId);
 
     if(!result){
       return new ResponseDto(

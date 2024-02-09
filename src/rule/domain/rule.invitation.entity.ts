@@ -42,11 +42,11 @@ export class RuleInvitationEntity extends BaseEntity {
     return { memberId, name };
   }
 
-  static async findInvitationByRuleId(ruleId: number, memberId: number): Promise<RuleInvitationEntity> {
+  static async findInvitationByRuleId(ruleId: number): Promise<RuleInvitationEntity[]> {
     try {
-      const invitation = await RuleInvitationEntity.findOne({
-        where: [{ rule : { id : ruleId }},
-          { member : { id : memberId }}]
+      const invitation = await RuleInvitationEntity.find({
+        where: {rule: {id : ruleId}},
+        relations: {member:true},
       });
       console.log('invitation 조회 결과 : ', invitation);
       return invitation;
