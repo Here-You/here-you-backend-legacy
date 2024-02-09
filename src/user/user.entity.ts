@@ -72,11 +72,8 @@ export class UserEntity extends BaseEntity {
   )
   likes: SignatureLikeEntity[];
 
-  @OneToMany(() => RuleInvitationEntity, (invitation) => invitation.inviter)
-  invitationsSent: RuleInvitationEntity[];
-
-  @OneToMany(() => RuleInvitationEntity, (invitation) => invitation.invited)
-  invitationsReceived: RuleInvitationEntity[];
+  @OneToMany(() => RuleInvitationEntity, (invitation) => invitation.member)
+  ruleParticipate: RuleInvitationEntity[];
 
   @OneToMany(() => CommentEntity, (comment) => comment.user)
   comments: CommentEntity[];

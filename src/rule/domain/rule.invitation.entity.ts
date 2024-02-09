@@ -19,13 +19,9 @@ export class RuleInvitationEntity extends BaseEntity {
   @JoinColumn({name: 'rule_id'})
   rule: RuleMainEntity;
 
-  @ManyToOne(() => UserEntity, user => user.invitationsSent)  @JoinColumn({name: 'inviter_id'})
-  @JoinColumn({name: 'inviter_id'})
-  inviter: UserEntity;
-
-  @ManyToOne(() => UserEntity, user => user.invitationsReceived)
-  @JoinColumn({name: 'invited_id'})
-  invited: UserEntity;
+  @ManyToOne(() => UserEntity, user => user.ruleParticipate)
+  @JoinColumn({name: 'member_id'})
+  member: UserEntity;
 
   @CreateDateColumn()
   created: Date;
@@ -50,7 +46,7 @@ export class RuleInvitationEntity extends BaseEntity {
     try {
       const invitation = await RuleInvitationEntity.findOne({
         where: [{ rule : { id : ruleId }},
-          { invited : { id : memberId }}]
+          { member : { id : memberId }}]
       });
       console.log('invitation 조회 결과 : ', invitation);
       return invitation;
@@ -64,7 +60,7 @@ export class RuleInvitationEntity extends BaseEntity {
     try {
       const invitation = await RuleInvitationEntity.findOne({
         where: [{rule: {id : ruleId}},
-          {invited: {id : userId}}]
+          {member: {id : userId}}]
       });
       console.log('invitation 조회 결과 : ', invitation);
       return invitation;
@@ -72,5 +68,16 @@ export class RuleInvitationEntity extends BaseEntity {
       console.log('Error on findInvitationByRuleId: ', error);
       throw error;
     }
+  }
+
+  // [member] 멤버인지 확인
+  static async isAlreadyMember(ruleId: number, targetUserId: number) :Promise<boolean> {
+    const isAlreadyMember = await RuleInvitationEntity.findOne({
+      where : {member: {id : targetUserId}, rule: {id : ruleId}}
+    })
+    console.log(isAlreadyMember);
+
+    if (!!isAlreadyMember) return true;
+    else return false;
   }
 }
