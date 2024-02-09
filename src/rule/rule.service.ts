@@ -3,23 +3,27 @@ import { CreateRuleDto } from './dto/create-rule.dto';
 import { RuleMainEntity } from './domain/rule.main.entity';
 import { RuleSubEntity } from './domain/rule.sub.entity';
 import { RuleInvitationEntity } from './domain/rule.invitation.entity';
-import { DetailPageDto } from './dto/detail-page.dto';
-import { MetaToBackDto } from './dto/meta-to-back.dto';
 import { UserEntity} from "../user/user.entity";
+import {DetailMemberDto, DetailRuleDto, RulePairDto} from "./dto/detail.rule.dto";
+import { S3UtilService} from "../utils/S3.service";
+import {UserService} from "../user/user.service";
 
 @Injectable()
 export class RuleService {
+  constructor(
+      private readonly s3Service: S3UtilService,
+  ) {}
 
   // [1] 여행 규칙 생성
   async createRule(dto: CreateRuleDto, userId: number): Promise<number> {
-    // main 저장
+    // -1) main 저장
     const main = new RuleMainEntity();
     main.mainTitle = dto.mainTitle;
     await main.save();
     console.log(main);
 
-    //rule 저장
-    const subs = dto.rulePairs.map(async (pair) => {
+    // -2) rule 저장
+    const subs = await Promise.all(dto.rulePairs.map(async (pair) => {
       const sub = new RuleSubEntity();
       sub.ruleTitle = pair.ruleTitle;
       sub.ruleDetail = pair.ruleDetail;
@@ -27,12 +31,12 @@ export class RuleService {
 
       await sub.save();
       return sub;
-    });
+    }));
     console.log(subs);
 
 
-    // invitation 저장
-    const members = dto.membersId.map(async (memberId) : Promise<RuleInvitationEntity> => {
+    // -3) invitation 저장
+    const members = await Promise.all(dto.membersId.map(async (memberId) : Promise<RuleInvitationEntity> => {
       const ruleInvitationEntity = new RuleInvitationEntity();
 
       const userEntity = await UserEntity.findOneOrFail({ where: { id: memberId } });
@@ -41,9 +45,9 @@ export class RuleService {
 
       await ruleInvitationEntity.save();
       return ruleInvitationEntity;
-    });
+    }));
 
-    // 여행 규칙 글 작성자 정보 저장
+    // -4) 여행 규칙 글 작성자 정보 저장
     const writerEntity = new RuleInvitationEntity();
 
     const inviterEntity = await UserEntity.findOneOrFail({ where: { id: userId } });
@@ -55,16 +59,43 @@ export class RuleService {
   }
 
   // [2] 여행 규칙 조회
-  async getDetail(ruleId : number, metaToBackDto : MetaToBackDto): Promise<DetailPageDto> {
-    try{
-      const detailPageDto : DetailPageDto = new DetailPageDto();
+  async getDetail(ruleId : number): Promise<DetailRuleDto> {
+    const dto = new DetailRuleDto();
+    const main: RuleMainEntity = await RuleMainEntity.findRuleById(ruleId);
+    const subs: RuleSubEntity[] = await RuleSubEntity.findSubById(ruleId);
+    const invitations: RuleInvitationEntity[] = await RuleInvitationEntity.findInvitationByRuleId(ruleId);
 
-      return detailPageDto;
-    }
-    catch(error){
-      console.error('Error on GetDetail : ', error);
-      throw new HttpException('Internal Server Error', 500);
-    }
+    // -1) 제목
+    dto.id = ruleId;
+    dto.mainTitle = main.mainTitle;
+
+    // -2) 규칙
+    dto.rulePairs = await Promise.all(subs.map(async(sub):Promise<RulePairDto> => {
+      const rulePair = new RulePairDto();
+      rulePair.id = sub.id;
+      rulePair.ruleTitle = sub.ruleTitle;
+      rulePair.ruleDetail = sub.ruleDetail;
+
+      return rulePair;
+    }))
+
+    // -3) 멤버 정보
+    dto.detailMembers = await Promise.all(invitations.map(async(invitation):Promise<DetailMemberDto> => {
+      const detailMember = new DetailMemberDto;
+      const memberEntity = invitation.member;
+      detailMember.id = memberEntity.id;
+      detailMember.name = memberEntity.name;
+
+      // 사용자 프로필 이미지
+      const image = memberEntity.profileImage;
+      if(image == null) detailMember.image = null;
+      else{
+        const userImageKey = image.imageKey;
+        detailMember.image = await this.s3Service.getImageUrl(userImageKey);
+      }
+      return detailMember;
+    }))
+    return dto;
   }
 
   // [3] 여행 규칙 나가기
@@ -86,17 +117,5 @@ export class RuleService {
     } catch (error) {
       console.log('Error on getInvitationList: ' + error);
     }
-  }
-
-  // [member] 멤버인지 확인
-  async checkMember(rule: RuleMainEntity, targetUserId: number): Promise<boolean> {
-    const invitedArray = rule.invitations || [];
-
-    const isMember = invitedArray.some(
-      (invitations) => invitations.member.id  === targetUserId,
-    );
-
-    console.log('테스트 결과 : ', isMember);
-    return isMember;
   }
 }

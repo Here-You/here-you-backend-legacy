@@ -33,4 +33,16 @@ export class RuleSubEntity extends BaseEntity {
 
   @DeleteDateColumn()
   deleted: Date;
+
+  static async findSubById(ruleId: number): Promise<RuleSubEntity[]> {
+    try {
+      const rule: RuleSubEntity[] = await RuleSubEntity.find({
+        where: {main: {id : ruleId}},
+      });
+      return rule;
+    } catch (error) {
+      console.log('Error on findRuleById: ', error);
+      throw error;
+    }
+  }
 }

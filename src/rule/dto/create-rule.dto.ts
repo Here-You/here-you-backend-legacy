@@ -1,6 +1,14 @@
 import { IsNotEmpty, IsNumber, IsString, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { RulePairDto} from "./rule-pair.dto";
+class RulePairDto {
+  @IsNotEmpty()
+  @IsString()
+  ruleTitle: string;
+
+  @IsNotEmpty()
+  @IsString()
+  ruleDetail: string;
+}
 
 export class CreateRuleDto {
   @IsNotEmpty()
