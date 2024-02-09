@@ -12,7 +12,53 @@ export class RuleController {
     private readonly ruleService: RuleService,
   ) {}
 
-  // 여행 규칙 생성
+  // [1] 여행 규칙 멤버 리스트 조회
+  @Get('member/:ruleId')
+  async getMemberList(@Param('ruleId') ruleId : number) : Promise<ResponseDto<any>> {
+    try {
+      const memberList = await this.ruleService.getMemberList(ruleId);
+      return new ResponseDto(
+          ResponseCode.GET_MEMBER_LIST_SUCCESS,
+          true,
+          "여행 규칙 멤버 리스트 불러오기 성공",
+          memberList
+      );
+    } catch (error) {
+      return new ResponseDto(
+          ResponseCode.GET_MEMBER_LIST_FAIL,
+          false,
+          "여행 규칙 멤버 리스트 불러오기 실패",
+          null
+      );
+    }
+  }
+
+  // [2] 여행 규칙 조회
+  @Get('/detail/:ruleId')
+  @UseGuards(UserGuard)
+  async getDetail(@Req() req: Request, @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
+
+    const result = await this.ruleService.getDetail(ruleId);
+
+    if(!result){
+      return new ResponseDto(
+          ResponseCode.GET_RULE_DETAIL_FAIL,
+          false,
+          "여행 규칙 및 댓글 조회 실패",
+          null
+      );
+    }
+    else{
+      return new ResponseDto(
+          ResponseCode.GET_RULE_DETAIL_SUCCESS,
+          true,
+          "여행 규칙 및 댓글 조회 성공",
+          result
+      );
+    }
+  }
+
+  // [3] 여행 규칙 생성
   @Post('/write')
   @UseGuards(UserGuard)
   async createRule(@Req() req: Request, @Body() createRuleDto: CreateRuleDto): Promise<ResponseDto<any>> {
@@ -32,31 +78,6 @@ export class RuleController {
         true,
         "여행 규칙 생성 성공",
         result);
-    }
-  }
-
-  // 여행 규칙 조회
-  @Get('/detail/:ruleId')
-  @UseGuards(UserGuard)
-  async getDetail(@Req() req: Request, @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
-    
-    const result = await this.ruleService.getDetail(ruleId);
-
-    if(!result){
-      return new ResponseDto(
-        ResponseCode.GET_RULE_DETAIL_FAIL,
-        false,
-        "여행 규칙 및 댓글 조회 실패",
-        null
-      );
-    }
-    else{
-      return new ResponseDto(
-        ResponseCode.GET_RULE_DETAIL_SUCCESS,
-        true,
-        "여행 규칙 및 댓글 조회 성공",
-        result
-      );
     }
   }
 
@@ -85,6 +106,5 @@ export class RuleController {
           null
       );
     }
-
   }
 }

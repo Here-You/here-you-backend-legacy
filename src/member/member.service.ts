@@ -1,5 +1,4 @@
 import {Injectable, NotFoundException} from '@nestjs/common';
-import { MemberDto } from './dto/member.dto';
 import { RuleInvitationEntity } from 'src/rule/domain/rule.invitation.entity';
 import { UserEntity } from "../user/user.entity";
 import { UserService} from "../user/user.service";
@@ -14,36 +13,6 @@ export class MemberService {
         private userService: UserService,
         private readonly s3Service: S3UtilService,
     ) {}
-
-    // [1] 여행 규칙 멤버 리스트 조회
-    async getMemberList(ruleId: number): Promise<MemberDto[]> {
-        const ruleEntity : RuleMainEntity = await RuleMainEntity.findOneOrFail({
-            where: {id : ruleId},
-            relations: ['invitations']
-        });
-
-        const members : MemberDto[] = await Promise.all(ruleEntity.invitations.map(async (invitation) : Promise<MemberDto> => {
-            const memberEntity : UserEntity = invitation.member;
-            const memberDto : MemberDto = new MemberDto();
-
-            memberDto.id = memberEntity.id;
-            memberDto.name = memberEntity.name;
-            memberDto.email = memberEntity.email;
-            memberDto.introduction = memberEntity.introduction;
-
-            // 사용자 프로필 이미지
-            const image = await this.userService.getProfileImage(memberEntity.id);
-            memberDto.image = image.imageKey;
-            if(image == null) memberDto.image = null;
-            else {
-                const userImageKey = image.imageKey;
-                memberDto.image = await this.s3Service.getImageUrl(userImageKey);
-            }
-            return memberDto;
-        }))
-
-        return members;
-    }
 
     // [2] 여행 규칙 멤버 초대
     async createInvitation(ruleId: number, invitedId: number): Promise<ResponseDto<any>> {

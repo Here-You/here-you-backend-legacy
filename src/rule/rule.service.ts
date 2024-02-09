@@ -6,12 +6,14 @@ import { RuleInvitationEntity } from './domain/rule.invitation.entity';
 import { UserEntity} from "../user/user.entity";
 import {DetailMemberDto, DetailRuleDto, RulePairDto} from "./dto/detail.rule.dto";
 import { S3UtilService} from "../utils/S3.service";
+import { GetMemberListDto} from "./dto/get-member-list.dto";
 import {UserService} from "../user/user.service";
 
 @Injectable()
 export class RuleService {
   constructor(
       private readonly s3Service: S3UtilService,
+      private readonly userService: UserService,
   ) {}
 
   // [1] 여행 규칙 생성
@@ -104,6 +106,37 @@ export class RuleService {
     const invitation : RuleInvitationEntity = await RuleInvitationEntity.findInvitationByRuleAndUser(ruleId, userId);
 
     return invitation.softRemove();
+  }
+
+  // [4] 여행 규칙 멤버 리스트 조회
+  async getMemberList(ruleId: number): Promise<GetMemberListDto[]> {
+    const invitationsList : RuleInvitationEntity[] = await RuleInvitationEntity.find({
+      where : {rule : {id: ruleId}},
+      relations : {member : true}
+    })
+
+    const membersList : GetMemberListDto[] = await Promise.all(invitationsList.map(async (invitation) : Promise<GetMemberListDto> => {
+      const memberEntity : UserEntity = invitation.member;
+      const memberDto : GetMemberListDto = new GetMemberListDto();
+
+      console.log('memberEntity : ', memberEntity);
+      memberDto.id = memberEntity.id;
+      memberDto.name = memberEntity.name;
+      memberDto.email = memberEntity.email;
+      memberDto.introduction = memberEntity.introduction;
+
+      // 사용자 프로필 이미지
+      const image = await this.userService.getProfileImage(memberEntity.id);
+      memberDto.image = image.imageKey;
+      if(image == null) memberDto.image = null;
+      else {
+        const userImageKey = image.imageKey;
+        memberDto.image = await this.s3Service.getImageUrl(userImageKey);
+      }
+      return memberDto;
+    }))
+    const sortedList = membersList.sort((a, b) => a.id - b.id);
+    return sortedList;
   }
 
   // [member] 초대 받은 멤버 리스트 생성

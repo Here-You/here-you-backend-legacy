@@ -60,25 +60,4 @@ export class MemberController {
             );
         }
     }
-
-    // [1] 여행 규칙 멤버 리스트 조회
-    @Get('/:ruleId')
-    async getMember(@Param('ruleId') ruleId : number) : Promise<ResponseDto<any>> {
-        try {
-            const memberList = await this.memberService.getMemberList(ruleId);
-            return new ResponseDto(
-                ResponseCode.GET_MEMBER_LIST_SUCCESS,
-                true,
-                "여행 규칙 멤버 리스트 불러오기 성공",
-                memberList
-            );
-        } catch (error) {
-            return new ResponseDto(
-                ResponseCode.GET_MEMBER_LIST_FAIL,
-                false,
-                "여행 규칙 멤버 리스트 불러오기 실패",
-                null
-            );
-        }
-    }
 }
