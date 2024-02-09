@@ -53,7 +53,9 @@ export class MateService{
       const myLocation = locationBlocks[locationBlocks.length-1].trim();
       console.log("*firstLocation: ", myLocation);
 
+      const loginUser = await this.userService.findUserById(userId);
       mateWithCommonLocationResponseDto.location = myLocation;
+      mateWithCommonLocationResponseDto.userName = loginUser.nickname;
 
       // 3. 이제 내 기준 로케이션이 사용된 모든 페이지 가져오기
       const commonLocationSignaturePages = await SignaturePageEntity.find({
@@ -177,17 +179,17 @@ export class MateService{
   async generateMateProfile(mate:UserEntity, userId:number){
     const mateProfile = new MateRecommendProfileDto();
     mateProfile._id = mate.id;
-    mateProfile.userName = mate.nickname;
+    mateProfile.mateName = mate.nickname;
     mateProfile.introduction = mate.introduction;
 
     const myEntity = await this.userService.findUserById(userId);
     mateProfile.is_followed = await this.userService.checkIfFollowing(mate, mate.id);
 
     let userProfileImage = await this.userService.getProfileImage(mate.id);
-    if(!userProfileImage) mateProfile.userImage = null;
+    if(!userProfileImage) mateProfile.mateImage = null;
     else{
       let userImageKey = userProfileImage.imageKey;
-      mateProfile.userImage = await this.s3Service.getImageUrl(userImageKey);
+      mateProfile.mateImage = await this.s3Service.getImageUrl(userImageKey);
     }
 
     const recentSignatures = await this.signatureService.getMyRecentSignatures(mate.id);
