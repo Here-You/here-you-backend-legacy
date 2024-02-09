@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
-export class MemberDto {
+export class GetMemberListDto {
     @IsNotEmpty()
     @IsNumber()
     id: number;
