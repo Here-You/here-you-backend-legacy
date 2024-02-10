@@ -1,5 +1,16 @@
 import { ApiOperation, ApiOkResponse } from '@nestjs/swagger';
-import { Controller, Put, Post, Get, Body, Param } from '@nestjs/common';
+import {
+  Controller,
+  Req,
+  UseGuards,
+  Put,
+  Post,
+  Get,
+  Body,
+  Param,
+} from '@nestjs/common';
+import { Request } from 'express';
+import { UserGuard } from 'src/user/user.guard';
 import { DiaryService } from './diary.service';
 import { PostDiaryDto } from './dtos/post-diary.dto';
 
@@ -15,8 +26,10 @@ export class DiaryController {
   @ApiOkResponse({
     description: '성공 ',
   })
+  @UseGuards(UserGuard)
   @Post('create/:scheduleId')
   async postJourney(
+    @Req() req: Request,
     @Param('scheduleId') scheduleId: number,
     @Body() body: PostDiaryDto,
   ) {
@@ -32,8 +45,10 @@ export class DiaryController {
   @ApiOkResponse({
     description: '성공 ',
   })
+  @UseGuards(UserGuard)
   @Put('update/:diaryId')
   async updateDiary(
+    @Req() req: Request,
     @Param('diaryId') diaryId: number,
     @Body() body: PostDiaryDto,
   ) {
@@ -49,8 +64,9 @@ export class DiaryController {
   @ApiOkResponse({
     description: '성공 ',
   })
+  @UseGuards(UserGuard)
   @Get('get/:scheduleId')
-  async getDiary(@Param('scheduleId') scheduleId: number) {
+  async getDiary(@Req() req: Request, @Param('scheduleId') scheduleId: number) {
     const result = await this.diaryService.getDiary(scheduleId);
     return result;
   }
