@@ -51,6 +51,13 @@ export class JourneyService {
       existUser.id,
       journeyId,
     );
+    if (!journey) {
+      return errResponse(BaseResponse.JOURNEY_NOT_FOUND);
+    }
+    if (title === null) {
+      const updateJourney = await JourneyEntity.updateJourney(journey, '');
+      return response(BaseResponse.UPDATE_JOURNEY_TITLE_SUCCESS);
+    }
     const updateJourney = await JourneyEntity.updateJourney(journey, title);
     return response(BaseResponse.UPDATE_JOURNEY_TITLE_SUCCESS);
   }
