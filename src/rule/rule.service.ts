@@ -204,7 +204,6 @@ export class RuleService {
 
       // 사용자 프로필 이미지
       const image = user.profileImage;
-      memberPair.image = image.imageKey;
       if(image == null) memberPair.image = null;
       else {
         const userImageKey = image.imageKey;
