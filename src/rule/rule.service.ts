@@ -144,26 +144,25 @@ export class RuleService {
   async getRuleList(userId: number) :Promise<GetRuleListDto[]> {
     const userEntity = await UserEntity.findOne({
       where: {id: userId},
-      relations: ['ruleParticipate', 'profileImage', 'ruleParticipate']
-      // relations: {ruleParticipate: true, profileImage: true}
+      relations: ['ruleParticipate', 'ruleParticipate.rule', 'ruleParticipate.rule.invitations', 'ruleParticipate.rule.invitations.member' , 'ruleParticipate.rule.invitations.member.profileImage']
     });
 
     try {
       const invitationEntities = userEntity.ruleParticipate;
 
       if (!!invitationEntities) {
-        const ruleMains = await Promise.all(invitationEntities.map(async (invitation) : Promise<GetRuleListDto> => {
+        const ruleMains = await Promise.all(invitationEntities.map(async (invitation : RuleInvitationEntity) : Promise<GetRuleListDto> => {
           console.log(invitation);
-          const ruleMain = invitation.rule;
-          const ruleListDto = new GetRuleListDto;
+          const ruleMain : RuleMainEntity = invitation.rule as RuleMainEntity;
+          const ruleListDto : GetRuleListDto = new GetRuleListDto;
 
-          console.log('ruleMain.id : ');
+          console.log('ruleMain.id : ', ruleMain.id);
 
           ruleListDto.id = ruleMain.id;
           ruleListDto.title = ruleMain.mainTitle;
           ruleListDto.updated = ruleMain.updated;
           ruleListDto.memberCnt = ruleMain.invitations.length;
-          ruleListDto.memberPairs = await this.getMemberPairs(ruleListDto, ruleMain);
+          ruleListDto.memberPairs = await this.getMemberPairs(ruleMain);
 
           return ruleListDto;
         }));
@@ -174,13 +173,14 @@ export class RuleService {
     }
   }
 
-  async getMemberPairs(ruleListDto: GetRuleListDto, ruleMain: RuleMainEntity) : Promise<MemberPairDto[]> {
+  async getMemberPairs(ruleMain: RuleMainEntity) : Promise<MemberPairDto[]> {
     const invitations: RuleInvitationEntity[] = ruleMain.invitations;
 
     const result : MemberPairDto[] = await Promise.all(invitations.map(async (invitation) : Promise<MemberPairDto> => {
       const memberPair = new MemberPairDto;
       const user: UserEntity = invitation.member;
 
+      console.log('user.id : ', user.id);
       memberPair.id = user.id;
       memberPair.name = user.name;
 
