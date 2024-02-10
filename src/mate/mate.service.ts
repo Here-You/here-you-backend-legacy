@@ -293,4 +293,79 @@ export class MateService{
       throw error;
     }
   }
+
+  async getSignaturesWithInfiniteCursor(cursorPageOptionsDto: CursorPageOptionsDto, mateId: number) {
+      try{
+
+        let cursorId: number = 0;
+
+        // 1. 맨 처음 요청일 경우 해당 유저의 시그니처 중 가장 최근 시그니처 id 가져오기
+        if(cursorPageOptionsDto.cursorId == 0) {
+          const recentSignature = await SignatureEntity.findOne({
+            where: { user: {id: mateId} },
+            order: {
+              id: 'DESC' // id를 내림차순으로 정렬해서 가장 최근에 작성한 시그니처
+            }
+          });
+
+          cursorId = recentSignature.id;
+
+        }
+        else cursorId = cursorPageOptionsDto.cursorId;
+
+
+        // 2. 무한 스크롤: take만큼 cursorId보다 id값이 작은 시그니처들 불러오기
+        const [ signatureEntities, total] = await SignatureEntity.findAndCount({
+          take: cursorPageOptionsDto.take,
+          where: {
+            id: cursorId ? LessThan(cursorId) : null,
+            user: { id: mateId }
+          },
+          order: {
+            id: "DESC" as any,
+          },
+        });
+
+
+        // 3. 가져온 시그니처들로 커버 만들기
+        const signatureCoverDtos: MateSignatureCoverDto[] = [];
+
+        for( const signatureEntity of signatureEntities){
+          const signatureCover: MateSignatureCoverDto = new MateSignatureCoverDto();
+
+          signatureCover._id = signatureEntity.id;
+          signatureCover.title = signatureEntity.title;
+          signatureCover.liked = signatureEntity.liked;
+
+          // 시그니처 썸네일 가져오기
+          const imageKey = await SignaturePageEntity.findThumbnail(signatureEntity.id);
+          signatureCover.image = await this.s3Service.getImageUrl(imageKey);
+
+          signatureCoverDtos.push(signatureCover);
+        }
+
+        // 4. 스크롤 설정
+        let hasNextData = true;
+        let cursor: number;
+
+        const takePerScroll = cursorPageOptionsDto.take;
+        const isLastScroll = total <= takePerScroll;
+        const lastDataPerScroll = signatureEntities[signatureEntities.length - 1];
+
+        if (isLastScroll) {
+          hasNextData = false;
+          cursor = null;
+        } else {
+          cursor = lastDataPerScroll.id;
+        }
+
+        const cursorPageMetaDto = new CursorPageMetaDto(
+          { cursorPageOptionsDto, total, hasNextData, cursor });
+
+        return new CursorPageDto(signatureCoverDtos, cursorPageMetaDto);
+
+      }catch(error){
+          throw error;
+      }
+  }
 }
