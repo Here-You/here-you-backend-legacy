@@ -1,4 +1,14 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn
+} from 'typeorm';
 import { RuleMainEntity } from 'src/rule/domain/rule.main.entity';
 import { UserEntity } from 'src/user/user.entity';
 
@@ -18,12 +28,12 @@ export class CommentEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id'})
   user: UserEntity;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn()
   created: Date;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn()
   updated: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @DeleteDateColumn()
   deleted: Date;
 }
