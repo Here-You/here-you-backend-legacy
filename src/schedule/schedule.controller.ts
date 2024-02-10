@@ -16,8 +16,10 @@ export class ScheduleController {
   @ApiOkResponse({
     description: '성공 ',
   })
+  @UseGuards(UserGuard)
   @Put('update/:scheduleId')
   async updateSchedule(
+    @Req() req: Request,
     @Param('scheduleId') scheduleId: number,
     @Body() body: UpdateScheduleDto,
   ) {
