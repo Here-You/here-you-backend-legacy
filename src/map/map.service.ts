@@ -9,6 +9,7 @@ import { MonthInfoDto } from './month-info.dto';
 import { LocationEntity } from 'src/location/location.entity';
 import { DiaryImageEntity } from 'src/diary/models/diary.image.entity';
 import { DetailScheduleEntity } from 'src/detail-schedule/detail-schedule.entity';
+import { CursorBasedPaginationRequestDto } from './cursor-based-pagination-request.dto.ts';
 
 @Injectable()
 export class MapService {
@@ -16,14 +17,16 @@ export class MapService {
   async getMonthlySchedules(
     userId: number,
     date: Date,
-    cursor: number,
-    pageSize: number,
+    options: CursorBasedPaginationRequestDto,
   ) {
     const user = await UserEntity.findExistUser(userId);
     const journeys = await JourneyEntity.findExistJourneyByDate(user.id, date);
-    console.log('포함 여정 : ', journeys);
+
     // 커서 값에 해당하는 배너들을 가져옴
-    const paginatedJourneys = journeys.slice(cursor, cursor + pageSize);
+    const paginatedJourneys = journeys.slice(
+      options.cursor,
+      options.cursor + options.pageSize,
+    );
     if (paginatedJourneys.length === 0) {
       return {
         data: response(BaseResponse.SCHEDULE_NOT_FOUND, { nextCursor: null }),
@@ -62,7 +65,7 @@ export class MapService {
       }),
     );
     // 다음 페이지를 위한 커서 값 계산
-    const nextCursor = cursor + pageSize;
+    const nextCursor = Number(options.cursor) + Number(options.pageSize);
 
     return {
       data: response(BaseResponse.GET_SCHEDULE_SUCCESS, result),

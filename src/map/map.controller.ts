@@ -1,9 +1,11 @@
 import { MapService } from './map.service';
-import { Controller, Param, Req, UseGuards, Get } from '@nestjs/common';
+import { Controller, Param, Req, UseGuards, Get, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { Request } from 'express';
 import { UserGuard } from 'src/user/user.guard';
 import { MonthInfoDto } from './month-info.dto';
+import { CursorBasedPaginationRequestDto } from './cursor-based-pagination-request.dto.ts';
+
 @Controller('map')
 export class MapController {
   constructor(private readonly mapService: MapService) {}
@@ -45,15 +47,16 @@ export class MapController {
   })
   @UseGuards(UserGuard)
   @Get('get-monthly-schedule/:date')
-  async getMonthlySchedule(@Param('date') date: Date, @Req() req: Request) {
+  async getMonthlySchedule(
+    @Param('date') date: Date,
+    @Query() options: CursorBasedPaginationRequestDto,
+    @Req() req: Request,
+  ) {
     const user = req.user;
-    const cursor = 0;
-    const pageSize = 3;
     const result = await this.mapService.getMonthlySchedules(
       user.id,
       date,
-      cursor,
-      pageSize,
+      options,
     );
     return result;
   }
