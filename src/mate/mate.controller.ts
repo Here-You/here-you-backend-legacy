@@ -80,14 +80,14 @@ export class MateController{
       }
   }
 
-  @Get(':userId')
+  @Get(':mateId')
   @UseGuards(UserGuard)
   async getUserProfile(
     @Req() req: Request,
-    @Param('userId') userId: number
+    @Param('mateId') mateId: number
   ): Promise<ResponseDto<MateProfileResponseDto>>{
     try{
-      const result = await this.mateService.findProfileWithUserId(req.user.id, userId);
+      const result = await this.mateService.findProfileWithUserId(req.user.id, mateId);
 
       if(!result){
         return new ResponseDto(
@@ -111,6 +111,32 @@ export class MateController{
         false,
         "유저 프로필 정보 가져오기 실패",
         null);
+    }
+  }
+
+  @Get('/signature/:mateId')
+  async getSignaturesWithInfiniteCursor(
+    @Param('mateId') mateId: number,
+    @Query() cursorPageOptionDto: CursorPageOptionsDto
+  ){
+    try{
+      const result = await this.mateService.getSignaturesWithInfiniteCursor(cursorPageOptionDto, mateId);
+
+      return new ResponseDto(
+        ResponseCode.GET_USER_SIGNATURES_SUCCESS,
+        true,
+        "메이트의 시그니처 가져오기 성공",
+        result
+      );
+
+    }catch(error){
+      console.log("Err on getUserSignatures: ", error);
+      return new ResponseDto(
+        ResponseCode.GET_USER_SIGNATURES_FAIL,
+        false,
+        "메이트의 시그니처 가져오기 실패",
+        null
+      );
     }
   }
 }
