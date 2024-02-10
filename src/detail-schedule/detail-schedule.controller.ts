@@ -6,10 +6,17 @@ import {
   Delete,
   Param,
   Body,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { Request } from 'express';
 import { DetailScheduleService } from './detail-schedule.service';
-import { DetailContentDto } from './detail-schedule-info.dto';
+import {
+  DetailContentDto,
+  DetailScheduleInfoDto,
+} from './detail-schedule-info.dto';
+import { UserGuard } from 'src/user/user.guard';
 
 @Controller('detail-schedule')
 export class DetailScheduleController {
@@ -23,10 +30,16 @@ export class DetailScheduleController {
   @ApiOkResponse({
     description: '성공 ',
   })
+  @UseGuards(UserGuard)
   @Post('create/:scheduleId')
-  async createDetailSchedule(@Param('scheduleId') scheduleId: number) {
+  async createDetailSchedule(
+    @Req() req: Request,
+    @Param('scheduleId') scheduleId: number,
+    @Body() body: DetailContentDto,
+  ) {
     const result = await this.detailScheduleService.createDetailSchedule(
       scheduleId,
+      body,
     );
     return result;
   }
@@ -39,8 +52,10 @@ export class DetailScheduleController {
   @ApiOkResponse({
     description: '성공 ',
   })
+  @UseGuards(UserGuard)
   @Put('update/:detailId')
   async updateDetailSchedule(
+    @Req() req: Request,
     @Param('detailId') detailId: number,
     @Body() detailContentDto: DetailContentDto,
   ) {
@@ -59,8 +74,12 @@ export class DetailScheduleController {
   @ApiOkResponse({
     description: '성공 ',
   })
+  @UseGuards(UserGuard)
   @Patch('update-status/:detailId')
-  async updateDetailStatus(@Param('detailId') detailId: number) {
+  async updateDetailStatus(
+    @Req() req: Request,
+    @Param('detailId') detailId: number,
+  ) {
     const result = await this.detailScheduleService.updateDetailStatus(
       detailId,
     );
@@ -76,8 +95,12 @@ export class DetailScheduleController {
   @ApiOkResponse({
     description: '성공 ',
   })
+  @UseGuards(UserGuard)
   @Delete('delete/:detailId')
-  async deleteDetailSchedule(@Param('detailId') detailId: number) {
+  async deleteDetailSchedule(
+    @Req() req: Request,
+    @Param('detailId') detailId: number,
+  ) {
     const result = await this.detailScheduleService.deleteDetailSchedule(
       detailId,
     );

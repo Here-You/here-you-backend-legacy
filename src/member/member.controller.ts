@@ -2,7 +2,7 @@ import { Controller, Post, Req, UseGuards, Param, Delete, Get } from '@nestjs/co
 import { ResponseCode } from '../response/response-code.enum';
 import { ResponseDto } from '../response/response.dto';
 import { MemberService } from './member.service';
-import {UserSearchDto} from "../user/user.search.dto";
+// import {UserSearchDto} from "../follow/dto/follow.search.dto";
 import { UserService} from "../user/user.service";
 import { UserGuard } from '../user/user.guard';
 import { Request } from 'express';
@@ -34,6 +34,7 @@ export class MemberController {
   }
 
     // [4] 초대할 여행 규칙 멤버 검색
+    /*
     @Get('/search/:searchTerm')
     @UseGuards(UserGuard)
     async getSearchResult(
@@ -60,4 +61,5 @@ export class MemberController {
             );
         }
     }
+     */
 }

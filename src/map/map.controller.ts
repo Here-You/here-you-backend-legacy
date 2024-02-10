@@ -69,9 +69,14 @@ export class MapController {
   @ApiOkResponse({
     description: '성공 ',
   })
+  @UseGuards(UserGuard)
   @Get('get-journey/:journeyId')
-  async getJourneyPreview(@Param('journeyId') journeyId: number) {
-    const result = await this.mapService.getJourneyPreview(journeyId);
+  async getJourneyPreview(
+    @Req() req: Request,
+    @Param('journeyId') journeyId: number,
+  ) {
+    const user = req.user;
+    const result = await this.mapService.getJourneyPreview(user.id, journeyId);
     return result;
   }
 
@@ -83,9 +88,14 @@ export class MapController {
   @ApiOkResponse({
     description: '성공 ',
   })
+  @UseGuards(UserGuard)
   @Get('get-diaries/:journeyId')
-  async getDiaryList(@Param('journeyId') journeyId: number) {
-    const result = await this.mapService.getDiaryList(journeyId);
+  async getDiaryList(
+    @Req() req: Request,
+    @Param('journeyId') journeyId: number,
+  ) {
+    const user = req.user;
+    const result = await this.mapService.getDiaryList(user.id, journeyId);
     return result;
   }
 
@@ -97,9 +107,17 @@ export class MapController {
   @ApiOkResponse({
     description: '성공 ',
   })
+  @UseGuards(UserGuard)
   @Get('get-schedules/:journeyId')
-  async getDetailJourneyList(@Param('journeyId') journeyId: number) {
-    const result = await this.mapService.getDetailJourneyList(journeyId);
+  async getDetailJourneyList(
+    @Req() req: Request,
+    @Param('journeyId') journeyId: number,
+  ) {
+    const user = req.user;
+    const result = await this.mapService.getDetailJourneyList(
+      user.id,
+      journeyId,
+    );
     return result;
   }
 }

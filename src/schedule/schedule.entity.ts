@@ -30,8 +30,10 @@ export class ScheduleEntity extends BaseEntity {
   @Column({ nullable: true })
   title: string;
 
-  @ManyToOne(() => LocationEntity, (location) => location.schedules)
-  location: LocationEntity;
+  @ManyToOne(() => LocationEntity, (location) => location.schedules, {
+    nullable: true,
+  })
+  location: LocationEntity | null;
 
   @ManyToOne(() => JourneyEntity, (journey) => journey.schedules, {
     onDelete: 'CASCADE',
@@ -82,9 +84,16 @@ export class ScheduleEntity extends BaseEntity {
     return await schedule.save();
   }
 
-  //일정 삭제하기
+  //일정 삭제하기 - 여정 삭제했을때
   static async deleteSchedule(schedule) {
     return await ScheduleEntity.remove(schedule);
+  }
+
+  //일정 리셋하기 - 제목, 위치
+  static async resetSchedule(schedule: ScheduleEntity) {
+    schedule.title = '';
+    schedule.location = null;
+    await schedule.save();
   }
 
   //일정 조회하기
@@ -107,8 +116,18 @@ export class ScheduleEntity extends BaseEntity {
     return schedule.location;
   }
 
+  static async findExistLocations(location: LocationEntity) {
+    const existLocation = await ScheduleEntity.find({
+      where: {
+        location: location,
+      },
+      relations: ['location'],
+    });
+    return existLocation;
+  }
+
   //journeyId로 일정 조회하기
-  static async findExistScheduleByJourneyId(
+  static async findExistSchedulesByJourneyId(
     journeyId: number,
   ): Promise<ScheduleEntity[]> {
     const schedules = await ScheduleEntity.find({
@@ -116,6 +135,10 @@ export class ScheduleEntity extends BaseEntity {
       relations: ['location'],
     });
     return schedules;
+  }
+
+  static async findExistScheduleByOptions(journeyId, scheduleId) {
+    const schedule = await ScheduleEntity.find({});
   }
   // 월별 일정 조회하기
   static async findMonthlySchedule(

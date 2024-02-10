@@ -15,6 +15,9 @@ export class LocationEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
+  name: string;
+
   @Column({ type: 'decimal', precision: 10, scale: 6 })
   latitude: number;
 
@@ -33,9 +36,11 @@ export class LocationEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
+  //위치 생성하기
   static async createLocation(updateScheduleDto) {
     try {
       const location: LocationEntity = new LocationEntity();
+      location.name = updateScheduleDto.location;
       location.latitude = updateScheduleDto.latitude;
       location.longitude = updateScheduleDto.longitude;
 
@@ -45,11 +50,13 @@ export class LocationEntity extends BaseEntity {
     }
   }
 
+  //위치 수정하기
   static async updateLocation(location: LocationEntity, updateScheduleDto) {
     try {
       const updateLocation = await LocationEntity.findOneOrFail({
         where: { id: location.id },
       });
+      updateLocation.name = updateScheduleDto.location;
       updateLocation.latitude = updateScheduleDto.latitude;
       updateLocation.longitude = updateScheduleDto.longitude;
 
@@ -59,11 +66,17 @@ export class LocationEntity extends BaseEntity {
     }
   }
 
+  //위치 삭제하기
+  static async deleteLocation(location) {
+    return await LocationEntity.remove(location);
+  }
+
   static async findExistLocation(updateScheduleDto) {
     {
     }
     const location = await LocationEntity.findOne({
       where: {
+        name: updateScheduleDto.location,
         latitude: updateScheduleDto.latitude,
         longitude: updateScheduleDto.longitude,
       },

@@ -6,6 +6,10 @@ export class UpdateScheduleDto {
   @IsOptional()
   title: string;
 
+  @IsString()
+  @IsOptional()
+  location: string;
+
   @IsOptional()
   @IsNumber()
   latitude: number;

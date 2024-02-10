@@ -91,6 +91,7 @@ export class RuleService {
 
       // 사용자 프로필 이미지
       const image = memberEntity.profileImage;
+      detailMember.image = image.imageKey;
       if(image == null) detailMember.image = null;
       else{
         const userImageKey = image.imageKey;
@@ -143,8 +144,25 @@ export class RuleService {
   // [5] 여행 규칙 전체 리스트 조회
   async getRuleList(userId: number) :Promise<GetRuleListDto[]> {
     const userEntity = await UserEntity.findOne({
-      where: {id: userId},
-      relations: ['ruleParticipate', 'ruleParticipate.rule', 'ruleParticipate.rule.invitations', 'ruleParticipate.rule.invitations.member' , 'ruleParticipate.rule.invitations.member.profileImage']
+      where: {
+        id: userId,
+      },
+      relations: {
+        ruleParticipate: {
+          rule: {
+            invitations: {
+              member: {
+                profileImage: true,
+              },
+            },
+          },
+        },
+        // 'ruleParticipate',
+        // 'ruleParticipate.rule',
+        // 'ruleParticipate.rule.invitations',
+        // 'ruleParticipate.rule.invitations.member',
+        // 'ruleParticipate.rule.invitations.member.profileImage'
+      },
     });
 
     try {
@@ -169,6 +187,7 @@ export class RuleService {
         return ruleMains;
       }
     } catch (e) {
+      console.error(e);
       console.log('참여하는 여행 규칙이 없습니다');
     }
   }
@@ -186,7 +205,6 @@ export class RuleService {
 
       // 사용자 프로필 이미지
       const image = user.profileImage;
-      memberPair.image = image.imageKey;
       if(image == null) memberPair.image = null;
       else {
         const userImageKey = image.imageKey;
