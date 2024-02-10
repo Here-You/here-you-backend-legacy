@@ -75,7 +75,8 @@ export class MapController {
     @Req() req: Request,
     @Param('journeyId') journeyId: number,
   ) {
-    const result = await this.mapService.getJourneyPreview(journeyId);
+    const user = req.user;
+    const result = await this.mapService.getJourneyPreview(user.id, journeyId);
     return result;
   }
 
@@ -93,7 +94,8 @@ export class MapController {
     @Req() req: Request,
     @Param('journeyId') journeyId: number,
   ) {
-    const result = await this.mapService.getDiaryList(journeyId);
+    const user = req.user;
+    const result = await this.mapService.getDiaryList(user.id, journeyId);
     return result;
   }
 
@@ -111,7 +113,11 @@ export class MapController {
     @Req() req: Request,
     @Param('journeyId') journeyId: number,
   ) {
-    const result = await this.mapService.getDetailJourneyList(journeyId);
+    const user = req.user;
+    const result = await this.mapService.getDetailJourneyList(
+      user.id,
+      journeyId,
+    );
     return result;
   }
 }

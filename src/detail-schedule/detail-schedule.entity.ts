@@ -12,7 +12,10 @@ import {
 import { NotFoundException } from '@nestjs/common';
 import { BaseResponse } from 'src/response/response.status';
 import { ScheduleEntity } from '../schedule/schedule.entity';
-import { DetailScheduleInfoDto } from './detail-schedule-info.dto';
+import {
+  DetailContentDto,
+  DetailScheduleInfoDto,
+} from './detail-schedule-info.dto';
 
 @Entity()
 export class DetailScheduleEntity extends BaseEntity {
@@ -40,9 +43,10 @@ export class DetailScheduleEntity extends BaseEntity {
   deleted: Date;
 
   //세부 일정 추가하기
-  static async createDetailSchedule(scheduleId) {
+  static async createDetailSchedule(schedule, content: DetailContentDto) {
     const detailSchedule = new DetailScheduleEntity();
-    detailSchedule.schedule = scheduleId;
+    detailSchedule.schedule = schedule;
+    detailSchedule.content = content.content;
     return await detailSchedule.save();
   }
   //세부 일정 작성하기

@@ -3,15 +3,17 @@ import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { DetailScheduleEntity } from './detail-schedule.entity';
 import { response } from 'src/response/response';
 import { BaseResponse } from 'src/response/response.status';
+import { DetailContentDto } from './detail-schedule-info.dto';
 
 @Injectable()
 export class DetailScheduleService {
   //세부일정 추가하기
-  async createDetailSchedule(scheduleId: number) {
+  async createDetailSchedule(scheduleId: number, content: DetailContentDto) {
     const schedule = await ScheduleEntity.findExistSchedule(scheduleId);
     console.log(schedule.id);
     const detailSchedule = await DetailScheduleEntity.createDetailSchedule(
       schedule.id,
+      content,
     );
     console.log(detailSchedule);
     return response(BaseResponse.DETAIL_SCHEDULE_CREATED);
