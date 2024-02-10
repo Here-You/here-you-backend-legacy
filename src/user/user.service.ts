@@ -7,7 +7,6 @@ import { UserProfileImageEntity } from './user.profile.image.entity';
 import { ResponseDto } from '../response/response.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { UserFollowingEntity } from './user.following.entity';
-import { UserSearchDto} from "./user.search.dto";
 import {Like} from "typeorm";
 
 @Injectable()
@@ -256,6 +255,7 @@ export class UserService {
     }
   }
 
+  /*
   async getSearchResult(userId: number, searchTerm: string) : Promise<UserSearchDto[]> {
     // 현재 로그인한 유저 객체
     const user = await this.findUserById(userId);
@@ -277,6 +277,7 @@ export class UserService {
     });
     console.log(mates);
 
+
     // dto 리스트 생성
     const results : UserSearchDto[] = await Promise.all(mates.map(async (mate) => {
       const userSearchDto = new UserSearchDto();
@@ -295,6 +296,8 @@ export class UserService {
 
     return results;
   }
+
+   */
 
   async isAlreadyFollowing(userId:number, followingId: number) {
     const userEntity = await this.findUserById(userId);

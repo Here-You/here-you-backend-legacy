@@ -27,4 +27,10 @@ export class CommentService {
     }
     return comment.id;
   }
+
+  /*
+  async updateComment(dto: CreateCommentDto, ruleId: number, userId: number) : Promise<number> {
+
+  }
+  */
 }

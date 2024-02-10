@@ -2,15 +2,12 @@ import {Controller, Post, Req, UseGuards, Param, Delete, Get, Patch, Query} from
 import { FollowService } from './follow.service';
 import { ResponseCode } from '../response/response-code.enum';
 import { ResponseDto } from '../response/response.dto';
-import { UserEntity } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
-import { UserSearchDto} from "../user/user.search.dto";
 import { UserGuard } from '../user/user.guard';
 import {query, Request} from 'express';
-import {UserFollowingEntity} from "../user/user.following.entity";
-import * as querystring from "querystring";
+import { FollowSearchDto } from "./dto/follow.search.dto";
 
-@Controller('mate/search')
+@Controller('mate')
 export class FollowController {
   constructor(
     private readonly followService: FollowService,
@@ -18,7 +15,7 @@ export class FollowController {
   ) {}
 
     // [1] 팔로우
-    @Patch('/follow/:followingId')
+    @Patch('/search/follow/:followingId')
     @UseGuards(UserGuard)
     async createFollow(@Req() req: Request, @Param('followingId') followingId : number): Promise<ResponseDto<any>> {
 
@@ -109,12 +106,12 @@ export class FollowController {
         @Query('searchTerm')searchTerm : string,
         @Req() req: Request): Promise<ResponseDto<any>> {
         try {
-            const userSearchDto : UserSearchDto[] = await this.userService.getSearchResult(req.user.id, searchTerm)
+            const followSearchDto : FollowSearchDto[] = await this.followService.getSearchResult(req.user.id, searchTerm)
             return new ResponseDto(
                 ResponseCode.GET_SEARCH_RESULT_SUCCESS,
                 true,
                 "검색 결과 리스트 불러오기 성공",
-                userSearchDto
+                followSearchDto
             );
         } catch (error) {
             return new ResponseDto(

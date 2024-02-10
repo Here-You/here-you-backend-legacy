@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, UseGuards, Param } from '@nestjs/common';
+import {Controller, Post, Body, Req, UseGuards, Param, Patch} from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { ResponseCode } from '../response/response-code.enum';
@@ -34,4 +34,28 @@ export class CommentController {
         result);
     }
   }
+
+  // 여행 규칙 코멘트 수정
+  /*
+  @Patch('/:ruleId')
+  @UseGuards(UserGuard)
+  async updateComment(@Body() dto: CreateCommentDto, @Param('ruleId') ruleId: number, @Req() req: Request): Promise<ResponseDto<any>> {
+    const result = await this.commentService.updateComment(dto, ruleId, req.user.id);
+
+    if(!result){
+      return new ResponseDto(
+          ResponseCode.COMMENT_UPDATE_FAIL,
+          false,
+          "여행 규칙 코멘트 수정 실패",
+          null);
+    }
+    else{
+      return new ResponseDto(
+          ResponseCode.COMMENT_UPDATE_SUCCESS,
+          true,
+          "여행 규칙 코멘트 수정 성공",
+          result);
+    }
+  }
+   */
 }
