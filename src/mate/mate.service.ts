@@ -7,7 +7,7 @@ import { CursorPageOptionsDto } from './cursor-page/cursor-page-option.dto';
 import { CursorPageDto } from './cursor-page/cursor-page.dto';
 import { SignatureEntity } from '../signature/domain/signature.entity';
 import { SignatureService } from '../signature/signature.service';
-import { LessThan, Like, MoreThan } from 'typeorm';
+import { LessThan, Like, MoreThan, Not } from 'typeorm';
 import { CursorPageMetaDto } from './cursor-page/cursor-page.meta.dto';
 import { SignaturePageEntity } from '../signature/domain/signature.page.entity';
 import { UserEntity } from '../user/user.entity';
@@ -40,7 +40,7 @@ export class MateService{
         },
       });
 
-      if(!mySignaturePageEntity){ // 사용자가 아직 한번도 시그니처를 작성한 적이 없을 경우
+      if(!mySignaturePageEntity){ // 로그인한 사용자가 아직 한번도 시그니처를 작성한 적이 없을 경우
         return null;
       }
 
@@ -76,10 +76,10 @@ export class MateService{
       // 5. 시그니처 작성자 기준으로 분류: 중복된 작성자를 또 찾아오지 않기 위해
       const signatureGroups = {};
       for(const signature of commonLocationSignatures){
-        if(!signatureGroups[signature.user.id]){
+        if(!signatureGroups[signature.user.id]){  // 새로운 유저일 경우 새 리스트 생성, 시그니처 삽입
           signatureGroups[signature.user.id] = [];
+          signatureGroups[signature.user.id].push(signature);
         }
-        signatureGroups[signature.user.id].push(signature);
       }
 
 
@@ -87,11 +87,12 @@ export class MateService{
       const mateProfiles : MateRecommendProfileDto[] = [];
 
       for(const authorUserId of Object.keys(signatureGroups)){
-        const mate = await this.userService.findUserById(Number(authorUserId));
-        console.log(mate);
+        const authorId:number = Number(authorUserId);
+        const mate = await this.userService.findUserById(authorId);
 
-        if(userId == Number(authorUserId)) continue;  // 본인은 제외
-        const mateProfile: MateRecommendProfileDto = await this.generateMateProfile(mate, userId);
+        if(userId == authorId) continue;  // 본인은 제외
+        const locationSignature:SignatureEntity = signatureGroups[authorId][0];
+        const mateProfile: MateRecommendProfileDto = await this.generateMateProfile(mate, userId, locationSignature);
         mateProfiles.push(mateProfile);
 
       }
@@ -119,7 +120,7 @@ export class MateService{
         },
         take: 1
       });
-      const max = newUser[0].id; // 랜덤 숫자 생성의 max 값
+      const max = newUser[0].id + 1; // 랜덤 숫자 생성의 max 값
       console.log('max id: ',max);
 
       const min = 5;               // 랜덤 숫자 생성의 min 값
@@ -137,7 +138,7 @@ export class MateService{
     const [mates, total] = await UserEntity.findAndCount({
       take: cursorPageOptionsDto.take,
       where: cursorId ? {
-        id: LessThan(cursorId),
+        id: LessThan(cursorId)
       }: null,
       order: {
         id: "DESC" as any,
@@ -150,7 +151,8 @@ export class MateService{
     const mateProfiles:MateRecommendProfileDto[] = [];
 
     for(const mate of mates){
-      const mateProfile = await this.generateMateProfile(mate, userId);
+      if(userId == mate.id) continue;  // 본인은 제외
+      const mateProfile = await this.generateMateProfile(mate, userId, null);
       mateProfiles.push(mateProfile);
     }
 
@@ -176,15 +178,19 @@ export class MateService{
 
   }
 
-  async generateMateProfile(mate:UserEntity, userId:number){
+  async generateMateProfile(mate:UserEntity, userId:number, locationSignature:SignatureEntity){
     const mateProfile = new MateRecommendProfileDto();
+
+    // 1. 메이트의 기본 정보 담기
     mateProfile._id = mate.id;
     mateProfile.mateName = mate.nickname;
     mateProfile.introduction = mate.introduction;
 
+    // 2. 로그인한 유저가 메이트를 팔로우하는지 팔로우 여부 체크
     const myEntity = await this.userService.findUserById(userId);
-    mateProfile.is_followed = await this.userService.checkIfFollowing(mate, mate.id);
+    mateProfile.is_followed = await this.userService.checkIfFollowing(myEntity, mate.id);
 
+    // 3. 메이트 프로필 사진 가져오기
     let userProfileImage = await this.userService.getProfileImage(mate.id);
     if(!userProfileImage) mateProfile.mateImage = null;
     else{
@@ -192,18 +198,50 @@ export class MateService{
       mateProfile.mateImage = await this.s3Service.getImageUrl(userImageKey);
     }
 
-    const recentSignatures = await this.signatureService.getMyRecentSignatures(mate.id);
+    /****************************************************
+                4. 메이트 대표 시그니처 두 개 구하기
+           [1] 랜덤 메이트 추천: 가장 최신 시그니처 두 개
+     [2] 장소 기반 추천: 장소 관련 시그니처 1개, 최신 시그니처 1개
+     ****************************************************/
+    console.log("locationSig: ", locationSignature);
+
+    let recommendSignatures = [];
+
+    if(locationSignature == null){ // [1] 랜덤 추천이면 가장 최신 시그니처 두 개 가져오기
+      recommendSignatures = await this.signatureService.getMyRecentSignatures(mate.id, 2);
+    }
+    else{ // [2] 장소 기반 추천이면 장소 관련 하나, 최신 시그니처 하나
+      recommendSignatures.push(locationSignature);
+      console.log("recommendSignatures: ",recommendSignatures);
+
+      // ㄱ. 삽입할 최신 시그니처 후보 두 개 가져오기 (두 개 중에 이미 삽입된 시그니처와 다른 것을 추가할 것임)
+      const recentSignatures = await this.signatureService.getMyRecentSignatures(mate.id, 2);
+
+      // ㄴ. 이미 들어있는 시그니처와 id 비교해서 다르면 삽입
+      for(const recentSignature of recentSignatures){
+        console.log("recentSignature.id: ",recentSignature.id);
+        console.log("locationSignature.id: ",locationSignature.id);
+
+        if(recentSignature.id != locationSignature.id) { // 이미 들어있는 시그니처와 다른 경우에만 push
+          console.log("push! : ", recentSignature.id)
+          recommendSignatures.push(recentSignature);
+          break;
+        }
+      }
+    }
 
     const signatureCovers = [];
-    //TODO 작성자가 작성한 시그니처가 하나일 경우에는 리스트에 하나만 담겨있음 프론트에 알리기
-    for(const signature of recentSignatures) {
+    //TODO 작성자가 작성한 시그니처가 하나일 경우에는 리스트에 하나만 담겨있음 프론트에 알리기 -> 완료
+    for(const signature of recommendSignatures) {
       const signatureCover: MateSignatureCoverDto = new MateSignatureCoverDto();
 
+      console.log("signature.id: ",signature.id);
       signatureCover._id = signature.id;
       signatureCover.title = signature.title;
       let thumbnailImageKey = await SignaturePageEntity.findThumbnail(signature.id);
       signatureCover.image = await this.s3Service.getImageUrl(thumbnailImageKey);
 
+      console.log("signatureCover: ", signatureCover);
       signatureCovers.push(signatureCover);
     }
     mateProfile.signatures = signatureCovers;

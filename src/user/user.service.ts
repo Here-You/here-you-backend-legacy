@@ -58,14 +58,16 @@ export class UserService {
   ): Promise<boolean> {
     // user가 targetUser를 팔로우하고 있는지 확인
 
-    const followingArray = user.following || [];
-    console.log('사용자가 팔로우하는 유저', user.following);
+    const isFollowing = await UserFollowingEntity.findOne({
+      where: {
+        user: { id: targetUserId },
+        followUser: { id: user.id }
+      }
+    });
 
-    const isFollowing = followingArray.some(
-      (following) => following.followUser.id === targetUserId,
-    );
+    if(isFollowing) return true;
+    else return false;
 
-    return isFollowing;
   }
 
   async findUserById(userId: number): Promise<UserEntity> {
