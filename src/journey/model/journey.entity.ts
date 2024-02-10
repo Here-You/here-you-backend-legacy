@@ -87,11 +87,12 @@ export class JourneyEntity extends BaseEntity {
     return journeys;
   }
 
-  static async findExistJourneyByPeriod(createJourneyDto) {
+  static async findExistJourneyByPeriod(userId, createJourneyDto) {
     const journey: JourneyEntity = await JourneyEntity.findOne({
       where: {
-        startDate: createJourneyDto.startDate,
-        endDate: createJourneyDto.endDate,
+        user: { id: userId },
+        startDate: LessThanOrEqual(createJourneyDto.endDate),
+        endDate: MoreThanOrEqual(createJourneyDto.startDate),
       },
     });
 
