@@ -143,8 +143,25 @@ export class RuleService {
   // [5] 여행 규칙 전체 리스트 조회
   async getRuleList(userId: number) :Promise<GetRuleListDto[]> {
     const userEntity = await UserEntity.findOne({
-      where: {id: userId},
-      relations: ['ruleParticipate', 'ruleParticipate.rule', 'ruleParticipate.rule.invitations', 'ruleParticipate.rule.invitations.member' , 'ruleParticipate.rule.invitations.member.profileImage']
+      where: {
+        id: userId,
+      },
+      relations: {
+        ruleParticipate: {
+          rule: {
+            invitations: {
+              member: {
+                profileImage: true,
+              },
+            },
+          },
+        },
+        // 'ruleParticipate',
+        // 'ruleParticipate.rule',
+        // 'ruleParticipate.rule.invitations',
+        // 'ruleParticipate.rule.invitations.member',
+        // 'ruleParticipate.rule.invitations.member.profileImage'
+      },
     });
 
     try {
