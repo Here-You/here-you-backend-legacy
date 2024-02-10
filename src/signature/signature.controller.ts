@@ -130,12 +130,34 @@ export class SignatureController {
           result
         );
       }
-      return new ResponseDto(
-        ResponseCode.GET_SIGNATURE_DETAIL_SUCCESS,
-        true,
-        "시그니처 상세보기 성공",
-        result
-      );
+
+      if(result.author){  // 작성자가 본인이 아닌 경우
+        if(result.author._id == null){  // 작성자가 탈퇴한 경우
+          return new ResponseDto(
+            ResponseCode.GET_SIGNATURE_DETAIL_SUCCESS,
+            true,
+            "시그니처 상세보기 성공: 작성자 탈퇴",
+            result
+          );
+        }
+        else{
+          return new ResponseDto(
+            ResponseCode.GET_SIGNATURE_DETAIL_SUCCESS,
+            true,
+            "시그니처 상세보기 성공: 메이트의 시그니처",
+            result
+          );
+
+        }
+      }
+      else{ // 작성자가 본인인 경우 author 없음
+        return new ResponseDto(
+          ResponseCode.GET_SIGNATURE_DETAIL_SUCCESS,
+          true,
+          "시그니처 상세보기 성공: 내 시그니처",
+          result
+        );
+      }
     }
     catch(error){
       console.log('Error on signatureId: ',error);
