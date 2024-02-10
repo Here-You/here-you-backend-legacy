@@ -4,6 +4,9 @@ import { FollowDto } from './dto/follow.dto';
 import { UserEntity } from "../user/user.entity";
 import { UserService } from "../user/user.service";
 import { S3UtilService } from "../utils/S3.service";
+import {SignatureEntity} from "../signature/domain/signature.entity";
+import {Like} from "typeorm";
+import {FollowSearchDto} from "./dto/follow.search.dto";
 
 @Injectable()
 export class FollowService {
@@ -71,6 +74,7 @@ export class FollowService {
 
             // 사용자 프로필 이미지
             const image = await this.userService.getProfileImage(mateEntity.id);
+            followDto.image = image.imageKey;
             if(image == null) followDto.image = null;
             else{
                 const userImageKey = image.imageKey;
@@ -78,8 +82,7 @@ export class FollowService {
             }
 
             return followDto;
-        }))
-
+        }));
         return informs;
     }
 
@@ -106,14 +109,14 @@ export class FollowService {
 
             // 사용자 프로필 이미지
             const image = await this.userService.getProfileImage(mateEntity.id);
+            followDto.image = image.imageKey;
             if(image == null) followDto.image = null;
             else{
                 const userImageKey = image.imageKey;
                 followDto.image = await this.s3Service.getImageUrl(userImageKey);
             }
-
             return followDto;
-        }))
+        }));
 
         return informs;
     }
@@ -121,12 +124,39 @@ export class FollowService {
     // [5] 메이트 검색
     async getSearchResult(userId: number, searchTerm: string) {
         // 검색 결과에 해당하는 값 찾기
-
         // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
+        console.log('검색 값: ', searchTerm);
+        const resultUsers = await UserEntity.find({
+            where: [{ name: Like(`%${searchTerm}%`) }, { nickname: Like(`%${searchTerm}%`) }],
+            relations: ['profileImage', 'following']
+        });
 
-        // 찾은 사용자의 정보를 검색 결과 담아줄 dto 에 넣기
+        const userEntity = await UserEntity.findExistUser(userId);
 
-        // 결과 return
+        const searchResult = await Promise.all(resultUsers.map(async (user) => {
+            const followSearchDto = new FollowSearchDto();
+
+            console.log('현재의 유저 : ', user.id);
+            followSearchDto.id = user.id;
+            followSearchDto.nickName = user.nickname;
+            followSearchDto.introduction = user.introduction;
+
+            followSearchDto.followerCnt = user.follower.length;
+            followSearchDto.followingCnt = user.following.length;
+
+            // 팔로우 여부
+            followSearchDto.isFollowing = await this.userService.checkIfFollowing(userEntity, followSearchDto.id);
+
+            // 사용자 프로필 이미지
+            const image = user.profileImage;
+            followSearchDto.image = image.imageKey;
+            if(image == null) followSearchDto.image = null;
+            else{
+                const userImageKey = image.imageKey;
+                followSearchDto.image = await this.s3Service.getImageUrl(userImageKey);
+            }
+            return followSearchDto;
+        }))
+        return searchResult;
     }
-
 }

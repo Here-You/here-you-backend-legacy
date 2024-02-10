@@ -1,9 +1,9 @@
 import {IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString} from 'class-validator';
 
-export class UserSearchDto {
+export class FollowSearchDto {
     @IsNotEmpty()
     @IsNumber()
-    mateId: number;
+    id: number;
 
     @IsNotEmpty()
     @IsString()

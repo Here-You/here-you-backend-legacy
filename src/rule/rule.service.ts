@@ -91,6 +91,7 @@ export class RuleService {
 
       // 사용자 프로필 이미지
       const image = memberEntity.profileImage;
+      detailMember.image = image.imageKey;
       if(image == null) detailMember.image = null;
       else{
         const userImageKey = image.imageKey;
