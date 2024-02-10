@@ -12,10 +12,9 @@ export class DetailScheduleService {
     const schedule = await ScheduleEntity.findExistSchedule(scheduleId);
     console.log(schedule.id);
     const detailSchedule = await DetailScheduleEntity.createDetailSchedule(
-      schedule.id,
+      schedule,
       content,
     );
-    console.log(detailSchedule);
     return response(BaseResponse.DETAIL_SCHEDULE_CREATED);
   }
 
