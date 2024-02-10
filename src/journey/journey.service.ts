@@ -66,7 +66,7 @@ export class JourneyService {
 
   async deleteJourney(journeyId: number) {
     const journey = await JourneyEntity.findExistJourney(journeyId);
-    const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+    const schedules = await ScheduleEntity.findExistSchedulesByJourneyId(
       journey.id,
     );
     for (const schedule of schedules) {

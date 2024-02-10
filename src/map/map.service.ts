@@ -34,7 +34,7 @@ export class MapService {
     }
     const result = await Promise.all(
       paginatedJourneys.map(async (journey) => {
-        const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+        const schedules = await ScheduleEntity.findExistSchedulesByJourneyId(
           journey.id,
         );
         const scheduleList = await Promise.all(
@@ -114,7 +114,7 @@ export class MapService {
   /*지도에서 여정 정보 보여주기*/
   async getJourneyPreview(journeyId) {
     const journey = await this.getJourneyInfo(journeyId);
-    const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+    const schedules = await ScheduleEntity.findExistSchedulesByJourneyId(
       journeyId,
     );
     const locationList = await this.getLocationList(schedules);
@@ -140,7 +140,7 @@ export class MapService {
   /*작성한 일지 불러오기 - 지도*/
   async getDiaryList(journeyId) {
     const journey = await JourneyEntity.findExistJourney(journeyId);
-    const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+    const schedules = await ScheduleEntity.findExistSchedulesByJourneyId(
       journey.id,
     );
     const diaryList = await Promise.all(
@@ -170,7 +170,7 @@ export class MapService {
   /* 지도에서 세부 여정 확인하기 */
   async getDetailJourneyList(journeyId) {
     const journey = await this.getJourneyInfo(journeyId);
-    const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+    const schedules = await ScheduleEntity.findExistSchedulesByJourneyId(
       journey.id,
     );
     const scheduleInfoList = await this.getScheduleList(schedules);
@@ -216,6 +216,7 @@ export class MapService {
         }
         return {
           locationId: location.id,
+          name: location.name,
           latitude: location.latitude,
           longitude: location.longitude,
         };
