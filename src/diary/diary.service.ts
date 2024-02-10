@@ -31,7 +31,7 @@ export class DiaryService {
   /*일지 사진 S3에 업로드 후 url 받기- 생성 */
   async getDiaryImgUrl(diary, fileName: string) {
     const imageKey = `diary/${this.s3UtilService.generateRandomImageKey(
-      fileName,
+      'diary.png',
     )}`;
     await this.s3UtilService.putObjectFromBase64(imageKey, fileName);
     return imageKey;
