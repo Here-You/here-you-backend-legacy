@@ -186,6 +186,7 @@ export class RuleService {
         return ruleMains;
       }
     } catch (e) {
+      console.error(e);
       console.log('참여하는 여행 규칙이 없습니다');
     }
   }
