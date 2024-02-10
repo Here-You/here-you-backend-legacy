@@ -76,6 +76,7 @@ export class LocationEntity extends BaseEntity {
     }
     const location = await LocationEntity.findOne({
       where: {
+        name: updateScheduleDto.location,
         latitude: updateScheduleDto.latitude,
         longitude: updateScheduleDto.longitude,
       },
