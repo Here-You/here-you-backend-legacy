@@ -122,14 +122,19 @@ export class ScheduleEntity extends BaseEntity {
     journeyId,
     dates: MonthInfoDto,
   ): Promise<ScheduleEntity[]> {
-    const firstDate = new Date(`${dates.year}-${dates.month}-01`);
-    const lastDate = new Date(`${dates.year}-${dates.month}-31`);
-    const schedule = await ScheduleEntity.find({
+    const firstDate = new Date(dates.year, dates.month - 1, 1);
+    const lastDate = new Date(dates.year, dates.month, 0);
+    console.log('startDate : ', firstDate, 'lastDate', lastDate);
+    const monthlySchedule = await ScheduleEntity.find({
       where: {
         journey: { id: journeyId },
         date: Between(firstDate, lastDate),
       },
+      relations: ['location'],
     });
-    return schedule;
+    for (const schedule of monthlySchedule) {
+      console.log(schedule.date);
+    }
+    return monthlySchedule;
   }
 }

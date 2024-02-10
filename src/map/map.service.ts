@@ -25,10 +25,12 @@ export class MapService {
           journey.id,
           monthInfoDto,
         );
+        console.log(schedules);
         const locations = await this.getLocationList(schedules);
         const images = await this.getDiaryImageList(schedules);
         const mapInfo = schedules.map((schedule, index) => {
           return {
+            date: schedules[index].date,
             location: locations[index],
             diaryImage: images[index],
           };
@@ -188,10 +190,27 @@ export class MapService {
   }
 
   //사용자의 월별 일정 가지고 오기
-  async getMonthlySchedule(journeyId, monthInfoDto: MonthInfoDto) {
+  async getMonthlySchedule(
+    journeyId,
+    monthInfoDto: MonthInfoDto,
+  ): Promise<ScheduleEntity[]> {
     const schedules: ScheduleEntity[] =
       await ScheduleEntity.findMonthlySchedule(journeyId, monthInfoDto);
     return schedules;
+    // const schedules: ScheduleEntity[] =
+    //   await ScheduleEntity.findExistScheduleByJourneyId(journeyId);
+    // const monthlySchedules: ScheduleEntity[] = await Promise.all(
+    //   schedules.map(async (schedule) => {
+    //     const monthlySchedule = await ScheduleEntity.findMonthlySchedule(
+    //       schedule,
+    //       monthInfoDto,
+    //     );
+    //     console.log('4월 일정', monthlySchedule);
+    //     return monthlySchedule;
+    //   }),
+    // );
+
+    // return monthlySchedules;
   }
 
   //여정에 작성한 일지 개수 가지고 오기
