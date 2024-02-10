@@ -1,6 +1,6 @@
 //mate.controller.ts
 
-import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { UserGuard } from '../user/user.guard';
 import { Request } from 'express';
 import { CursorPageOptionsDto } from './cursor-page/cursor-page-option.dto';
@@ -9,6 +9,7 @@ import { ResponseDto } from '../response/response.dto';
 import { MateRecommendProfileDto } from './dto/mate-recommend-profile.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { MateWithCommonLocationResponseDto } from './dto/mate-with-common-location-response.dto';
+import { MateProfileResponseDto } from './dto/mate-profile-response.dto';
 
 @Controller('/mate')
 export class MateController{
@@ -79,4 +80,37 @@ export class MateController{
       }
   }
 
+  @Get(':userId')
+  @UseGuards(UserGuard)
+  async getUserProfile(
+    @Req() req: Request,
+    @Param('userId') userId: number
+  ): Promise<ResponseDto<MateProfileResponseDto>>{
+    try{
+      const result = await this.mateService.findProfileWithUserId(req.user.id, userId);
+
+      if(!result){
+        return new ResponseDto(
+          ResponseCode.GET_USER_PROFILE_FAIL,
+          false,
+          "유저 프로필 정보 가져오기 실패",
+          null);
+      }
+      else{
+        return new ResponseDto(
+          ResponseCode.GET_USER_PROFILE_SUCCESS,
+          true,
+          "유저 프로필 정보 가져오기 성공",
+          result);
+      }
+
+    }catch (error) {
+      console.log("Error at GetUserProfile: ", error);
+      return new ResponseDto(
+        ResponseCode.GET_USER_PROFILE_FAIL,
+        false,
+        "유저 프로필 정보 가져오기 실패",
+        null);
+    }
+  }
 }

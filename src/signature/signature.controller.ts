@@ -56,7 +56,6 @@ export class SignatureController {
         false,
         "시그니처 생성에 실패했습니다",
         null);
-
     }
     else{
       return new ResponseDto(
