@@ -308,7 +308,7 @@ export class MateService{
             }
           });
 
-          cursorId = recentSignature.id;
+          cursorId = recentSignature.id + 1;
 
         }
         else cursorId = cursorPageOptionsDto.cursorId;
