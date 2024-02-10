@@ -93,9 +93,8 @@ export class SearchService{
     return signatureCovers;
   }
 
-  async searchByKeyword(keyword: string) {
+  async searchByKeyword(keyword: string) {  // 키워드로 검색하기
     try{
-      // 키워드로 검색하기
       const resultSignatures = await SignatureEntity.find({
         where:{ title: Like(`%${keyword}%`) },
         relations: ['user'] // user 포함
@@ -115,8 +114,8 @@ export class SearchService{
   }
 
 
-  async getSignatureCover(signature:SignatureEntity):Promise<CoverSignatureDto>{
-    // 시그니처 커버 만들기
+  async getSignatureCover(signature:SignatureEntity)  // 시그니처 커버 만들기
+    :Promise<CoverSignatureDto>{
     const signatureCover = new CoverSignatureDto();
 
     signatureCover._id = signature.id;
