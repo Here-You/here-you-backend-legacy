@@ -15,20 +15,42 @@ export class MapService {
   /*캘린더에서 사용자의 월별 일정 불러오기*/
   async getMonthlySchedules(userId: number, date: Date) {
     const user = await UserEntity.findExistUser(userId);
-    const journeys = await JourneyEntity.findExistJourneyByDate(userId, date);
-    const scheduleList = await Promise.all(
+    const journeys = await JourneyEntity.findExistJourneyByDate(user.id, date);
+    console.log('포함 여정 : ', journeys);
+    const result = await Promise.all(
       journeys.map(async (journey) => {
         const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
           journey.id,
         );
-        if (!schedules) {
-          return errResponse(BaseResponse.SCHEDULE_NOT_FOUND);
-        }
-        const locations = await this.getLocationList(schedules);
-        const detailSchedules = await this.getDetailScheduleList(schedules);
-        const diary = await this.getDiaryStatus(schedules);
+        const scheduleList = await Promise.all(
+          schedules.map(async (schedule) => {
+            const locations = await this.getLocationList([schedule]); // getLocationList에 schedule 배열을 전달
+            const detailSchedules = await this.getDetailScheduleList([
+              schedule,
+            ]); // getDetailScheduleList에 schedule 배열을 전달
+            const diary = await this.getDiaryStatus([schedule]); // getDiaryStatus에 schedule 배열을 전달
+
+            return {
+              scheduleId: schedule.id,
+              title: schedule.title,
+              date: schedule.date,
+              location: locations,
+              detailSchedules: detailSchedules,
+              diary: diary,
+            };
+          }),
+        );
+
+        return {
+          journeyId: journey.id,
+          startDate: journey.startDate,
+          endDate: journey.endDate,
+          scheduleList: scheduleList,
+        };
       }),
     );
+
+    return response(BaseResponse.GET_SCHEDULE_SUCCESS, result);
   }
 
   /*지도에서 사용자의 월별 여정 불러오기*/
@@ -251,6 +273,7 @@ export class MapService {
         if (!diary) {
           return false;
         }
+        return true;
       }),
     );
 
@@ -271,3 +294,17 @@ export class MapService {
     };
   }
 }
+
+// const scheduleList = await Promise.all(
+//   journeys.map(async (journey) => {
+//     const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+//       journey.id,
+//     );
+//     if (!schedules) {
+//       return errResponse(BaseResponse.SCHEDULE_NOT_FOUND);
+//     }
+//     const locations = await this.getLocationList(schedules);
+//     const detailSchedules = await this.getDetailScheduleList(schedules);
+//     const diary = await this.getDiaryStatus(schedules);
+//   }),
+// );

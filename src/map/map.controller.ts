@@ -44,7 +44,7 @@ export class MapController {
     description: '성공 ',
   })
   @UseGuards(UserGuard)
-  @Get('get-monthly-schedule')
+  @Get('get-monthly-schedule/:date')
   async getMonthlySchedule(@Param('date') date: Date, @Req() req: Request) {
     const user = req.user;
     const result = await this.mapService.getMonthlySchedules(user.id, date);

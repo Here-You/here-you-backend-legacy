@@ -11,6 +11,8 @@ import {
   OneToMany,
   ManyToOne,
   Between,
+  LessThanOrEqual,
+  MoreThanOrEqual,
 } from 'typeorm';
 
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
@@ -96,10 +98,10 @@ export class JourneyEntity extends BaseEntity {
     return journey;
   }
 
-  static async findExistJourneyByDate(userId: number, date) {
+  static async findExistJourneyByDate(userId: number, date: Date) {
     const journeys: JourneyEntity[] = await JourneyEntity.find({
       where: {
-        id: userId,
+        user: { id: userId },
         startDate: Between(new Date(0), date),
         endDate: Between(date, new Date('9999-12-31')),
       },
