@@ -57,6 +57,7 @@ export class MapService {
         );
 
         return {
+          userId: user.id,
           journeyId: journey.id,
           startDate: journey.startDate,
           endDate: journey.endDate,
@@ -99,6 +100,7 @@ export class MapService {
         });
         const diaryCount = await this.getDiaryCount(schedules);
         return {
+          userId: user.id,
           journeyId: journey.id,
           title: journey.title,
           startDate: journey.startDate,
@@ -112,7 +114,8 @@ export class MapService {
   }
 
   /*지도에서 여정 정보 보여주기*/
-  async getJourneyPreview(journeyId) {
+  async getJourneyPreview(userId, journeyId) {
+    const user = await UserEntity.findExistUser(userId);
     const journey = await this.getJourneyInfo(journeyId);
     const schedules = await ScheduleEntity.findExistSchedulesByJourneyId(
       journeyId,
@@ -127,6 +130,7 @@ export class MapService {
     });
 
     return response(BaseResponse.GET_JOURNEY_PREVIEW_SUCCESS, {
+      userId: user.id,
       journey: {
         journeyId: journey.id,
         title: journey.title,
@@ -138,7 +142,8 @@ export class MapService {
   }
 
   /*작성한 일지 불러오기 - 지도*/
-  async getDiaryList(journeyId) {
+  async getDiaryList(userId, journeyId) {
+    const user = await UserEntity.findExistUser(userId);
     const journey = await JourneyEntity.findExistJourney(journeyId);
     const schedules = await ScheduleEntity.findExistSchedulesByJourneyId(
       journey.id,
@@ -164,11 +169,15 @@ export class MapService {
         };
       }),
     );
-    return response(BaseResponse.GET_DIARY_SUCCESS, diaryList);
+    return response(BaseResponse.GET_DIARY_SUCCESS, {
+      userId: user.id,
+      diaryList,
+    });
   }
 
   /* 지도에서 세부 여정 확인하기 */
-  async getDetailJourneyList(journeyId) {
+  async getDetailJourneyList(userId, journeyId) {
+    const user = await UserEntity.findExistUser(userId);
     const journey = await this.getJourneyInfo(journeyId);
     const schedules = await ScheduleEntity.findExistSchedulesByJourneyId(
       journey.id,
@@ -185,7 +194,10 @@ export class MapService {
         diary: diaryStatus[index],
       };
     });
-    return response(BaseResponse.GET_SCHEDULE_SUCCESS, detailJourneyList);
+    return response(BaseResponse.GET_SCHEDULE_SUCCESS, {
+      userId: user.id,
+      detailJourneyList,
+    });
   }
 
   //일정 정보 불러오기

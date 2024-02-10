@@ -12,7 +12,10 @@ import {
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { Request } from 'express';
 import { DetailScheduleService } from './detail-schedule.service';
-import { DetailContentDto } from './detail-schedule-info.dto';
+import {
+  DetailContentDto,
+  DetailScheduleInfoDto,
+} from './detail-schedule-info.dto';
 import { UserGuard } from 'src/user/user.guard';
 
 @Controller('detail-schedule')
@@ -32,9 +35,11 @@ export class DetailScheduleController {
   async createDetailSchedule(
     @Req() req: Request,
     @Param('scheduleId') scheduleId: number,
+    @Body() body: DetailContentDto,
   ) {
     const result = await this.detailScheduleService.createDetailSchedule(
       scheduleId,
+      body,
     );
     return result;
   }
