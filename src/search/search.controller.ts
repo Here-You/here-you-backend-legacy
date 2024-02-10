@@ -4,7 +4,7 @@ import { Body, Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { ResponseDto } from '../response/response.dto';
 import { GetSearchMainDto } from './dto/get-search-main.dto';
 import { ResponseCode } from '../response/response-code.enum';
-import { CoverSignatureDto } from './dto/cover-signature.dto';
+import { SignatureCoverDto } from './dto/signature-cover.dto';
 import { SearchService } from './search.service';
 import { UserGuard } from '../user/user.guard';
 import { Request } from 'express';
@@ -23,11 +23,11 @@ export class SearchController{
       const getSearchMainDto:GetSearchMainDto = new GetSearchMainDto();
 
       // [1] 인기 급상승 시그니처 가져오기
-      const hotSignatures:CoverSignatureDto[] = await this.searchService.findHotSignatures();
+      const hotSignatures:SignatureCoverDto[] = await this.searchService.findHotSignatures();
       getSearchMainDto.hot = hotSignatures;
 
       // [2] 내가 팔로우하는 메이트들의 최신 시그니처 가져오기
-      const newSignatures:CoverSignatureDto[] = await this.searchService.findMatesNewSignatures(req.user.id);
+      const newSignatures:SignatureCoverDto[] = await this.searchService.findMatesNewSignatures(req.user.id);
       getSearchMainDto.new = newSignatures;
 
       return new ResponseDto(
@@ -48,10 +48,10 @@ export class SearchController{
   }
 
   @Get('/find') // 탑색탭 검색: 키워드로 시그니처 검색하기
-  async search(@Query('keyword') keyword: string): Promise<ResponseDto<CoverSignatureDto[]>> {
+  async search(@Query('keyword') keyword: string): Promise<ResponseDto<SignatureCoverDto[]>> {
     try{
 
-      const searchResult: CoverSignatureDto[] = await this.searchService.searchByKeyword(keyword);
+      const searchResult: SignatureCoverDto[] = await this.searchService.searchByKeyword(keyword);
 
       return new ResponseDto(
         ResponseCode.SEARCH_BY_KEYWORD_SUCCESS,

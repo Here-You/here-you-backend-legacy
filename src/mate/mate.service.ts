@@ -15,6 +15,7 @@ import { MateRecommendProfileDto } from './dto/mate-recommend-profile.dto';
 import { MateController } from './mate.controller';
 import { MateSignatureCoverDto } from './dto/mate-signature-cover.dto';
 import { MateWithCommonLocationResponseDto } from './dto/mate-with-common-location-response.dto';
+import { MateProfileResponseDto } from './dto/mate-profile-response.dto';
 
 @Injectable()
 export class MateService{
@@ -249,4 +250,39 @@ export class MateService{
 
   }
 
+  async findProfileWithUserId(loginUserId: number, targetUserId) { // 유저 정보 가져오기
+    try{
+      const targetUserEntity = await this.userService.findUserById(targetUserId);
+      console.log(targetUserEntity);
+
+      const mateProfileResponseDto:MateProfileResponseDto = new MateProfileResponseDto();
+      mateProfileResponseDto._id = targetUserEntity.id;
+      mateProfileResponseDto.nickname = targetUserEntity.nickname;
+      mateProfileResponseDto.introduction = targetUserEntity.introduction;
+
+      // 타겟 유저 프로필 이미지 가져오기
+      const userProfileImageEntity = await this.userService.getProfileImage(targetUserId);
+      if(userProfileImageEntity == null) mateProfileResponseDto.image = null;
+      else{
+        const userProfileImageKey = userProfileImageEntity.imageKey;
+        mateProfileResponseDto.image = await this.s3Service.getImageUrl(userProfileImageKey);
+      }
+
+      // 현재 로그인한 유저가 타켓 유저를 팔로우하는지 여부 가져오기
+      if(loginUserId == targetUserId){ // 현재 로그인 유저와 타겟 유저가 같다면 is_followed = null
+        mateProfileResponseDto.is_followed = null;
+
+      }else{
+        const loginUserEntity = await this.userService.findUserById(loginUserId);
+        mateProfileResponseDto.is_followed = await this.userService.checkIfFollowing(loginUserEntity,targetUserId);
+
+      }
+      return mateProfileResponseDto;
+
+    }
+    catch(error){
+      console.log("Err on findProfileWithId Service: ",error);
+      throw error;
+    }
+  }
 }

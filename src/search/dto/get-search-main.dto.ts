@@ -1,8 +1,8 @@
 // get-search-main.dto.ts
 
-import { CoverSignatureDto } from './cover-signature.dto';
+import { SignatureCoverDto } from './signature-cover.dto';
 
 export class GetSearchMainDto{
-  hot: CoverSignatureDto[];
-  new: CoverSignatureDto[];
+  hot: SignatureCoverDto[];
+  new: SignatureCoverDto[];
 }

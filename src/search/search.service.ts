@@ -2,7 +2,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { SignatureEntity } from '../signature/domain/signature.entity';
-import { CoverSignatureDto } from './dto/cover-signature.dto';
+import { SignatureCoverDto } from './dto/signature-cover.dto';
 import { SignaturePageEntity } from '../signature/domain/signature.page.entity';
 import { UserService } from '../user/user.service';
 import { exit } from '@nestjs/cli/actions';
@@ -18,7 +18,7 @@ export class SearchService{
     private readonly s3Service: S3UtilService,
   ) {}
 
-  async findHotSignatures(): Promise<CoverSignatureDto[]> {
+  async findHotSignatures(): Promise<SignatureCoverDto[]> {
     try{
       /*****************************************
        인기 시그니처 알고리즘 로직:
@@ -81,7 +81,7 @@ export class SearchService{
   async getSignatureCoversForSearchMain(signatureEntities){
 
     // 탐색 메인화면에 출력될 시그니처 커버 20개 만들기
-    const signatureCovers: CoverSignatureDto[] = [];
+    const signatureCovers: SignatureCoverDto[] = [];
 
     for (let i = 0; i < signatureEntities.length && i < 20; i++) {
       const signature = signatureEntities[i];
@@ -115,8 +115,8 @@ export class SearchService{
 
 
   async getSignatureCover(signature:SignatureEntity)  // 시그니처 커버 만들기
-    :Promise<CoverSignatureDto>{
-    const signatureCover = new CoverSignatureDto();
+    :Promise<SignatureCoverDto>{
+    const signatureCover = new SignatureCoverDto();
 
     signatureCover._id = signature.id;
     signatureCover.title = signature.title;
@@ -134,7 +134,6 @@ export class SearchService{
     else{
       const userProfileImageKey = userProfileImageEntity.imageKey;
       signatureCover.userImage = await this.s3Service.getImageUrl(userProfileImageKey);
-
     }
     return signatureCover;
   }
