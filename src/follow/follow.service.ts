@@ -1,4 +1,4 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import {Injectable, HttpException, NotFoundException, BadRequestException} from '@nestjs/common';
 import { UserFollowingEntity } from 'src/user/user.following.entity';
 import { FollowDto } from './dto/follow.dto';
 import { UserEntity } from "../user/user.entity";
@@ -15,39 +15,74 @@ export class FollowService {
         private readonly s3Service: S3UtilService,
     ) {}
 
+    // 팔로우 가능한 사이인지 검증
+    async checkFollow(userId : number, followingId : number): Promise<number> {
+        try {
+            // case1) 유효한 유저인지 검증
+            const userEntity : UserEntity = await this.userService.findUserById(userId);
+            const followingUser = await UserEntity.findExistUser(followingId);
+            if (!followingUser) throw new NotFoundException('해당 사용자를 찾을 수 없습니다');
+            console.log('현재 로그인한 유저 : ', userEntity);
+            console.log('팔로우 대상 유저 : ', followingUser);
+
+            // case2) 본인을 팔로우한 경우
+            if (userId == followingId) throw new BadRequestException('본인을 팔로우 할 수 없습니다');
+
+            // case3) 팔로우 관계 확인
+            const isAlreadyFollowing = await this.userService.isAlreadyFollowing(userId, followingId);
+            console.log('Is already following? : ', isAlreadyFollowing);
+
+            // [2] 이미 팔로우 한 사이, 팔로우 취소
+            if (isAlreadyFollowing) {
+                console.log('언팔로우 service 호출');
+                return this.deleteFollow(userId, followingId);
+            } else {
+                // [1] 팔로우
+                console.log('팔로우 service 호출');
+                return this.createFollow(userId, followingId);
+            }
+        } catch (e) {
+            console.log('팔로우 요청에 실패하였습니다');
+            throw new Error(e.message);
+        }
+    }
+
     // [1] 팔로우
-    async createFollow(userId : number, followingId : number): Promise<UserFollowingEntity> {
+    async createFollow(userId : number, followingId : number): Promise<number> {
 
-        const userEntity : UserEntity = await this.userService.findUserById(userId);
-        const followingUserEntity : UserEntity = await this.userService.findUserById(followingId);
-        console.log('현재 로그인한 유저 : ', userEntity);
-        console.log('팔로우 대상 유저 : ', followingUserEntity);
+        try {
+            const userEntity : UserEntity = await this.userService.findUserById(userId);
+            const followingUser = await UserEntity.findExistUser(followingId);
+            if (!followingUser) throw new NotFoundException('해당 사용자를 찾을 수 없습니다');
+            console.log('현재 로그인한 유저 : ', userEntity);
+            console.log('팔로우 대상 유저 : ', followingUser);
+            if (userId == followingId) throw new BadRequestException('본인을 팔로우 할 수 없습니다');
 
-        try{
             const userFollowingEntity = new UserFollowingEntity();
             userFollowingEntity.user = userEntity;
-            userFollowingEntity.followUser = followingUserEntity;
+            userFollowingEntity.followUser = followingUser;
 
-            return userFollowingEntity.save();
-
-        }catch(error){
-            console.error('Error on following: ', error);
-            throw new Error('Failed to following');
+            await userFollowingEntity.save();
+            return userFollowingEntity.id;
+        } catch (e) {
+            console.log('팔로우 요청에 실패하였습니다');
+            throw new Error(e.message);
         }
     }
 
     // [2] 언팔로우
-    async deleteFollow(userId: number, followingId:number): Promise<UserFollowingEntity> {
+    async deleteFollow(userId: number, followingId:number): Promise<number> {
         console.log('언팔로우 서비스 호출');
         const followEntity : UserFollowingEntity = await UserFollowingEntity.findOneOrFail({ where:
                 { user : {id : userId}, followUser : {id : followingId}}
         });
 
         try{
-            return followEntity.softRemove();
-        }catch(error){
-            console.error('Error on unfollowing: ', error);
-            throw new Error('Failed to unfollowing');
+            await followEntity.softRemove();
+            return followEntity.id;
+        }catch(e){
+            console.error('언팔로우 요청에 실패하였습니다: ');
+            throw new Error(e.message);
         }
     }
 

@@ -18,38 +18,19 @@ export class FollowController {
     @Patch('/search/follow/:followingId')
     @UseGuards(UserGuard)
     async createFollow(@Req() req: Request, @Param('followingId') followingId : number): Promise<ResponseDto<any>> {
-
         try {
-            // 팔로우 관계 확인
-            const isAlreadyFollowing = await this.userService.isAlreadyFollowing(req.user.id, followingId);
-            console.log('Is already following? : ', isAlreadyFollowing);
-
-            // -1) 이미 팔로우 한 사이, 팔로우 취소
-            if (isAlreadyFollowing) {
-                console.log('언팔로우 service 호출');
-                await this.followService.deleteFollow(req.user.id, followingId);
-                return new ResponseDto(
-                    ResponseCode.UNFOLLOW_SUCCESS,
-                    true,
-                    "언팔로우 성공",
-                    null
-                );
-            } else {
-                // -2) 팔로우
-                console.log('팔로우 service 호출');
-                await this.followService.createFollow(req.user.id, followingId);
-                return new ResponseDto(
-                    ResponseCode.FOLLOW_CREATED,
-                    true,
-                    "팔로우 성공",
-                    null
-                );
-            }
-        } catch(error) {
+            const result = await this.followService.checkFollow(req.user.id, followingId);
             return new ResponseDto(
-                ResponseCode.UNFOLLOW_FAIL,
+                ResponseCode.FOLLOW_SUCCESS,
+                true,
+                "팔로우 / 언팔로우 성공",
+                result
+            );
+        } catch (e) {
+            return new ResponseDto(
+                ResponseCode.FOLLOW_FAIL,
                 false,
-                "처리 실패",
+                e.message,
                 null
             );
         }
@@ -59,6 +40,7 @@ export class FollowController {
     @Get('/followList')
     @UseGuards(UserGuard)
     async getFollowList(@Req() req: Request): Promise<ResponseDto<any>> {
+      console.log('controller');
         try {
             const followList = await this.followService.getFollowList(req.user.id);
             return new ResponseDto(
@@ -67,11 +49,11 @@ export class FollowController {
             "팔로우 리스트 불러오기 성공",
             followList
             );
-        } catch (error) {
+        } catch (e) {
             return new ResponseDto(
                 ResponseCode.GET_FOLLOWING_LIST_FAIL,
                 false,
-                "팔로우 리스트 불러오기 실패",
+                e.message,
                 null
             );
         }
@@ -89,11 +71,11 @@ export class FollowController {
             "팔로워 리스트 불러오기 성공",
             followerList
             );
-        } catch (error) {
+        } catch (e) {
             return new ResponseDto(
                 ResponseCode.GET_FOLLOWER_LIST_FAIL,
                 false,
-                "팔로워 리스트 불러오기 실패",
+                e.message,
                 null
             );
         }
