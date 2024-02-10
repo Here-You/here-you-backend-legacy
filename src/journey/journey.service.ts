@@ -18,6 +18,7 @@ export class JourneyService {
   //여정 생성하기 - 일정, 일지 함께 생성
   async createJourney(user, createJourneyDto: CreateJourneyDto) {
     const existJourney = await JourneyEntity.findExistJourneyByPeriod(
+      user.id,
       createJourneyDto,
     );
     if (existJourney) {
