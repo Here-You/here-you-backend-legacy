@@ -58,6 +58,29 @@ export class RuleController {
     }
   }
 
+  // [3] 여행 규칙 전체 리스트 조회
+  @Get('list')
+  @UseGuards(UserGuard)
+  async getRuleList(@Req() req: Request): Promise<ResponseDto<any>> {
+    const result = await this.ruleService.getRuleList(req.user.id);
+
+    if(!result){
+      return new ResponseDto(
+          ResponseCode.GET_RULE_LIST_FAIL,
+          false,
+          "여행 규칙 전체 리스트 조회 실패",
+          null);
+
+    }
+    else{
+      return new ResponseDto(
+          ResponseCode.GET_RULE_LIST_SUCCESS,
+          true,
+          "여행 규칙 전체 리스트 조회 성공",
+          result);
+    }
+  }
+
   // [3] 여행 규칙 생성
   @Post('/write')
   @UseGuards(UserGuard)

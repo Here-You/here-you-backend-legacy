@@ -8,6 +8,7 @@ import {DetailMemberDto, DetailRuleDto, RulePairDto} from "./dto/detail.rule.dto
 import { S3UtilService} from "../utils/S3.service";
 import { GetMemberListDto} from "./dto/get-member-list.dto";
 import {UserService} from "../user/user.service";
+import {GetRuleListDto, MemberPairDto} from "./dto/get-rule-list.dto";
 
 @Injectable()
 export class RuleService {
@@ -134,10 +135,68 @@ export class RuleService {
         memberDto.image = await this.s3Service.getImageUrl(userImageKey);
       }
       return memberDto;
-    }))
+    }));
     const sortedList = membersList.sort((a, b) => a.id - b.id);
     return sortedList;
   }
+
+  // [5] 여행 규칙 전체 리스트 조회
+  async getRuleList(userId: number) :Promise<GetRuleListDto[]> {
+    const userEntity = await UserEntity.findOne({
+      where: {id: userId},
+      relations: ['ruleParticipate', 'profileImage', 'ruleParticipate']
+      // relations: {ruleParticipate: true, profileImage: true}
+    });
+
+    try {
+      const invitationEntities = userEntity.ruleParticipate;
+
+      if (!!invitationEntities) {
+        const ruleMains = await Promise.all(invitationEntities.map(async (invitation) : Promise<GetRuleListDto> => {
+          console.log(invitation);
+          const ruleMain = invitation.rule;
+          const ruleListDto = new GetRuleListDto;
+
+          console.log('ruleMain.id : ');
+
+          ruleListDto.id = ruleMain.id;
+          ruleListDto.title = ruleMain.mainTitle;
+          ruleListDto.updated = ruleMain.updated;
+          ruleListDto.memberCnt = ruleMain.invitations.length;
+          ruleListDto.memberPairs = await this.getMemberPairs(ruleListDto, ruleMain);
+
+          return ruleListDto;
+        }));
+        return ruleMains;
+      }
+    } catch (e) {
+      console.log('참여하는 여행 규칙이 없습니다');
+    }
+  }
+
+  async getMemberPairs(ruleListDto: GetRuleListDto, ruleMain: RuleMainEntity) : Promise<MemberPairDto[]> {
+    const invitations: RuleInvitationEntity[] = ruleMain.invitations;
+
+    const result : MemberPairDto[] = await Promise.all(invitations.map(async (invitation) : Promise<MemberPairDto> => {
+      const memberPair = new MemberPairDto;
+      const user: UserEntity = invitation.member;
+
+      memberPair.id = user.id;
+      memberPair.name = user.name;
+
+      // 사용자 프로필 이미지
+      const image = user.profileImage;
+      memberPair.image = image.imageKey;
+      if(image == null) memberPair.image = null;
+      else {
+        const userImageKey = image.imageKey;
+        memberPair.image = await this.s3Service.getImageUrl(userImageKey);
+      }
+    return memberPair;
+  }));
+    return result;
+  }
+
 
   // [member] 초대 받은 멤버 리스트 생성
   async getInvitationList(ruleId: number) {

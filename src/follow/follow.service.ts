@@ -117,4 +117,16 @@ export class FollowService {
 
         return informs;
     }
+
+    // [5] 메이트 검색
+    async getSearchResult(userId: number, searchTerm: string) {
+        // 검색 결과에 해당하는 값 찾기
+
+        // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
+
+        // 찾은 사용자의 정보를 검색 결과 담아줄 dto 에 넣기
+
+        // 결과 return
+    }
+
 }
