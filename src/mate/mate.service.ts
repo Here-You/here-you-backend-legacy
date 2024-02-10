@@ -280,10 +280,10 @@ export class MateService{
       }
 
       const followingList = await this.userService.getFollowingList(targetUserId);
-      mateProfileResponseDto.followingCnt = followingList.length;
+      mateProfileResponseDto.following = followingList.length;
 
       const followerList = await this.userService.getFollowerList(targetUserId);
-      mateProfileResponseDto.followerCnt = followerList.length;
+      mateProfileResponseDto.follower = followerList.length;
 
       return mateProfileResponseDto;
 
