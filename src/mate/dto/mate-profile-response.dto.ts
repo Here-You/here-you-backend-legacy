@@ -6,4 +6,7 @@ export class MateProfileResponseDto {
   nickname: string;
   introduction: string;
   is_followed: boolean;
+
+  follower: number;
+  following: number;
 }

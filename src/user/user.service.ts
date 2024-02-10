@@ -152,11 +152,11 @@ export class UserService {
 
   async getFollowingList(userId: number) {
     try {
-      const userFollowingEntity = await UserFollowingEntity.find({
+      return await UserFollowingEntity.find({
         where: { user: { id: userId } },
         relations: ['followUser'],
       });
-      return userFollowingEntity;
+
     } catch (error) {
       console.log('Error on getFollowingList: ' + error);
     }
@@ -164,11 +164,11 @@ export class UserService {
 
   async getFollowerList(userId: number) {
     try {
-      const userFollowerEntity = await UserFollowingEntity.find({
+      return await UserFollowingEntity.find({
         where: { followUser: { id: userId } },
         relations: ['user'],
       });
-      return userFollowerEntity;
+
     } catch (error) {
       console.log('Error on getFollowingList: ' + error);
     }
