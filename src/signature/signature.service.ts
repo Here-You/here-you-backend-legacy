@@ -142,20 +142,21 @@ export class SignatureService {
       const authorDto: AuthorSignatureDto = new AuthorSignatureDto();
 
       if(signature.user){
-        if(loginUser.id != signature.user.id) { // 본인의 시그니처면 빈 객체를, 다르면 작성자의 프로필 정보를 담는다
-          authorDto._id = signature.user.id;
-          authorDto.name = signature.user.nickname;
+        authorDto._id = signature.user.id;
+        authorDto.name = signature.user.nickname;
 
-          const image = await this.userService.getProfileImage(signature.user.id);
-          if(image == null) authorDto.image = null;
-          else{
-            authorDto.image = await this.s3Service.getImageUrl(image.imageKey);
-          }
+        const image = await this.userService.getProfileImage(signature.user.id);
+        if(image == null) authorDto.image = null;
+        else authorDto.image = await this.s3Service.getImageUrl(image.imageKey);
 
+        if(loginUser.id == signature.user.id) { // 시그니처 작성자가 본인이면 is_followed == null
+          authorDto.is_followed = null;
+        }
+        else{
           // 해당 시그니처 작성자를 팔로우하고 있는지 확인
           authorDto.is_followed = await this.userService.checkIfFollowing(loginUser,signature.user.id);
-          detailSignatureDto.author = authorDto;
         }
+        detailSignatureDto.author = authorDto;
       }
       else{ // 해당 시그니처를 작성한 유저가 존재하지 않는 경우(탈퇴한 경우)
         console.log("작성자 유저가 존재하지 않습니다.");
@@ -165,7 +166,6 @@ export class SignatureService {
         authorDto.is_followed = null;
         detailSignatureDto.author = authorDto;
       }
-
 
       /****************************************/
 
