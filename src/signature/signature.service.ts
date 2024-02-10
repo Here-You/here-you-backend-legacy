@@ -140,24 +140,34 @@ export class SignatureService {
 
       // [2] 시그니처 작성자 정보 가져오기
       const authorDto: AuthorSignatureDto = new AuthorSignatureDto();
+      if(!authorDto){
+        if(loginUser.id != signature.user.id) {
+          authorDto._id = signature.user.id;
+          authorDto.name = signature.user.nickname;
+
+          const image = await this.userService.getProfileImage(signature.user.id);
+          if(image == null) authorDto.image = null;
+          else{
+            authorDto.image = await this.s3Service.getImageUrl(image.imageKey);
+          }
+
+          // 해당 시그니처 작성자를 팔로우하고 있는지 확인
+          authorDto.is_followed = await this.userService.checkIfFollowing(loginUser,signature.user.id);
+          detailSignatureDto.author = authorDto;
+        }
+      }
+      else{ // 해당 시그니처를 작성한 유저가 존재하지 않는 경우(탈퇴한 경우)
+        console.log("유저가 존재하지 않습니다.");
+        authorDto._id = null;
+        authorDto.name = null;
+        authorDto.image = null;
+        authorDto.is_followed = null;
+        detailSignatureDto.author = authorDto;
+      }
 
       console.log("시그니처 작성자 id: ",signature.user.id);
       console.log("로그인한 유저 id: ",loginUser.id);
       // 본인의 시그니처면 빈 객체를, 다르면 작성자의 프로필 정보를 담는다
-      if(loginUser.id != signature.user.id) {
-        authorDto._id = signature.user.id;
-        authorDto.name = signature.user.nickname;
-
-        const image = await this.userService.getProfileImage(signature.user.id);
-        if(image == null) authorDto.image = null;
-        else{
-          authorDto.image = await this.s3Service.getImageUrl(image.imageKey);
-        }
-
-        // 해당 시그니처 작성자를 팔로우하고 있는지 확인
-        authorDto.is_followed = await this.userService.checkIfFollowing(loginUser,signature.user.id);
-        detailSignatureDto.author = authorDto;
-      }
 
       /****************************************/
 
@@ -377,7 +387,7 @@ export class SignatureService {
     }
   }
 
-  async getMyRecentSignatures(userId: number) { // 가장 최신 시그니처 두 개 반환
+  async getMyRecentSignatures(userId: number, take:number) { // 가장 최신 시그니처 반환
     // 1. 메이트 탐색의 기준이 될 장소 가져오기 = 사용자의 가장 최신 시그니처의 첫 번째 페이지 장소
     return await SignatureEntity.find({
       where: {
@@ -386,7 +396,7 @@ export class SignatureService {
       order: {
         created: 'DESC' // 'created'를 내림차순으로 정렬해서 가장 최근꺼 가져오기
       },
-      take: 2,          // 최신 시그니처 두 개 가져오기
+      take: take,          // 최신 시그니처 가져오기
     });
   }
 }
