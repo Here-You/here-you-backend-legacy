@@ -8,20 +8,6 @@ import { MonthInfoDto } from './month-info.dto';
 export class MapController {
   constructor(private readonly mapService: MapService) {}
 
-  /*여정 불러오기*/
-  @ApiOperation({
-    summary: '여정 불러오기',
-    description: '여정 제목, 날짜, 위치, 사진을 불러옵니다.',
-  })
-  @ApiOkResponse({
-    description: '성공 ',
-  })
-  @Get('get-journey/:journeyId')
-  async getJourneyPreview(@Param('journeyId') journeyId: number) {
-    const result = await this.mapService.getJourneyPreview(journeyId);
-    return result;
-  }
-
   /*월별 여정 불러오기*/
   @ApiOperation({
     summary: '월별 여정 불러오기',
@@ -46,6 +32,36 @@ export class MapController {
       user.id,
       monthInfoDto,
     );
+    return result;
+  }
+  /*월별 일정 불러오기 -캘린더 */
+  @ApiOperation({
+    summary: '월별 일정 불러오기',
+    description:
+      '여정에 포함되는 일정, 위치, 세부 일정, 다이어리 유무를 불러옵니다.',
+  })
+  @ApiOkResponse({
+    description: '성공 ',
+  })
+  @UseGuards(UserGuard)
+  @Get('get-monthly-schedule')
+  async getMonthlySchedule(@Param('date') date: Date, @Req() req: Request) {
+    const user = req.user;
+    const result = await this.mapService.getMonthlySchedules(user.id, date);
+    return result;
+  }
+
+  /*여정 불러오기*/
+  @ApiOperation({
+    summary: '여정 불러오기',
+    description: '여정 제목, 날짜, 위치, 사진을 불러옵니다.',
+  })
+  @ApiOkResponse({
+    description: '성공 ',
+  })
+  @Get('get-journey/:journeyId')
+  async getJourneyPreview(@Param('journeyId') journeyId: number) {
+    const result = await this.mapService.getJourneyPreview(journeyId);
     return result;
   }
 

@@ -17,7 +17,7 @@ import { DiaryImageEntity } from 'src/diary/models/diary.image.entity';
 export class JourneyService {
   //여정 생성하기 - 일정, 일지 함께 생성
   async createJourney(user, createJourneyDto: CreateJourneyDto) {
-    const existJourney = await JourneyEntity.findExistJourneyByDate(
+    const existJourney = await JourneyEntity.findExistJourneyByPeriod(
       createJourneyDto,
     );
     if (existJourney) {

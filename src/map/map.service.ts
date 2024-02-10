@@ -8,9 +8,29 @@ import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { MonthInfoDto } from './month-info.dto';
 import { LocationEntity } from 'src/location/location.entity';
 import { DiaryImageEntity } from 'src/diary/models/diary.image.entity';
+import { DetailScheduleEntity } from 'src/detail-schedule/detail-schedule.entity';
 
 @Injectable()
 export class MapService {
+  /*캘린더에서 사용자의 월별 일정 불러오기*/
+  async getMonthlySchedules(userId: number, date: Date) {
+    const user = await UserEntity.findExistUser(userId);
+    const journeys = await JourneyEntity.findExistJourneyByDate(userId, date);
+    const scheduleList = await Promise.all(
+      journeys.map(async (journey) => {
+        const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+          journey.id,
+        );
+        if (!schedules) {
+          return errResponse(BaseResponse.SCHEDULE_NOT_FOUND);
+        }
+        const locations = await this.getLocationList(schedules);
+        const detailSchedules = await this.getDetailScheduleList(schedules);
+        const diary = await this.getDiaryStatus(schedules);
+      }),
+    );
+  }
+
   /*지도에서 사용자의 월별 여정 불러오기*/
   async getMonthlyJourneyMap(userId: number, monthInfoDto: MonthInfoDto) {
     const user = await UserEntity.findExistUser(userId);
@@ -197,20 +217,18 @@ export class MapService {
     const schedules: ScheduleEntity[] =
       await ScheduleEntity.findMonthlySchedule(journeyId, monthInfoDto);
     return schedules;
-    // const schedules: ScheduleEntity[] =
-    //   await ScheduleEntity.findExistScheduleByJourneyId(journeyId);
-    // const monthlySchedules: ScheduleEntity[] = await Promise.all(
-    //   schedules.map(async (schedule) => {
-    //     const monthlySchedule = await ScheduleEntity.findMonthlySchedule(
-    //       schedule,
-    //       monthInfoDto,
-    //     );
-    //     console.log('4월 일정', monthlySchedule);
-    //     return monthlySchedule;
-    //   }),
-    // );
+  }
 
-    // return monthlySchedules;
+  // 사용자의 세부 일정 가지고 오기
+  async getDetailScheduleList(schedules: ScheduleEntity[]) {
+    const detailScheduleList = await Promise.all(
+      schedules.map(async (schedule) => {
+        const detailSchedules =
+          await DetailScheduleEntity.findExistDetailByScheduleId(schedule);
+        return detailSchedules;
+      }),
+    );
+    return detailScheduleList;
   }
 
   //여정에 작성한 일지 개수 가지고 오기

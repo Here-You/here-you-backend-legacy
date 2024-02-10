@@ -16,6 +16,7 @@ import {
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { MonthInfoDto } from 'src/map/month-info.dto';
+import { CreateJourneyDto } from '../dtos/create-journey.dto';
 
 @Entity()
 export class JourneyEntity extends BaseEntity {
@@ -84,7 +85,7 @@ export class JourneyEntity extends BaseEntity {
     return journeys;
   }
 
-  static async findExistJourneyByDate(createJourneyDto) {
+  static async findExistJourneyByPeriod(createJourneyDto) {
     const journey: JourneyEntity = await JourneyEntity.findOne({
       where: {
         startDate: createJourneyDto.startDate,
@@ -95,8 +96,19 @@ export class JourneyEntity extends BaseEntity {
     return journey;
   }
 
+  static async findExistJourneyByDate(userId: number, date) {
+    const journeys: JourneyEntity[] = await JourneyEntity.find({
+      where: {
+        id: userId,
+        startDate: Between(new Date(0), date),
+        endDate: Between(date, new Date('9999-12-31')),
+      },
+    });
+    return journeys;
+  }
+
   //사용자의 월별 여정 조회
-  static async findMonthlyJourney(userId, dates: MonthInfoDto) {
+  static async findMonthlyJourney(userId: number, dates: MonthInfoDto) {
     const firstDate = new Date(`${dates.year}-${dates.month}-01`);
     const lastDate = new Date(`${dates.year}-${dates.month}-31`);
     const journeys: JourneyEntity[] = await JourneyEntity.find({
