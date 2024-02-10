@@ -14,7 +14,7 @@ export class SearchController{
 
   constructor(private readonly searchService: SearchService) {}
 
-  @Get('/')
+  @Get('/') // 팀색탭 메인: 인기 급상승, 메이트의 최신 시그니처
   @UseGuards(UserGuard)
   async getSearchMain(
     @Req() req: Request,
@@ -47,7 +47,7 @@ export class SearchController{
     }
   }
 
-  @Get('/find')
+  @Get('/find') // 탑색탭 검색: 키워드로 시그니처 검색하기
   async search(@Query('keyword') keyword: string): Promise<ResponseDto<CoverSignatureDto[]>> {
     try{
 

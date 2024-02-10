@@ -15,9 +15,37 @@ export class MateController{
 
   constructor(private readonly mateService:MateService) {}
 
-  @Get('/location')
+
+  @Get('/random') // 메이트 탐색 첫째 줄: 랜덤으로 메이트 추천
   @UseGuards(UserGuard)
-  async getMateProfileWithMyFirstLocation( // 메이트 탐색 첫 줄: 나와 공통 장소를 사용한 메이트 추천
+  async getRandomMateProfileWithInfiniteCursor(
+    @Req() req: Request,
+    @Query() cursorPageOptionDto: CursorPageOptionsDto
+  ){
+    try{
+      const result = await this.mateService.recommendRandomMateWithInfiniteScroll(cursorPageOptionDto, req.user.id);
+
+      return new ResponseDto(
+        ResponseCode.GET_RANDOM_MATE_PROFILE_SUCCESS,
+        true,
+        "랜덤 메이트 추천 데이터 생성 성공",
+        result
+      );
+    }
+    catch(e){
+      console.log(e);
+      return new ResponseDto(
+        ResponseCode.GET_RANDOM_MATE_PROFILE_FAIL,
+        false,
+        "랜덤 메이트 추천 데이터 생성 실패",
+        null
+      );
+    }
+  }
+
+  @Get('/location') // 메이트 탐색 둘째 줄: 나와 공통 장소를 사용한 메이트 추천
+  @UseGuards(UserGuard)
+  async getMateProfileWithMyFirstLocation(
     @Req() req: Request,
   ): Promise<ResponseDto<MateWithCommonLocationResponseDto>> {
 
@@ -49,33 +77,6 @@ export class MateController{
           null
         );
       }
-
   }
 
-  @Get('/random')
-  @UseGuards(UserGuard)
-  async getRandomMateProfileWithInfiniteCursor( // 메이트 탐색 둘째 줄: 랜덤으로 메이트 추천
-    @Req() req: Request,
-    @Query() cursorPageOptionDto: CursorPageOptionsDto
-  ){
-    try{
-      const result = await this.mateService.recommendRandomMateWithInfiniteScroll(cursorPageOptionDto, req.user.id);
-
-      return new ResponseDto(
-        ResponseCode.GET_RANDOM_MATE_PROFILE_SUCCESS,
-        true,
-        "랜덤 메이트 추천 데이터 생성 성공",
-        result
-      );
-    }
-    catch(e){
-      console.log(e);
-      return new ResponseDto(
-        ResponseCode.GET_RANDOM_MATE_PROFILE_FAIL,
-        false,
-        "랜덤 메이트 추천 데이터 생성 실패",
-        null
-      );
-    }
-  }
 }

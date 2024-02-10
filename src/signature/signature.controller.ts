@@ -42,9 +42,9 @@ export class SignatureController {
     }
   }
 
-  @Post('/new')
+  @Post('/new') // 시그니처 생성하기
   @UseGuards(UserGuard)
-  async createNewSignature( // 시그니처 생성하기
+  async createNewSignature(
     @Body() newSignature: CreateSignatureDto,
     @Req() req: Request
   ): Promise<ResponseDto<any>> {
@@ -131,7 +131,7 @@ export class SignatureController {
         );
       }
 
-      if(result.author){  // 작성자가 본인이 아닌 경우
+      if(result.author.is_followed){  // 작성자가 본인이 아닌 경우
         if(result.author._id == null){  // 작성자가 탈퇴한 경우
           return new ResponseDto(
             ResponseCode.GET_SIGNATURE_DETAIL_SUCCESS,
@@ -147,7 +147,6 @@ export class SignatureController {
             "시그니처 상세보기 성공: 메이트의 시그니처",
             result
           );
-
         }
       }
       else{ // 작성자가 본인인 경우 author 없음
