@@ -106,7 +106,7 @@ export const BaseResponse = {
   SCHEDULE_NOT_FOUND: {
     success: false,
     code: 404,
-    message: '스케줄이 없습니다.',
+    message: '일정이 없습니다.',
   },
   DETAIL_SCHEDULE_NOT_FOUND: {
     success: false,

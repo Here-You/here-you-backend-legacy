@@ -13,12 +13,24 @@ import { DetailScheduleEntity } from 'src/detail-schedule/detail-schedule.entity
 @Injectable()
 export class MapService {
   /*캘린더에서 사용자의 월별 일정 불러오기*/
-  async getMonthlySchedules(userId: number, date: Date) {
+  async getMonthlySchedules(
+    userId: number,
+    date: Date,
+    cursor: number,
+    pageSize: number,
+  ) {
     const user = await UserEntity.findExistUser(userId);
     const journeys = await JourneyEntity.findExistJourneyByDate(user.id, date);
     console.log('포함 여정 : ', journeys);
+    // 커서 값에 해당하는 배너들을 가져옴
+    const paginatedJourneys = journeys.slice(cursor, cursor + pageSize);
+    if (paginatedJourneys.length === 0) {
+      return {
+        data: response(BaseResponse.SCHEDULE_NOT_FOUND, { nextCursor: null }),
+      };
+    }
     const result = await Promise.all(
-      journeys.map(async (journey) => {
+      paginatedJourneys.map(async (journey) => {
         const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
           journey.id,
         );
@@ -49,8 +61,13 @@ export class MapService {
         };
       }),
     );
+    // 다음 페이지를 위한 커서 값 계산
+    const nextCursor = cursor + pageSize;
 
-    return response(BaseResponse.GET_SCHEDULE_SUCCESS, result);
+    return {
+      data: response(BaseResponse.GET_SCHEDULE_SUCCESS, result),
+      nextCursor: nextCursor,
+    };
   }
 
   /*지도에서 사용자의 월별 여정 불러오기*/

@@ -47,7 +47,14 @@ export class MapController {
   @Get('get-monthly-schedule/:date')
   async getMonthlySchedule(@Param('date') date: Date, @Req() req: Request) {
     const user = req.user;
-    const result = await this.mapService.getMonthlySchedules(user.id, date);
+    const cursor = 0;
+    const pageSize = 3;
+    const result = await this.mapService.getMonthlySchedules(
+      user.id,
+      date,
+      cursor,
+      pageSize,
+    );
     return result;
   }
 
