@@ -128,7 +128,7 @@ export class FollowService {
         console.log('검색 값: ', searchTerm);
         const resultUsers = await UserEntity.find({
             where: [{ name: Like(`%${searchTerm}%`) }, { nickname: Like(`%${searchTerm}%`) }],
-            relations: ['profileImage', 'following']
+            relations: {profileImage : true, follower : true, following : true}
         });
 
         const userEntity = await UserEntity.findExistUser(userId);
