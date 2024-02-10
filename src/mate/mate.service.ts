@@ -17,6 +17,7 @@ import { MateSignatureCoverDto } from './dto/mate-signature-cover.dto';
 import { MateWithCommonLocationResponseDto } from './dto/mate-with-common-location-response.dto';
 import { MateProfileResponseDto } from './dto/mate-profile-response.dto';
 
+
 @Injectable()
 export class MateService{
   constructor(
@@ -250,7 +251,7 @@ export class MateService{
 
   }
 
-  async findProfileWithUserId(loginUserId: number, targetUserId) { // 유저 정보 가져오기
+  async findProfileWithUserId(loginUserId: number, targetUserId): Promise<MateProfileResponseDto> { // 유저 정보 가져오기
     try{
       const targetUserEntity = await this.userService.findUserById(targetUserId);
       console.log(targetUserEntity);
@@ -277,6 +278,13 @@ export class MateService{
         mateProfileResponseDto.is_followed = await this.userService.checkIfFollowing(loginUserEntity,targetUserId);
 
       }
+
+      const followingList = await this.userService.getFollowingList(targetUserId);
+      mateProfileResponseDto.followingCnt = followingList.length;
+
+      const followerList = await this.userService.getFollowerList(targetUserId);
+      mateProfileResponseDto.followerCnt = followerList.length;
+
       return mateProfileResponseDto;
 
     }
