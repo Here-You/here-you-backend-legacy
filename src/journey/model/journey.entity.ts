@@ -64,6 +64,12 @@ export class JourneyEntity extends BaseEntity {
     }
   }
 
+  //여정 수정하기
+  static async updateJourney(journey: JourneyEntity, title: string) {
+    journey.title = title;
+    return await journey.save();
+  }
+
   //여정 삭제하기
   static async deleteJourney(journey) {
     return await JourneyEntity.remove(journey);
@@ -79,12 +85,22 @@ export class JourneyEntity extends BaseEntity {
     return journey;
   }
 
-  static async findExistJourneyByUserId(userId) {
+  static async findExistJourneysByUserId(userId) {
     const journeys: JourneyEntity[] = await JourneyEntity.find({
       where: { user: { id: userId } },
     });
 
     return journeys;
+  }
+
+  static async findExistJourneyByOptions(userId, journeyId) {
+    const journey: JourneyEntity = await JourneyEntity.findOne({
+      where: {
+        id: journeyId,
+        user: { id: userId },
+      },
+    });
+    return journey;
   }
 
   static async findExistJourneyByPeriod(userId, createJourneyDto) {
