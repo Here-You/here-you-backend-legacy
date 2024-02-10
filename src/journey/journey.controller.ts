@@ -6,6 +6,7 @@ import {
   Post,
   Delete,
   Param,
+  Put,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { Request } from 'express';
@@ -36,8 +37,31 @@ export class JourneyController {
     );
     return result;
   }
+  /*여정 수정하기*/
+  @ApiOperation({
+    summary: '여정 수정하기',
+    description: '제목을 수정합니다.',
+  })
+  @ApiOkResponse({
+    description: '성공 ',
+  })
+  @UseGuards(UserGuard)
+  @Put('update/:journeyId')
+  async updateJourney(
+    @Body('title') title: string,
+    @Param('journeyId') journeyId: number,
+    @Req() req: Request,
+  ) {
+    const user = req.user;
+    const result = await this.journeyService.updateJourney(
+      user,
+      journeyId,
+      title,
+    );
+    return result;
+  }
 
-  /*여정 저장하기*/
+  /*여정 삭제하기*/
   @ApiOperation({
     summary: '여정 삭제하기',
     description:

@@ -11,6 +11,7 @@ import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { CreateJourneyDto } from './dtos/create-journey.dto';
 import { DetailScheduleEntity } from 'src/detail-schedule/detail-schedule.entity';
 import { DiaryEntity } from 'src/diary/models/diary.entity';
+import { UserEntity } from 'src/user/user.entity';
 import { DiaryImageEntity } from 'src/diary/models/diary.image.entity';
 
 @Injectable()
@@ -41,6 +42,17 @@ export class JourneyService {
     }
 
     return errResponse(BaseResponse.JOURNEY_CREATED);
+  }
+
+  //여정 수정하기
+  async updateJourney(user, journeyId: number, title: string) {
+    const existUser = await UserEntity.findExistUser(user.id);
+    const journey = await JourneyEntity.findExistJourneyByOptions(
+      existUser.id,
+      journeyId,
+    );
+    const updateJourney = await JourneyEntity.updateJourney(journey, title);
+    return response(BaseResponse.UPDATE_JOURNEY_TITLE_SUCCESS);
   }
 
   //여정 삭제하기 - 일정, 일지,

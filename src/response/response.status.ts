@@ -20,6 +20,11 @@ export const BaseResponse = {
     code: 200,
     message: '세부 일정을 삭제했습니다.',
   },
+  UPDATE_JOURNEY_TITLE_SUCCESS: {
+    success: true,
+    code: 200,
+    message: '여정 제목을 수정했습니다',
+  },
   UPDATE_DETAIL_SCHEDULE_STATUS_SUCCESS: {
     success: true,
     code: 200,
