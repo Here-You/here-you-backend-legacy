@@ -8,9 +8,71 @@ import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { MonthInfoDto } from './month-info.dto';
 import { LocationEntity } from 'src/location/location.entity';
 import { DiaryImageEntity } from 'src/diary/models/diary.image.entity';
+import { DetailScheduleEntity } from 'src/detail-schedule/detail-schedule.entity';
+import { CursorBasedPaginationRequestDto } from './cursor-based-pagination-request.dto.ts';
 
 @Injectable()
 export class MapService {
+  /*캘린더에서 사용자의 월별 일정 불러오기*/
+  async getMonthlySchedules(
+    userId: number,
+    date: Date,
+    options: CursorBasedPaginationRequestDto,
+  ) {
+    const user = await UserEntity.findExistUser(userId);
+    const journeys = await JourneyEntity.findExistJourneyByDate(user.id, date);
+
+    // 커서 값에 해당하는 배너들을 가져옴
+    const paginatedJourneys = journeys.slice(
+      options.cursor,
+      options.cursor + options.pageSize,
+    );
+    if (paginatedJourneys.length === 0) {
+      return {
+        data: response(BaseResponse.SCHEDULE_NOT_FOUND, { nextCursor: null }),
+      };
+    }
+    const result = await Promise.all(
+      paginatedJourneys.map(async (journey) => {
+        const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+          journey.id,
+        );
+        const scheduleList = await Promise.all(
+          schedules.map(async (schedule) => {
+            const locations = await this.getLocationList([schedule]); // getLocationList에 schedule 배열을 전달
+            const detailSchedules = await this.getDetailScheduleList([
+              schedule,
+            ]); // getDetailScheduleList에 schedule 배열을 전달
+            const diary = await this.getDiaryStatus([schedule]); // getDiaryStatus에 schedule 배열을 전달
+
+            return {
+              scheduleId: schedule.id,
+              title: schedule.title,
+              date: schedule.date,
+              location: locations,
+              detailSchedules: detailSchedules,
+              diary: diary,
+            };
+          }),
+        );
+
+        return {
+          journeyId: journey.id,
+          startDate: journey.startDate,
+          endDate: journey.endDate,
+          scheduleList: scheduleList,
+        };
+      }),
+    );
+    // 다음 페이지를 위한 커서 값 계산
+    const nextCursor = Number(options.cursor) + Number(options.pageSize);
+
+    return {
+      data: response(BaseResponse.GET_SCHEDULE_SUCCESS, result),
+      nextCursor: nextCursor,
+    };
+  }
+
   /*지도에서 사용자의 월별 여정 불러오기*/
   async getMonthlyJourneyMap(userId: number, monthInfoDto: MonthInfoDto) {
     const user = await UserEntity.findExistUser(userId);
@@ -197,20 +259,18 @@ export class MapService {
     const schedules: ScheduleEntity[] =
       await ScheduleEntity.findMonthlySchedule(journeyId, monthInfoDto);
     return schedules;
-    // const schedules: ScheduleEntity[] =
-    //   await ScheduleEntity.findExistScheduleByJourneyId(journeyId);
-    // const monthlySchedules: ScheduleEntity[] = await Promise.all(
-    //   schedules.map(async (schedule) => {
-    //     const monthlySchedule = await ScheduleEntity.findMonthlySchedule(
-    //       schedule,
-    //       monthInfoDto,
-    //     );
-    //     console.log('4월 일정', monthlySchedule);
-    //     return monthlySchedule;
-    //   }),
-    // );
+  }
 
-    // return monthlySchedules;
+  // 사용자의 세부 일정 가지고 오기
+  async getDetailScheduleList(schedules: ScheduleEntity[]) {
+    const detailScheduleList = await Promise.all(
+      schedules.map(async (schedule) => {
+        const detailSchedules =
+          await DetailScheduleEntity.findExistDetailByScheduleId(schedule);
+        return detailSchedules;
+      }),
+    );
+    return detailScheduleList;
   }
 
   //여정에 작성한 일지 개수 가지고 오기
@@ -233,6 +293,7 @@ export class MapService {
         if (!diary) {
           return false;
         }
+        return true;
       }),
     );
 
@@ -253,3 +314,17 @@ export class MapService {
     };
   }
 }
+
+// const scheduleList = await Promise.all(
+//   journeys.map(async (journey) => {
+//     const schedules = await ScheduleEntity.findExistScheduleByJourneyId(
+//       journey.id,
+//     );
+//     if (!schedules) {
+//       return errResponse(BaseResponse.SCHEDULE_NOT_FOUND);
+//     }
+//     const locations = await this.getLocationList(schedules);
+//     const detailSchedules = await this.getDetailScheduleList(schedules);
+//     const diary = await this.getDiaryStatus(schedules);
+//   }),
+// );
