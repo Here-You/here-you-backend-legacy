@@ -32,14 +32,16 @@ export class CommentService {
     try {
       // 사용자, 규칙, 댓글 검증
       const user = await UserEntity.findExistUser(userId);
-      if (!user) throw new NotFoundException('사용자를 찾을 수 없습니다');
+      if (!user) throw new NotFoundException('존재하지 않는 사용자 입니다');
       const rule = await RuleMainEntity.findRuleById(ruleId);
-      if (!rule) throw new NotFoundException('존재하지 않는 규칙입니다');
+      if (!rule) throw new NotFoundException('존재하지 않는 규칙 입니다');
+      const comment = await CommentEntity.findOne({where:{id : commentId}});
+      if (!comment) throw new NotFoundException('존재하지 않는 댓글 입니다');
 
-      const comment = await CommentEntity.findOne({
+      const rightComment = await CommentEntity.findOne({
         where: {user: {id: userId}, rule: {id: ruleId}}
       })
-      if(!comment) throw new NotFoundException("데이터를 찾을 수 없습니다");
+      if(!rightComment) throw new NotFoundException("데이터를 찾을 수 없습니다");
 
       if(comment.id != commentId) throw new NotFoundException('해당 댓글 수정 권한이 없는 사용자입니다');
 
@@ -49,7 +51,6 @@ export class CommentService {
         return comment.id;
       }
     } catch (e) {
-      console.log('해당 댓글 수정 권한이 없는 사용자 입니다');
       throw new Error(e.message);
     }
   }
