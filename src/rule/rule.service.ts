@@ -240,11 +240,6 @@ export class RuleService {
             },
           },
         },
-        // 'ruleParticipate',
-        // 'ruleParticipate.rule',
-        // 'ruleParticipate.rule.invitations',
-        // 'ruleParticipate.rule.invitations.member',
-        // 'ruleParticipate.rule.invitations.member.profileImage'
       },
     });
 
@@ -299,19 +294,26 @@ export class RuleService {
   }
 
   // [6] 여행 규칙 참여 멤버로 초대할 메이트 검색 결과
-  async getSearchMember(userId: number, ruleId: number, searchTerm: string): Promise<GetSearchMemberDto[]> {
+  async getSearchMember(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, ruleId: number, searchTerm: string): Promise<CursorPageDto<GetSearchMemberDto>> {
+    // (1) 데이터 조회
     // 검색 결과에 해당하는 값 찾기
     // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
     console.log('검색 값: ', searchTerm);
-    const resultUsers = await UserEntity.find({
+    const [resultUsers, total] = await UserEntity.findAndCount({
+      take: cursorPageOptionsDto.take,
       where: [
-          { name: Like(`%${searchTerm}%`) },
+        {id: cursorPageOptionsDto.cursorId ? LessThan(cursorPageOptionsDto.cursorId) : null},
+        { name: Like(`%${searchTerm}%`) },
         { nickname: Like(`%${searchTerm}%`)},
-        { id: Not(Equal(userId)) }],  // 사용자 본인은 검색결과에 뜨지 않도록
-      relations: {profileImage : true, ruleParticipate: true}
+        { id: Not(Equal(userId))}  // 사용자 본인은 검색결과에 뜨지 않도록
+      ],
+      relations: {profileImage : true, ruleParticipate: {rule: true}},
+      order: {
+        id: cursorPageOptionsDto.sort.toUpperCase() as any,
+      },
     });
 
-    const result = await Promise.all(resultUsers.map(async (user) => {
+    const searchResult = await Promise.all(resultUsers.map(async (user) => {
       const dto: GetSearchMemberDto = new GetSearchMemberDto();
 
       dto.id = user.id;
@@ -330,8 +332,27 @@ export class RuleService {
         dto.image = await this.s3Service.getImageUrl(userImageKey);
       }
       return dto;
-    }))
-    return result;
+    }));
+
+    console.log('searchResult : ',searchResult);
+
+    // (2) 페이징 및 정렬 기준 설정
+    const takePerPage = cursorPageOptionsDto.take;
+    const isLastPage = total <= takePerPage;
+
+    let hasNextData = true;
+    let cursor: number;
+
+    if (isLastPage || searchResult.length <= 0) {
+      hasNextData = false;
+      cursor = null;
+    } else {
+      cursor = searchResult[searchResult.length - 1].id;
+    }
+
+    const cursorPageMetaDto = new CursorPageMetaDto({ cursorPageOptionsDto, total, hasNextData, cursor });
+
+    return new CursorPageDto(searchResult, cursorPageMetaDto);
   }
 
   // [7] 여행 규칙 수정

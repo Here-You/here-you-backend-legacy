@@ -8,6 +8,8 @@ import { Request } from 'express';
 import {GetSearchMemberDto} from "./dto/get-search-member.dto";
 import { UpdateRuleDto } from "./dto/update-rule.dto";
 import {CursorPageOptionsDto} from "./dto/cursor-page.options.dto";
+import {CursorPageDto} from "./dto/cursor-page.dto";
+import {UserEntity} from "../user/user.entity";
 
 @Controller('mate/rule')
 export class RuleController {
@@ -15,7 +17,7 @@ export class RuleController {
     private readonly ruleService: RuleService,
   ) {}
 
-  // [1] 여행 규칙 상세 페이지 조회 (댓글) - 페이지네이션
+  // [1] 여행 규칙 상세 페이지 조회 (댓글) - 무한 스크롤 적용
   @Get('/detail/comment/:ruleId')
   @UseGuards(UserGuard)
   async getComment(@Req() req: Request,
@@ -67,15 +69,16 @@ export class RuleController {
   @UseGuards(UserGuard)
   async getSearchMember(
       @Query('searchTerm')searchTerm : string,
+      @Query() cursorPageOptionsDto: CursorPageOptionsDto,
       @Param('ruleId') ruleId: number,
       @Req() req: Request): Promise<ResponseDto<any>> {
     try {
-      const getSearchMemberDto : GetSearchMemberDto[] = await this.ruleService.getSearchMember(req.user.id, ruleId, searchTerm)
+      const result : CursorPageDto<GetSearchMemberDto> = await this.ruleService.getSearchMember(cursorPageOptionsDto, req.user.id, ruleId, searchTerm)
       return new ResponseDto(
           ResponseCode.GET_SEARCH_RESULT_SUCCESS,
           true,
           "초대할 메이트 검색 결과 리스트 불러오기 성공",
-          getSearchMemberDto
+          result
       );
     } catch (error) {
       return new ResponseDto(
