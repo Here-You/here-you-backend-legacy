@@ -380,6 +380,9 @@ export class RuleService {
       const member = invitation.member;
       let isDeleteMember : boolean = true;
 
+      // (예외 상황) 현재 로그인한 사용자
+      if (member.id == userId) break;
+
       for(const updateMemberId of updateMemberIds) {
         if(member.id == updateMemberId) {
           isDeleteMember = false;
