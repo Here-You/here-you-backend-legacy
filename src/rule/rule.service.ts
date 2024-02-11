@@ -70,7 +70,10 @@ export class RuleService {
     const dto = new DetailRuleDto();
     const main: RuleMainEntity = await RuleMainEntity.findRuleById(ruleId);
     const subs: RuleSubEntity[] = await RuleSubEntity.findSubById(ruleId);
-    const invitations: RuleInvitationEntity[] = await RuleInvitationEntity.findInvitationByRuleId(ruleId);
+    const invitations: RuleInvitationEntity[] = await RuleInvitationEntity.find({
+      where: {rule: {id: ruleId}},
+      relations: {member: {profileImage : true}}
+    })
 
     // -1) 제목
     dto.id = ruleId;
@@ -84,7 +87,7 @@ export class RuleService {
       rulePair.ruleDetail = sub.ruleDetail;
 
       return rulePair;
-    }))
+    }));
 
     // -3) 멤버 정보
     dto.detailMembers = await Promise.all(invitations.map(async(invitation):Promise<DetailMemberDto> => {
@@ -95,7 +98,6 @@ export class RuleService {
 
       // 사용자 프로필 이미지
       const image = memberEntity.profileImage;
-      detailMember.image = image.imageKey;
       if(image == null) detailMember.image = null;
       else{
         const userImageKey = image.imageKey;
@@ -104,7 +106,7 @@ export class RuleService {
       return detailMember;
     }))
     return dto;
-  }
+  };
 
   // [3] 여행 규칙 나가기
   // -1) 초대 받은 팀원 -> 초대 삭제
@@ -119,7 +121,7 @@ export class RuleService {
     const invitationsList : RuleInvitationEntity[] = await RuleInvitationEntity.find({
       where : {rule : {id: ruleId}},
       relations : {member : true}
-    })
+    });
 
     const membersList : GetMemberListDto[] = await Promise.all(invitationsList.map(async (invitation) : Promise<GetMemberListDto> => {
       const memberEntity : UserEntity = invitation.member;
@@ -133,7 +135,6 @@ export class RuleService {
 
       // 사용자 프로필 이미지
       const image = await this.userService.getProfileImage(memberEntity.id);
-      memberDto.image = image.imageKey;
       if(image == null) memberDto.image = null;
       else {
         const userImageKey = image.imageKey;

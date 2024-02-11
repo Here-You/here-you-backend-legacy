@@ -155,7 +155,7 @@ export class UserService {
     try {
       return await UserFollowingEntity.find({
         where: { user: { id: userId } },
-        relations: ['followUser'],
+        relations: {followUser: {profileImage : true}},
       });
 
     } catch (error) {
@@ -167,7 +167,7 @@ export class UserService {
     try {
       return await UserFollowingEntity.find({
         where: { followUser: { id: userId } },
-        relations: ['user'],
+        relations: {user: {profileImage : true}},
       });
 
     } catch (error) {

@@ -109,7 +109,6 @@ export class FollowService {
 
             // 사용자 프로필 이미지
             const image = await this.userService.getProfileImage(mateEntity.id);
-            followDto.image = image.imageKey;
             if(image == null) followDto.image = null;
             else{
                 const userImageKey = image.imageKey;
@@ -144,7 +143,6 @@ export class FollowService {
 
             // 사용자 프로필 이미지
             const image = await this.userService.getProfileImage(mateEntity.id);
-            followDto.image = image.imageKey;
             if(image == null) followDto.image = null;
             else{
                 const userImageKey = image.imageKey;
@@ -184,7 +182,6 @@ export class FollowService {
 
             // 사용자 프로필 이미지
             const image = user.profileImage;
-            followSearchDto.image = image.imageKey;
             if(image == null) followSearchDto.image = null;
             else{
                 const userImageKey = image.imageKey;
