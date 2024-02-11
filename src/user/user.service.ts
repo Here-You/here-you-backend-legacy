@@ -316,9 +316,9 @@ export class UserService {
     return !!isFollowing;
   }
 
-  async checkAlreadyMember(user: UserEntity, ruleID: number) {
+  async checkAlreadyMember(userId: number, ruleID: number) {
     const rule = await RuleInvitationEntity.findOne({
-      where: { member: { id: user.id }, rule: { id: ruleID } },
+      where: { member: { id: userId }, rule: { id: ruleID } },
     });
     // 이미 규칙 멤버인 경우 : true 반환
     console.log('rule : ', rule);
