@@ -9,6 +9,8 @@ import { S3UtilService} from "../utils/S3.service";
 import { GetMemberListDto} from "./dto/get-member-list.dto";
 import {UserService} from "../user/user.service";
 import {GetRuleListDto, MemberPairDto} from "./dto/get-rule-list.dto";
+import {Like} from "typeorm";
+import {GetSearchMemberDto} from "./dto/get.search.member.dto";
 
 @Injectable()
 export class RuleService {
@@ -214,6 +216,45 @@ export class RuleService {
   }));
     return result;
   }
+
+  // [6] 여행 규칙 참여 멤버로 초대할 메이트 검색 결과
+  async getSearchMember(userId: number, ruleId: number, searchTerm: string): Promise<GetSearchMemberDto[]> {
+    // 검색 결과에 해당하는 값 찾기
+    // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
+    console.log('검색 값: ', searchTerm);
+    const resultUsers = await UserEntity.find({
+      where: [{ name: Like(`%${searchTerm}%`) }, { nickname: Like(`%${searchTerm}%`) }],
+      relations: {profileImage : true, ruleParticipate: true}
+    });
+
+    const result = await Promise.all(resultUsers.map(async (user) => {
+      const dto: GetSearchMemberDto = new GetSearchMemberDto();
+
+      dto.id = user.id;
+      dto.name = user.name;
+      dto.email = user.email;
+      dto.introduction = user.introduction;
+
+      // 이미 여행 규칙에 참여하는 멤버인지 여부
+      dto.isInvited = await this.userService.checkAlreadyMember(user, ruleId);
+
+      dto.image
+      // 사용자 프로필 이미지
+      const image = user.profileImage;
+      dto.image = image.imageKey;
+      if(image == null) dto.image = null;
+      else{
+        const userImageKey = image.imageKey;
+        dto.image = await this.s3Service.getImageUrl(userImageKey);
+      }
+      return dto;
+    }))
+    return result;
+  }
+
+
+
+
 
 
   // [member] 초대 받은 멤버 리스트 생성
