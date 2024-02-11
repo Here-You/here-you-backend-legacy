@@ -320,6 +320,7 @@ export class RuleService {
     })
 
     rule.mainTitle = updateRuleDto.mainTitle
+    await rule.save();
 
     // (1) [상세 규칙 수정]
     // 기존 세부 규칙 정보 리스트
