@@ -1,4 +1,4 @@
-import {Controller, Post, Body, Get, Param, Delete, UseGuards, Req, Query} from '@nestjs/common';
+import {Controller, Post, Body, Get, Param, Delete, UseGuards, Req, Query, Patch} from '@nestjs/common';
 import { RuleService } from './rule.service';
 import { CreateRuleDto } from './dto/create-rule.dto';
 import { ResponseCode } from '../response/response-code.enum';
@@ -7,6 +7,7 @@ import { UserGuard } from '../user/user.guard';
 import { Request } from 'express';
 import {FollowSearchDto} from "../follow/dto/follow.search.dto";
 import {GetSearchMemberDto} from "./dto/get.search.member.dto";
+import { UpdateRuleDto } from "./dto/update-rule.dto";
 
 @Controller('mate/rule')
 export class RuleController {
@@ -35,7 +36,7 @@ export class RuleController {
     }
   }
 
-  // [2] 여행 규칙 조회
+  // [2] 여행 규칙 상세 페이지 조회 (게시글)
   @Get('/detail/:ruleId')
   @UseGuards(UserGuard)
   async getDetail(@Req() req: Request, @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
@@ -46,7 +47,7 @@ export class RuleController {
       return new ResponseDto(
           ResponseCode.GET_RULE_DETAIL_FAIL,
           false,
-          "여행 규칙 및 댓글 조회 실패",
+          "여행 규칙 상세 페이지 (게시글) 조회 실패",
           null
       );
     }
@@ -54,11 +55,40 @@ export class RuleController {
       return new ResponseDto(
           ResponseCode.GET_RULE_DETAIL_SUCCESS,
           true,
-          "여행 규칙 및 댓글 조회 성공",
+          "여행 규칙 상세 페이지 (게시글) 조회 성공",
           result
       );
     }
   }
+
+  // [2] 여행 규칙 수정
+  /*
+  @Patch('/detail/:ruleId')
+  @UseGuards(UserGuard)
+  async updateRule(@Body() updateRuleDto: UpdateRuleDto, @Req() req: Request, @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
+
+    const result = await this.ruleService.updateRule(updateRuleDto, req.user.id, ruleId);
+
+    if(!result){
+      return new ResponseDto(
+          ResponseCode.PATCH_RULE_FAIL,
+          false,
+          "여행 규칙 수정 실패",
+          null
+      );
+    }
+    else{
+      return new ResponseDto(
+          ResponseCode.PATCH_RULE_SUCCESS,
+          true,
+          "여행 규칙 수정 성공",
+          result
+      );
+    }
+  }
+
+   */
+
 
   // [3] 여행 규칙 전체 리스트 조회
   @Get('list')

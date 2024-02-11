@@ -11,6 +11,8 @@ import {UserService} from "../user/user.service";
 import {GetRuleListDto, MemberPairDto} from "./dto/get-rule-list.dto";
 import {Like} from "typeorm";
 import {GetSearchMemberDto} from "./dto/get.search.member.dto";
+import {UpdateRuleDto} from "./dto/update-rule.dto";
+import {FollowSearchDto} from "../follow/dto/follow.search.dto";
 
 @Injectable()
 export class RuleService {
@@ -63,7 +65,7 @@ export class RuleService {
     return main.id;
   }
 
-  // [2] 여행 규칙 조회
+  // [2] 여행 규칙 상세 페이지 조회 (게시글)
   async getDetail(ruleId : number): Promise<DetailRuleDto> {
     const dto = new DetailRuleDto();
     const main: RuleMainEntity = await RuleMainEntity.findRuleById(ruleId);
@@ -252,6 +254,49 @@ export class RuleService {
     return result;
   }
 
+  // [7] 여행 규칙 수정
+  /*
+  async updateRule(updateRuleDto: UpdateRuleDto, userId: number, ruleId: number) {
+    const rule = await RuleMainEntity.findOne({
+      where: {id : ruleId },
+      relations: { rules: true, invitations: {member : true} }
+    })
+
+    rule.mainTitle = updateRuleDto.mainTitle
+
+    // 상세 규칙 수정
+    // 기존 세부 규칙 정보
+    const subs = rule.rules;
+
+    // 새로운 세부 규칙 리스트
+    const updateSubsList = updateRuleDto.rulePairs;
+
+    // 수정 및 규칙 추가
+    const result = await Promise.all(updateSubsList.map(async (updateSub) => {
+      // case1) 새로운 규칙
+      if (!updateSub.id) {
+        const newSub = new RuleSubEntity();
+        newSub.ruleTitle = updateSub.ruleTitle;
+        newSub.ruleDetail = updateSub.ruleDetail;
+
+        return new
+      }
+      // case2) 수정 규칙
+      if (!!updateSub.id && !!updateSub.ruleTitle && !!updateSub.ruleDetail) {
+        const oldSub = await RuleSubEntity.findOne({
+          where: {id: updateSub.id}
+        })
+        oldSub.ruleTitle = updateSub.ruleTitle;
+        oldSub.ruleDetail = updateSub.ruleDetail;
+
+      }
+      // case3) 삭제 규칙
+      if (!!updateSub.id && !updateSub.ruleTitle && !updateSub.ruleDetail) {
+
+      }
+    }}
+
+   */
 
 
 
