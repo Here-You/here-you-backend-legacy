@@ -256,6 +256,7 @@ export class MateService{
       const targetUserEntity = await this.userService.findUserById(targetUserId);
       console.log(targetUserEntity);
 
+      // 타겟 유저 프로필 가져오기
       const mateProfileResponseDto:MateProfileResponseDto = new MateProfileResponseDto();
       mateProfileResponseDto._id = targetUserEntity.id;
       mateProfileResponseDto.nickname = targetUserEntity.nickname;
@@ -272,18 +273,21 @@ export class MateService{
       // 현재 로그인한 유저가 타켓 유저를 팔로우하는지 여부 가져오기
       if(loginUserId == targetUserId){ // 현재 로그인 유저와 타겟 유저가 같다면 is_followed = null
         mateProfileResponseDto.is_followed = null;
-
       }else{
         const loginUserEntity = await this.userService.findUserById(loginUserId);
-        mateProfileResponseDto.is_followed = await this.userService.checkIfFollowing(loginUserEntity,targetUserId);
-
+        mateProfileResponseDto.is_followed = await this.userService.checkIfFollowing( loginUserEntity, targetUserId);
       }
 
+      // 팔로잉 수
       const followingList = await this.userService.getFollowingList(targetUserId);
       mateProfileResponseDto.following = followingList.length;
 
+      // 팔로워 수
       const followerList = await this.userService.getFollowerList(targetUserId);
       mateProfileResponseDto.follower = followerList.length;
+
+      // 시그니처 개수
+      mateProfileResponseDto.signatures = await this.signatureService.getSignatureCnt(targetUserId);
 
       return mateProfileResponseDto;
 

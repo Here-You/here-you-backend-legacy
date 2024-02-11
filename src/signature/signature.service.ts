@@ -397,4 +397,12 @@ export class SignatureService {
       take: take,          // 최신 시그니처 가져오기
     });
   }
+
+  async getSignatureCnt(userId: number): Promise<number> { // 시그니처 개수 반환
+    return await SignatureEntity.count({
+      where: {
+        user: { id: userId },
+      }
+    });
+  }
 }

@@ -7,6 +7,7 @@ export class MateProfileResponseDto {
   introduction: string;
   is_followed: boolean;
 
-  follower: number;
-  following: number;
+  signatures: number;   // 시그니처 개수
+  follower: number;     // 팔로워 수
+  following: number;    // 팔로잉 수
 }
