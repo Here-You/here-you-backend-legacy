@@ -363,6 +363,7 @@ export class UserService {
       {
         diaries: await Promise.all(
           diaries.map(async (diary) => ({
+            scheduleId: diary.schedule.id,
             id: diary.id,
             title: diary.title,
             place: diary.place,
