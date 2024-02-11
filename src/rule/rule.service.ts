@@ -9,7 +9,7 @@ import { S3UtilService} from "../utils/S3.service";
 import { GetMemberListDto} from "./dto/get-member-list.dto";
 import {UserService} from "../user/user.service";
 import {GetRuleListDto, MemberPairDto} from "./dto/get-rule-list.dto";
-import {LessThan, Like} from "typeorm";
+import {Equal, LessThan, Like, Not} from "typeorm";
 import {GetSearchMemberDto} from "./dto/get-search-member.dto";
 import {UpdateRuleDto} from "./dto/update-rule.dto";
 import {CursorPageOptionsDto} from "../mate/cursor-page/cursor-page-option.dto";
@@ -283,7 +283,10 @@ export class RuleService {
     // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
     console.log('검색 값: ', searchTerm);
     const resultUsers = await UserEntity.find({
-      where: [{ name: Like(`%${searchTerm}%`) }, { nickname: Like(`%${searchTerm}%`) }],
+      where: [
+          { name: Like(`%${searchTerm}%`) },
+        { nickname: Like(`%${searchTerm}%`)},
+        { id: Not(Equal(userId)) }],  // 사용자 본인은 검색결과에 뜨지 않도록
       relations: {profileImage : true, ruleParticipate: true}
     });
 
