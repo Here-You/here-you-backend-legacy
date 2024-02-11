@@ -89,12 +89,21 @@ export class FollowController {
     async createFollow(@Req() req: Request, @Param('followingId') followingId : number): Promise<ResponseDto<any>> {
         try {
             const result = await this.followService.checkFollow(req.user.id, followingId);
-            return new ResponseDto(
-                ResponseCode.FOLLOW_SUCCESS,
-                true,
-                "팔로우 / 언팔로우 성공",
-                result
-            );
+            if (!!result.deleted) {
+                return new ResponseDto(
+                    ResponseCode.FOLLOW_SUCCESS,
+                    true,
+                    "언팔로우 성공",
+                    result.id
+                );
+            } else {
+                return new ResponseDto(
+                    ResponseCode.FOLLOW_SUCCESS,
+                    true,
+                    "팔로우 성공",
+                    result.id
+                );
+            }
         } catch (e) {
             return new ResponseDto(
                 ResponseCode.FOLLOW_FAIL,

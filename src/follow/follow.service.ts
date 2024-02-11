@@ -121,8 +121,8 @@ export class FollowService {
         return informs;
     }
 
-    // 팔로우 가능한 사이인지 검증
-    async checkFollow(userId : number, followingId : number): Promise<number> {
+    // [4] 팔로우 가능한 사이인지 검증
+    async checkFollow(userId : number, followingId : number): Promise<UserFollowingEntity> {
         try {
             // case1) 유효한 유저인지 검증
             const userEntity : UserEntity = await this.userService.findUserById(userId);
@@ -154,7 +154,7 @@ export class FollowService {
     }
 
     // [4-1] 팔로우
-    async createFollow(userId : number, followingId : number): Promise<number> {
+    async createFollow(userId : number, followingId : number): Promise<UserFollowingEntity> {
 
         try {
             const userEntity : UserEntity = await this.userService.findUserById(userId);
@@ -169,7 +169,7 @@ export class FollowService {
             userFollowingEntity.followUser = followingUser;
 
             await userFollowingEntity.save();
-            return userFollowingEntity.id;
+            return userFollowingEntity;
         } catch (e) {
             console.log('팔로우 요청에 실패하였습니다');
             throw new Error(e.message);
@@ -177,7 +177,7 @@ export class FollowService {
     }
 
     // [4-2] 언팔로우
-    async deleteFollow(userId: number, followingId:number): Promise<number> {
+    async deleteFollow(userId: number, followingId:number): Promise<UserFollowingEntity> {
         console.log('언팔로우 서비스 호출');
         const followEntity : UserFollowingEntity = await UserFollowingEntity.findOneOrFail({ where:
                 { user : {id : userId}, followUser : {id : followingId}}
@@ -185,12 +185,10 @@ export class FollowService {
 
         try{
             await followEntity.softRemove();
-            return followEntity.id;
+            return followEntity;
         }catch(e){
             console.error('언팔로우 요청에 실패하였습니다: ');
             throw new Error(e.message);
         }
     }
-
-
 }
