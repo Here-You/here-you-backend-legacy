@@ -60,8 +60,8 @@ export class UserService {
 
     const isFollowing = await UserFollowingEntity.findOne({
       where: {
-        user: { id: targetUserId },
-        followUser: { id: user.id }
+        user: { id: user.id },
+        followUser: { id: targetUserId }
       }
     });
 
