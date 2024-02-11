@@ -160,6 +160,7 @@ export class MapService {
         }
         return {
           journeyId: journeyId,
+          scheduleId: schedule.id,
           date: schedule.date,
           diary: diary,
           diaryImage: {
