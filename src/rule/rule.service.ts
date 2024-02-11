@@ -9,7 +9,7 @@ import { S3UtilService} from "../utils/S3.service";
 import { GetMemberListDto} from "./dto/get-member-list.dto";
 import {UserService} from "../user/user.service";
 import {GetRuleListDto, MemberPairDto} from "./dto/get-rule-list.dto";
-import {LessThan, Like} from "typeorm";
+import {Equal, LessThan, Like, Not} from "typeorm";
 import {GetSearchMemberDto} from "./dto/get-search-member.dto";
 import {UpdateRuleDto} from "./dto/update-rule.dto";
 import {CursorPageOptionsDto} from "../mate/cursor-page/cursor-page-option.dto";
@@ -165,12 +165,33 @@ export class RuleService {
     return new CursorPageDto(result, cursorPageMetaDto);
   }
 
-  // [3] 여행 규칙 나가기
+  // [4] 여행 규칙 나가기
   // -1) 초대 받은 팀원 -> 초대 삭제
   async deleteInvitation(ruleId: number, userId: number): Promise<RuleInvitationEntity> {
-    const invitation : RuleInvitationEntity = await RuleInvitationEntity.findInvitationByRuleAndUser(ruleId, userId);
+    try {
+      // 검증1) 사용자가 존재하지 않는 경우
+      const user = await UserEntity.findOne({
+        where: {id : userId},
+      });
+      if (!user) throw new Error('사용자를 찾을 수 없습니다');
 
-    return invitation.softRemove();
+      // 검증2) 규칙이 존재하지 않는 경우
+      const ruleMain = await RuleMainEntity.findOne({
+        where : {id : ruleId},
+      });
+      if (!ruleMain) throw new Error('규칙을 찾을 수 없습니다');
+
+      // 검증3) 규칙에 참여하는 사용자가 아닌 경우
+      const invitation = await RuleInvitationEntity.findOne({
+        where: {member: {id: userId}, rule: {id: ruleId}},
+      })
+      if (!!invitation) {
+        return invitation.softRemove();
+      } else throw new Error('사용자가 참여하는 규칙이 아닙니다');
+    } catch (e) {
+      console.log('여행 규칙 나가기 실패');
+      throw new Error(e.message);
+    }
   }
 
   // [4] 여행 규칙 멤버 리스트 조회
@@ -283,7 +304,10 @@ export class RuleService {
     // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
     console.log('검색 값: ', searchTerm);
     const resultUsers = await UserEntity.find({
-      where: [{ name: Like(`%${searchTerm}%`) }, { nickname: Like(`%${searchTerm}%`) }],
+      where: [
+          { name: Like(`%${searchTerm}%`) },
+        { nickname: Like(`%${searchTerm}%`)},
+        { id: Not(Equal(userId)) }],  // 사용자 본인은 검색결과에 뜨지 않도록
       relations: {profileImage : true, ruleParticipate: true}
     });
 

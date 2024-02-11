@@ -161,33 +161,26 @@ export class RuleController {
   }
 
   // [7] 여행 규칙 나가기
-  /*
   @Delete('/:ruleId')
   @UseGuards(UserGuard)
   async deleteInvitation(@Req() req: Request, @Param('ruleId') ruleId: number){
-
-    // 현재 로그인한 사용자 ID
-    // const userId = req.user.id;
-    const userId = 2;
-
     try {
-      await this.ruleService.deleteInvitation(ruleId, userId);
+      await this.ruleService.deleteInvitation(ruleId, req.user.id);
       return new ResponseDto(
           ResponseCode.DELETE_INVITATION_SUCCESS,
           true,
           "여행 규칙 나가기 성공",
           null
       );
-    } catch (error) {
+    } catch (e) {
       return new ResponseDto(
           ResponseCode.DELETE_INVITATION_FAIL,
           false,
-          "여행 규칙 나가기 실패",
+          e.message,
           null
       );
     }
   }
-   */
 
   // [8] 여행 규칙 전체 리스트 조회
   @Get()
