@@ -298,6 +298,7 @@ export class RuleService {
     // (1) 데이터 조회
     // 검색 결과에 해당하는 값 찾기
     // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
+    console.log('검색 값: ', searchTerm);
     const [resultUsers, total] = await UserEntity.findAndCount({
       take: cursorPageOptionsDto.take,
       where: [
@@ -306,7 +307,7 @@ export class RuleService {
         { nickname: Like(`%${searchTerm}%`)},
         { id: Not(Equal(userId))}  // 사용자 본인은 검색결과에 뜨지 않도록
       ],
-      relations: {profileImage : true, ruleParticipate: true},
+      relations: {profileImage : true, ruleParticipate: {rule: true}},
       order: {
         id: cursorPageOptionsDto.sort.toUpperCase() as any,
       },
@@ -331,7 +332,9 @@ export class RuleService {
         dto.image = await this.s3Service.getImageUrl(userImageKey);
       }
       return dto;
-    }))
+    }));
+
+    console.log('searchResult : ',searchResult);
 
     // (2) 페이징 및 정렬 기준 설정
     const takePerPage = cursorPageOptionsDto.take;
