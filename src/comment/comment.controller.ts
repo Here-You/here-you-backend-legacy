@@ -8,7 +8,7 @@ import { Request } from 'express';
 import {UserEntity} from "../user/user.entity";
 import {RuleMainEntity} from "../rule/domain/rule.main.entity";
 
-@Controller('mate/rule/comment')
+@Controller('mate/rule/detail/comment')
 export class CommentController {
   constructor(
     private readonly commentService: CommentService,

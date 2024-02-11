@@ -5,8 +5,12 @@ import { UserEntity } from "../user/user.entity";
 import { UserService } from "../user/user.service";
 import { S3UtilService } from "../utils/S3.service";
 import {SignatureEntity} from "../signature/domain/signature.entity";
-import {Like} from "typeorm";
+import {LessThan, Like} from "typeorm";
 import {FollowSearchDto} from "./dto/follow.search.dto";
+import {CursorPageOptionsDto} from "../mate/cursor-page/cursor-page-option.dto";
+import {CommentEntity} from "../comment/domain/comment.entity";
+import {CursorPageMetaDto} from "../rule/dto/cursor-page.meta.dto";
+import {CursorPageDto} from "../rule/dto/cursor-page.dto";
 
 @Injectable()
 export class FollowService {
@@ -16,16 +20,25 @@ export class FollowService {
     ) {}
 
     // [1] 메이트 검색
-    async getSearchResult(userId: number, searchTerm: string) {
+    async getSearchResult(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, searchTerm: string) {
+        // (1) 데이터 조회
         // 검색 결과에 해당하는 값 찾기
         // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
-        console.log('검색 값: ', searchTerm);
-        const resultUsers = await UserEntity.find({
-            where: [{ name: Like(`%${searchTerm}%`) }, { nickname: Like(`%${searchTerm}%`) }],
-            relations: {profileImage : true, follower : true, following : true}
+        const [resultUsers, total] = await UserEntity.findAndCount({
+            take: cursorPageOptionsDto.take,
+            where: [
+                {id: cursorPageOptionsDto.cursorId ? LessThan(cursorPageOptionsDto.cursorId) : null},
+                {name: Like(`%${searchTerm}%`)},
+                {nickname: Like(`%${searchTerm}%`)}
+            ],
+            relations: {profileImage : true, follower : true, following : true},
+            order: {
+                id: cursorPageOptionsDto.sort.toUpperCase() as any,
+            },
         });
 
         const userEntity = await UserEntity.findExistUser(userId);
+
 
         const searchResult = await Promise.all(resultUsers.map(async (user) => {
             const followSearchDto = new FollowSearchDto();
@@ -49,8 +62,25 @@ export class FollowService {
                 followSearchDto.image = await this.s3Service.getImageUrl(userImageKey);
             }
             return followSearchDto;
-        }))
-        return searchResult;
+        }));
+
+        // (2) 페이징 및 정렬 기준 설정
+        const takePerPage = cursorPageOptionsDto.take;
+        const isLastPage = total <= takePerPage;
+
+        let hasNextData = true;
+        let cursor: number;
+
+        if (isLastPage || searchResult.length <= 0) {
+            hasNextData = false;
+            cursor = null;
+        } else {
+            cursor = searchResult[searchResult.length - 1].id;
+        }
+
+        const cursorPageMetaDto = new CursorPageMetaDto({ cursorPageOptionsDto, total, hasNextData, cursor });
+
+        return new CursorPageDto(searchResult, cursorPageMetaDto);
     }
 
     // [2] 팔로우 리스트 조회
@@ -121,8 +151,8 @@ export class FollowService {
         return informs;
     }
 
-    // 팔로우 가능한 사이인지 검증
-    async checkFollow(userId : number, followingId : number): Promise<number> {
+    // [4] 팔로우 가능한 사이인지 검증
+    async checkFollow(userId : number, followingId : number): Promise<UserFollowingEntity> {
         try {
             // case1) 유효한 유저인지 검증
             const userEntity : UserEntity = await this.userService.findUserById(userId);
@@ -154,7 +184,7 @@ export class FollowService {
     }
 
     // [4-1] 팔로우
-    async createFollow(userId : number, followingId : number): Promise<number> {
+    async createFollow(userId : number, followingId : number): Promise<UserFollowingEntity> {
 
         try {
             const userEntity : UserEntity = await this.userService.findUserById(userId);
@@ -169,7 +199,7 @@ export class FollowService {
             userFollowingEntity.followUser = followingUser;
 
             await userFollowingEntity.save();
-            return userFollowingEntity.id;
+            return userFollowingEntity;
         } catch (e) {
             console.log('팔로우 요청에 실패하였습니다');
             throw new Error(e.message);
@@ -177,7 +207,7 @@ export class FollowService {
     }
 
     // [4-2] 언팔로우
-    async deleteFollow(userId: number, followingId:number): Promise<number> {
+    async deleteFollow(userId: number, followingId:number): Promise<UserFollowingEntity> {
         console.log('언팔로우 서비스 호출');
         const followEntity : UserFollowingEntity = await UserFollowingEntity.findOneOrFail({ where:
                 { user : {id : userId}, followUser : {id : followingId}}
@@ -185,12 +215,10 @@ export class FollowService {
 
         try{
             await followEntity.softRemove();
-            return followEntity.id;
+            return followEntity;
         }catch(e){
             console.error('언팔로우 요청에 실패하였습니다: ');
             throw new Error(e.message);
         }
     }
-
-
 }

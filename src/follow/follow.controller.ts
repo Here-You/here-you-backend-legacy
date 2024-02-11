@@ -1,32 +1,31 @@
-import {Controller, Post, Req, UseGuards, Param, Delete, Get, Patch, Query} from '@nestjs/common';
+import {Controller, Req, UseGuards, Param, Get, Patch, Query} from '@nestjs/common';
 import { FollowService } from './follow.service';
 import { ResponseCode } from '../response/response-code.enum';
 import { ResponseDto } from '../response/response.dto';
-import { UserService } from 'src/user/user.service';
 import { UserGuard } from '../user/user.guard';
-import {query, Request} from 'express';
-import { FollowSearchDto } from "./dto/follow.search.dto";
+import { Request} from 'express';
+import {CursorPageOptionsDto} from "../rule/dto/cursor-page.options.dto";
 
 @Controller('mate/follow')
 export class FollowController {
   constructor(
     private readonly followService: FollowService,
-    private readonly userService: UserService,
   ) {}
 
-    // [1] 메이트 검색
+    // [1] 메이트 검색 - 무한스크롤 적용
     @Get('/search')
     @UseGuards(UserGuard)
     async getSearchResult(
         @Query('searchTerm')searchTerm : string,
+        @Query() cursorPageOptionsDto: CursorPageOptionsDto,
         @Req() req: Request): Promise<ResponseDto<any>> {
         try {
-            const followSearchDto : FollowSearchDto[] = await this.followService.getSearchResult(req.user.id, searchTerm)
+            const result = await this.followService.getSearchResult(cursorPageOptionsDto, req.user.id, searchTerm);
             return new ResponseDto(
                 ResponseCode.GET_SEARCH_RESULT_SUCCESS,
                 true,
                 "검색 결과 리스트 불러오기 성공",
-                followSearchDto
+                result
             );
         } catch (error) {
             return new ResponseDto(
@@ -89,12 +88,21 @@ export class FollowController {
     async createFollow(@Req() req: Request, @Param('followingId') followingId : number): Promise<ResponseDto<any>> {
         try {
             const result = await this.followService.checkFollow(req.user.id, followingId);
-            return new ResponseDto(
-                ResponseCode.FOLLOW_SUCCESS,
-                true,
-                "팔로우 / 언팔로우 성공",
-                result
-            );
+            if (!!result.deleted) {
+                return new ResponseDto(
+                    ResponseCode.FOLLOW_SUCCESS,
+                    true,
+                    "언팔로우 성공",
+                    result.id
+                );
+            } else {
+                return new ResponseDto(
+                    ResponseCode.FOLLOW_SUCCESS,
+                    true,
+                    "팔로우 성공",
+                    result.id
+                );
+            }
         } catch (e) {
             return new ResponseDto(
                 ResponseCode.FOLLOW_FAIL,
