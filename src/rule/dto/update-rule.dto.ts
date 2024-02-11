@@ -1,7 +1,10 @@
 import { IsNotEmpty, IsNumber, IsString, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-class RulePairDto {
+export class UpdateRulePairDto {
+    @IsNumber()
+    id: number;
+
     @IsNotEmpty()
     @IsString()
     ruleTitle: string;
@@ -11,13 +14,17 @@ class RulePairDto {
     ruleDetail: string;
 }
 
-export class CreateRuleDto {
+export class UpdateRuleDto {
     @IsNotEmpty()
     @IsString()
     mainTitle: string;
 
     @IsArray()
     @ValidateNested({ each: true })
-    @Type(() => RulePairDto)
-    rulePairs: RulePairDto[];
+    @Type(() => UpdateRulePairDto)
+    rulePairs: UpdateRulePairDto[];
+
+    @IsArray()
+    @IsNumber({}, { each: true })
+    membersId: number[];
 }

@@ -8,6 +8,7 @@ import { ResponseDto } from '../response/response.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { UserFollowingEntity } from './user.following.entity';
 import {Like} from "typeorm";
+import {RuleInvitationEntity} from "../rule/domain/rule.invitation.entity";
 
 @Injectable()
 export class UserService {
@@ -312,5 +313,14 @@ export class UserService {
 
     // 팔로우 관계 : true 반환
     return !!isFollowing;
+  }
+
+  async checkAlreadyMember(user: UserEntity, ruleID: number) {
+    const rule = await RuleInvitationEntity.findOne({
+      where: {member: {id: user.id}, rule: {id: ruleID}}
+    });
+    // 이미 규칙 멤버인 경우 : true 반환
+    console.log('rule : ', rule);
+    return !!rule;
   }
 }
