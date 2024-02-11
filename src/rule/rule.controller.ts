@@ -5,9 +5,9 @@ import { ResponseCode } from '../response/response-code.enum';
 import { ResponseDto } from '../response/response.dto';
 import { UserGuard } from '../user/user.guard';
 import { Request } from 'express';
-import {FollowSearchDto} from "../follow/dto/follow.search.dto";
-import {GetSearchMemberDto} from "./dto/get.search.member.dto";
+import {GetSearchMemberDto} from "./dto/get-search-member.dto";
 import { UpdateRuleDto } from "./dto/update-rule.dto";
+import {CursorPageOptionsDto} from "./dto/cursor-page.options.dto";
 
 @Controller('mate/rule')
 export class RuleController {
@@ -36,7 +36,33 @@ export class RuleController {
     }
   }
 
-  // [2] 여행 규칙 상세 페이지 조회 (게시글)
+  // [2] 여행 규칙 상세 페이지 조회 (댓글) - 페이지네이션
+  @Get('/detail/:ruleId')
+  @UseGuards(UserGuard)
+  async getComment(@Req() req: Request,
+                   @Param('ruleId') ruleId: number,
+                   @Query() cursorPageOptionsDto: CursorPageOptionsDto
+  ): Promise<ResponseDto<any>> {
+    try {
+      const result = await this.ruleService.getComment(cursorPageOptionsDto, ruleId);
+
+      return new ResponseDto(
+          ResponseCode.GET_COMMENT_DETAIL_SUCCESS,
+          true,
+          "여행 규칙 상세 페이지 (댓글) 조회 성공",
+          result
+      );
+    } catch (e) {
+      return new ResponseDto(
+          ResponseCode.GET_COMMENT_DETAIL_FAIL,
+          false,
+          "여행 규칙 상세 페이지 (댓글) 조회 실패",
+          null
+      );
+    }
+  }
+
+  // [3] 여행 규칙 상세 페이지 조회 (게시글)
   @Get('/detail/:ruleId')
   @UseGuards(UserGuard)
   async getDetail(@Req() req: Request, @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
@@ -61,7 +87,7 @@ export class RuleController {
     }
   }
 
-  // [2] 여행 규칙 수정
+  // [4] 여행 규칙 수정
   @Patch('/detail/:ruleId')
   @UseGuards(UserGuard)
   async updateRule(@Body() updateRuleDto: UpdateRuleDto, @Req() req: Request, @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
@@ -86,7 +112,7 @@ export class RuleController {
     }
   }
 
-  // [3] 여행 규칙 전체 리스트 조회
+  // [5] 여행 규칙 전체 리스트 조회
   @Get('list')
   @UseGuards(UserGuard)
   async getRuleList(@Req() req: Request): Promise<ResponseDto<any>> {
@@ -109,7 +135,7 @@ export class RuleController {
     }
   }
 
-  // [3] 여행 규칙 생성
+  // [6] 여행 규칙 생성
   @Post('/write')
   @UseGuards(UserGuard)
   async createRule(@Req() req: Request, @Body() createRuleDto: CreateRuleDto): Promise<ResponseDto<any>> {
@@ -132,7 +158,7 @@ export class RuleController {
     }
   }
 
-  // [4] 여행 규칙 참여 멤버로 초대할 메이트 검색 결과
+  // [7] 여행 규칙 참여 멤버로 초대할 메이트 검색 결과
   @Get('/write/search/:ruleId')
   @UseGuards(UserGuard)
   async getSearchMember(
