@@ -296,12 +296,10 @@ export class RuleService {
       dto.introduction = user.introduction;
 
       // 이미 여행 규칙에 참여하는 멤버인지 여부
-      dto.isInvited = await this.userService.checkAlreadyMember(user, ruleId);
+      dto.isInvited = await this.userService.checkAlreadyMember(user.id, ruleId);
 
-      dto.image
       // 사용자 프로필 이미지
       const image = user.profileImage;
-      dto.image = image.imageKey;
       if(image == null) dto.image = null;
       else{
         const userImageKey = image.imageKey;
@@ -320,6 +318,7 @@ export class RuleService {
     })
 
     rule.mainTitle = updateRuleDto.mainTitle
+    await rule.save();
 
     // (1) [상세 규칙 수정]
     // 기존 세부 규칙 정보 리스트
