@@ -1,4 +1,4 @@
-// cursor-page.options.ts
+// cursor-page.options.dto.ts
 
 import { Type } from "class-transformer";
 import { IsEnum, IsOptional } from "class-validator";
