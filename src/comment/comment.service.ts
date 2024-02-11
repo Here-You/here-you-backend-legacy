@@ -60,9 +60,14 @@ export class CommentService {
   async deleteComment(ruleId: number, userId: number, commentId: number) : Promise<number> {
     try {
       // 사용자, 규칙, 댓글 검증
-      const user = await UserEntity.findExistUser(userId);
+      const user = await UserEntity.findOne({
+        where: {id : userId},
+      });
       if (!user) throw new NotFoundException('사용자를 찾을 수 없습니다');
-      const rule = await RuleMainEntity.findRuleById(ruleId);
+
+      const rule = await RuleMainEntity.findOne({
+        where: {id: ruleId},
+      })
       if (!rule) throw new NotFoundException('존재하지 않는 규칙입니다');
 
       const comment = await CommentEntity.findOne({
@@ -74,6 +79,7 @@ export class CommentService {
 
       if (comment.id == commentId) {
         await comment.softRemove();
+        console.log('댓글 삭제 성공');
         return comment.id;
       }
     } catch (e) {
