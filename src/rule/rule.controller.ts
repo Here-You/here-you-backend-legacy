@@ -62,7 +62,6 @@ export class RuleController {
   }
 
   // [2] 여행 규칙 수정
-  /*
   @Patch('/detail/:ruleId')
   @UseGuards(UserGuard)
   async updateRule(@Body() updateRuleDto: UpdateRuleDto, @Req() req: Request, @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
@@ -86,9 +85,6 @@ export class RuleController {
       );
     }
   }
-
-   */
-
 
   // [3] 여행 규칙 전체 리스트 조회
   @Get('list')

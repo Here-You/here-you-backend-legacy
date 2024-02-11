@@ -256,8 +256,7 @@ export class RuleService {
   }
 
   // [7] 여행 규칙 수정
-  /*
-  async updateRule(updateRuleDto: UpdateRuleDto, userId: number, ruleId: number) {
+  async updateRule(updateRuleDto: UpdateRuleDto, userId: number, ruleId: number): Promise<number> {
     const rule = await RuleMainEntity.findOne({
       where: {id : ruleId },
       relations: { rules: true, invitations: {member : true} }
@@ -265,42 +264,106 @@ export class RuleService {
 
     rule.mainTitle = updateRuleDto.mainTitle
 
-    // 상세 규칙 수정
-    // 기존 세부 규칙 정보
+    // (1) [상세 규칙 수정]
+    // 기존 세부 규칙 정보 리스트
     const subs = rule.rules;
 
     // 새로운 세부 규칙 리스트
     const updateSubsList = updateRuleDto.rulePairs;
 
-    // 수정 및 규칙 추가
-    const result = await Promise.all(updateSubsList.map(async (updateSub) => {
+    // case1) 규칙 삭제
+    for(const sub of subs) {
+      let isDeleteSub : boolean = true;
+      for(const updateSub of updateSubsList) {
+        if(sub.id == updateSub.id) {
+          isDeleteSub = false;
+          break;
+        }
+      }
+      if (isDeleteSub) {
+        await sub.softRemove();
+        console.log('삭제하는 sub 규칙 : ', sub.id);
+      }
+    }
+
+    // case2) 규칙 수정 및 규칙 추가
+    for (const updateSub of updateSubsList) {
       // case1) 새로운 규칙
       if (!updateSub.id) {
         const newSub = new RuleSubEntity();
         newSub.ruleTitle = updateSub.ruleTitle;
         newSub.ruleDetail = updateSub.ruleDetail;
 
-        return new
+        await newSub.save();
+        console.log('새로 저장하는 sub 규칙 : ', newSub.id);
       }
       // case2) 수정 규칙
-      if (!!updateSub.id && !!updateSub.ruleTitle && !!updateSub.ruleDetail) {
+      else {
         const oldSub = await RuleSubEntity.findOne({
           where: {id: updateSub.id}
         })
         oldSub.ruleTitle = updateSub.ruleTitle;
         oldSub.ruleDetail = updateSub.ruleDetail;
 
+        await oldSub.save();
+        console.log('수정하는 규칙 ID : ', oldSub);
       }
-      // case3) 삭제 규칙
-      if (!!updateSub.id && !updateSub.ruleTitle && !updateSub.ruleDetail) {
+    }
 
+    // (2) [여행 규칙 멤버 수정]
+    // 기존 멤버 초대 리스트
+    const oldInvitations = await RuleInvitationEntity.find({
+      where: {rule: {id : ruleId}},
+      relations: {member: true}
+    })
+    // 수정된 멤버 ID 리스트
+    const updateMemberIds = updateRuleDto.membersId;
+
+    // case1) 멤버 삭제
+    for(const invitation of oldInvitations) {
+      const member = invitation.member;
+      let isDeleteMember : boolean = true;
+
+      for(const updateMemberId of updateMemberIds) {
+        if(member.id == updateMemberId) {
+          isDeleteMember = false;
+          break;
+        }
       }
-    }}
+      if(isDeleteMember) {
+        await invitation.softRemove();
+        console.log('삭제하는 멤버 ID : ', invitation.id);
+      }
+    }
 
-   */
+    // case2) 멤버 추가
+    for (const updateMemberId of updateMemberIds) {
+      const member = await UserEntity.findExistUser(updateMemberId);
 
+      let isPostMember : boolean = true;
 
+      for(const oldInvitation of oldInvitations) {
+        const oldMember = oldInvitation.member;
+        if(oldMember.id == updateMemberId) {
+          isPostMember = false;
+          break;
+        }
+      }
 
+      if(isPostMember) {
+        const newInvitation = new RuleInvitationEntity();
+
+        newInvitation.member = await UserEntity.findExistUser(updateMemberId);
+        newInvitation.rule = rule;
+
+        await newInvitation.save();
+        console.log('새로 초대한 멤버 ID : ', updateMemberId);
+      }
+    }
+
+    console.log('--여행 규칙 수정이 완료되었습니다--')
+    return rule.id;
+  }
 
 
   // [member] 초대 받은 멤버 리스트 생성
