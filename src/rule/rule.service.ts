@@ -66,7 +66,10 @@ export class RuleService {
     const dto = new DetailRuleDto();
     const main: RuleMainEntity = await RuleMainEntity.findRuleById(ruleId);
     const subs: RuleSubEntity[] = await RuleSubEntity.findSubById(ruleId);
-    const invitations: RuleInvitationEntity[] = await RuleInvitationEntity.findInvitationByRuleId(ruleId);
+    const invitations: RuleInvitationEntity[] = await RuleInvitationEntity.find({
+      where: {rule: {id: ruleId}},
+      relations: {member: {profileImage : true}}
+    })
 
     // -1) 제목
     dto.id = ruleId;
