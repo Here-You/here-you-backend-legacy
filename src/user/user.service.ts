@@ -7,7 +7,7 @@ import { UserProfileImageEntity } from './user.profile.image.entity';
 import { ResponseDto } from '../response/response.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { UserFollowingEntity } from './user.following.entity';
-import { LessThan, Like } from 'typeorm';
+import { LessThan } from 'typeorm';
 import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
 import { DiaryEntity } from '../diary/models/diary.entity';
 import { S3UtilService } from '../utils/S3.service';
@@ -330,16 +330,24 @@ export class UserService {
       cursor = undefined;
     }
 
+    // user -> journey -> schedules -> diary -> diaryImage
     const diaries = await DiaryEntity.find({
       where: {
-        author: {
-          id: userId,
+        schedule: {
+          journey: {
+            user: {
+              id: userId,
+            },
+          },
         },
         id: cursor ? LessThan(Number(cursor)) : undefined,
       },
       relations: {
         image: true,
         schedule: {
+          journey: {
+            user: true,
+          },
           location: true,
         },
       },
