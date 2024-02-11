@@ -348,7 +348,6 @@ export class UserService {
           journey: {
             user: true,
           },
-          location: true,
         },
       },
       order: {
@@ -370,7 +369,7 @@ export class UserService {
             weather: diary.weather,
             mood: diary.mood,
             content: diary.content,
-            location: diary.schedule?.location?.name,
+            date: diary.schedule.date,
             diary_image: diary.image
               ? {
                   id: diary.image.id,
