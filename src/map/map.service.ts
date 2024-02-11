@@ -10,9 +10,12 @@ import { LocationEntity } from 'src/location/location.entity';
 import { DiaryImageEntity } from 'src/diary/models/diary.image.entity';
 import { DetailScheduleEntity } from 'src/detail-schedule/detail-schedule.entity';
 import { CursorBasedPaginationRequestDto } from './cursor-based-pagination-request.dto.ts';
+import { S3UtilService } from 'src/utils/S3.service';
 
 @Injectable()
 export class MapService {
+  constructor(private readonly s3UtilService: S3UtilService) {}
+
   /*캘린더에서 사용자의 월별 일정 불러오기*/
   async getMonthlySchedules(
     userId: number,
@@ -155,6 +158,9 @@ export class MapService {
           return null;
         }
         const diaryImg = await DiaryImageEntity.findExistImgUrl(diary);
+        const imageUrl = await this.s3UtilService.getImageUrl(
+          diaryImg.imageUrl,
+        );
         if (!diaryImg) {
           return null;
         }
@@ -165,7 +171,7 @@ export class MapService {
           diary: diary,
           diaryImage: {
             id: diaryImg.id,
-            imageUrl: diaryImg.imageUrl,
+            imageUrl: imageUrl,
           },
         };
       }),
@@ -247,9 +253,12 @@ export class MapService {
           return null;
         }
         const diaryImage = await DiaryImageEntity.findExistImgUrl(diary);
+        const imageUrl = await this.s3UtilService.getImageUrl(
+          diaryImage.imageUrl,
+        );
         return {
           imageId: diaryImage.id,
-          imageUrl: diaryImage.imageUrl,
+          imageUrl: imageUrl,
         };
       }),
     );

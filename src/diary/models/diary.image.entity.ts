@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { DiaryEntity } from './diary.entity';
+import { S3UtilService } from 'src/utils/S3.service';
 
 @Entity()
 export class DiaryImageEntity extends BaseEntity {
