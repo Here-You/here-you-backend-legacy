@@ -13,6 +13,15 @@ export class UserController {
     return this.userService.Login(email, password);
   }
 
+  @Post('/login/oauth')
+  SNSLogin(
+    @Body('type') type: 'KAKAO' | 'GOOGLE',
+    @Body('token') token: string,
+    @Body('redirect_uri') redirectUrl: string,
+  ) {
+    return this.userService.SNSLogin(type, token, redirectUrl);
+  }
+
   @Post('/profile')
   @UseGuards(UserGuard)
   UpdateProfile(@Body() body: Partial<IUserProfile>, @Req() req: Request) {

@@ -1,14 +1,14 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import * as jsonwebtoken from 'jsonwebtoken';
+import fetch from 'node-fetch';
 import { UserEntity } from './user.entity';
 import { IReqUser, IUserProfile } from './user.dto';
 import { UserProfileImageEntity } from './user.profile.image.entity';
 import { ResponseDto } from '../response/response.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { UserFollowingEntity } from './user.following.entity';
-import {Like} from "typeorm";
-import {RuleInvitationEntity} from "../rule/domain/rule.invitation.entity";
+import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
 
 @Injectable()
 export class UserService {
@@ -26,6 +26,49 @@ export class UserService {
     return jsonwebtoken.sign(payload, process.env.JWT_SECRET, {
       expiresIn: '1d',
     });
+  }
+
+  private objectToQueryString(obj: Record<string, unknown>) {
+    return Object.entries(obj)
+      .map(([key, value]) => `${key}=${encodeURIComponent(value.toString())}`)
+      .join('&');
+  }
+
+  private async getKakaoToken(code: string, redirectUrl: string) {
+    const response = await fetch(`https://kauth.kakao.com/oauth/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+      },
+      body: this.objectToQueryString({
+        grant_type: 'authorization_code',
+        client_id: process.env.KAKAO_CLIENT_ID,
+        redirect_uri: redirectUrl,
+        code,
+      }),
+    });
+
+    return await response.json();
+  }
+
+  private async getKakaoInformation(accessToken: string) {
+    const response = await fetch(
+      `https://kapi.kakao.com/v2/user/me?${this.objectToQueryString({
+        property_keys: JSON.stringify([
+          'kakao_account.profile',
+          'kakao_account.email',
+          'kakao_account.name',
+        ]),
+      })}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-type': 'application/x-www-form-urlencoded;charset=utf-8',
+        },
+      },
+    );
+
+    return await response.json();
   }
 
   async Login(email: string, password: string) {
@@ -52,6 +95,78 @@ export class UserService {
     };
   }
 
+  async SNSLogin(type: 'KAKAO' | 'GOOGLE', code: string, redirectUrl: string) {
+    if (type === 'KAKAO') {
+      // 인가 코드 받기
+      const authToken = await this.getKakaoToken(code, redirectUrl);
+      if (authToken.error) {
+        return new ResponseDto(
+          ResponseCode.UNKNOWN_AUTHENTICATION_ERROR,
+          false,
+          '인가 코드가 유효하지 않습니다',
+          null,
+        );
+      }
+
+      // 사용자 정보 받기
+      const kakaoInfo = await this.getKakaoInformation(authToken.access_token);
+
+      const userId = kakaoInfo.id;
+      const userProfile = kakaoInfo.kakao_account.profile;
+      const userEmail = kakaoInfo.kakao_account.email;
+
+      // 사용자 정보로 DB 조회
+      let userEntity = await UserEntity.findOne({
+        where: {
+          oauthType: 'KAKAO',
+          oauthToken: userId.toString(),
+        },
+        relations: {
+          profileImage: true,
+        },
+      });
+
+      let isNewUser = false;
+      if (!userEntity) {
+        isNewUser = true;
+        userEntity = new UserEntity();
+        userEntity.oauthType = 'KAKAO';
+        userEntity.oauthToken = userId.toString();
+
+        userEntity.introduction = '';
+        userEntity.visibility = 'PUBLIC';
+        userEntity.name = '';
+        userEntity.age = 0;
+      }
+
+      userEntity.email = userEmail;
+      userEntity.password = '';
+      userEntity.nickname = userProfile?.nickname;
+
+      // Todo: 프로필 이미지 저장하기
+      await userEntity.save();
+
+      return {
+        status: 200,
+        success: true,
+        message: '로그인 성공',
+        token: this._generateToken({
+          id: userEntity.id,
+        }),
+        register_required: isNewUser,
+      };
+    } else if (type === 'GOOGLE') {
+      // Todo
+    } else {
+      return new ResponseDto(
+        ResponseCode.INTERNAL_SERVEr_ERROR,
+        false,
+        '잘못된 요청입니다',
+        null,
+      );
+    }
+  }
+
   async checkIfFollowing(
     user: UserEntity,
     targetUserId: number,
@@ -61,20 +176,19 @@ export class UserService {
     const isFollowing = await UserFollowingEntity.findOne({
       where: {
         user: { id: user.id },
-        followUser: { id: targetUserId }
-      }
+        followUser: { id: targetUserId },
+      },
     });
 
-    if(isFollowing) return true;
+    if (isFollowing) return true;
     else return false;
-
   }
 
   async findUserById(userId: number): Promise<UserEntity> {
     try {
       const user: UserEntity = await UserEntity.findOne({
         where: { id: userId },
-        relations: [ 'profileImage' ],
+        relations: ['profileImage'],
       });
       return user;
     } catch (error) {
@@ -91,7 +205,6 @@ export class UserService {
 
       console.log('겟프로필이미지: ', profileImageEntity);
       return profileImageEntity;
-
     } catch (error) {
       console.log('Error on getProfileImage: ' + error);
     }
@@ -155,9 +268,8 @@ export class UserService {
     try {
       return await UserFollowingEntity.find({
         where: { user: { id: userId } },
-        relations: {followUser: {profileImage : true}},
+        relations: { followUser: { profileImage: true } },
       });
-
     } catch (error) {
       console.log('Error on getFollowingList: ' + error);
     }
@@ -167,9 +279,8 @@ export class UserService {
     try {
       return await UserFollowingEntity.find({
         where: { followUser: { id: userId } },
-        relations: {user: {profileImage : true}},
+        relations: { user: { profileImage: true } },
       });
-
     } catch (error) {
       console.log('Error on getFollowingList: ' + error);
     }
@@ -252,7 +363,6 @@ export class UserService {
     } catch (error) {
       console.log('Error on findFollowingMates: ', error);
       throw error;
-
     }
   }
 
@@ -300,7 +410,7 @@ export class UserService {
 
    */
 
-  async isAlreadyFollowing(userId:number, followingId: number) {
+  async isAlreadyFollowing(userId: number, followingId: number) {
     const userEntity = await this.findUserById(userId);
     const followingEntity = await this.findUserById(followingId);
     console.log('현재 로그인한 사용자 : ', userEntity.id);
@@ -308,8 +418,10 @@ export class UserService {
 
     const isFollowing = await UserFollowingEntity.findOne({
       where: {
-        user : {id : userId}, followUser : {id : followingId},
-      }});
+        user: { id: userId },
+        followUser: { id: followingId },
+      },
+    });
 
     // 팔로우 관계 : true 반환
     return !!isFollowing;
@@ -317,7 +429,7 @@ export class UserService {
 
   async checkAlreadyMember(user: UserEntity, ruleID: number) {
     const rule = await RuleInvitationEntity.findOne({
-      where: {member: {id: user.id}, rule: {id: ruleID}}
+      where: { member: { id: user.id }, rule: { id: ruleID } },
     });
     // 이미 규칙 멤버인 경우 : true 반환
     console.log('rule : ', rule);
