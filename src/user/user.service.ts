@@ -325,7 +325,7 @@ export class UserService {
     return !!rule;
   }
 
-  async listDiaries(userId: number, cursor?: string, take = 30) {
+  async listDiaries(userId: number, cursor?: string, take = 10) {
     if (!cursor || cursor === '') {
       cursor = undefined;
     }
