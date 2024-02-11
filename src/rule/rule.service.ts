@@ -1,4 +1,4 @@
-import {Injectable, HttpException, BadRequestException} from '@nestjs/common';
+import {Injectable, HttpException, BadRequestException, HttpStatus} from '@nestjs/common';
 import { CreateRuleDto } from './dto/create-rule.dto';
 import { RuleMainEntity } from './domain/rule.main.entity';
 import { RuleSubEntity } from './domain/rule.sub.entity';
@@ -9,10 +9,14 @@ import { S3UtilService} from "../utils/S3.service";
 import { GetMemberListDto} from "./dto/get-member-list.dto";
 import {UserService} from "../user/user.service";
 import {GetRuleListDto, MemberPairDto} from "./dto/get-rule-list.dto";
-import {Like} from "typeorm";
-import {GetSearchMemberDto} from "./dto/get.search.member.dto";
+import {LessThan, Like} from "typeorm";
+import {GetSearchMemberDto} from "./dto/get-search-member.dto";
 import {UpdateRuleDto} from "./dto/update-rule.dto";
-import {FollowSearchDto} from "../follow/dto/follow.search.dto";
+import {CursorPageOptionsDto} from "../mate/cursor-page/cursor-page-option.dto";
+import {CommentEntity} from "../comment/domain/comment.entity";
+import {GetCommentDto } from "./dto/get-comment.dto";
+import {CursorPageDto} from "./dto/cursor-page.dto";
+import {CursorPageMetaDto} from "./dto/cursor-page.meta.dto";
 
 @Injectable()
 export class RuleService {
@@ -107,6 +111,59 @@ export class RuleService {
     }))
     return dto;
   };
+
+  // [3] 여행 규칙 상세 페이지 조회 (댓글) - 페이지네이션
+  async getComment(cursorPageOptionsDto: CursorPageOptionsDto, ruleId: number): Promise<CursorPageDto<GetCommentDto>> {
+    // (1) 데이터 조회
+    const [comments, total] = await CommentEntity.findAndCount({
+      take: cursorPageOptionsDto.take,
+      where: {
+        rule: { id: ruleId },
+        id: cursorPageOptionsDto.cursorId ? LessThan(cursorPageOptionsDto.cursorId) : null,
+      },
+      relations: {user:{profileImage: true}},
+      order: {
+        id: cursorPageOptionsDto.sort.toUpperCase() as any,
+      },
+    });
+
+    const result = await Promise.all(comments.map(async (comment) => {
+      const getCommentDto = new GetCommentDto();
+
+      getCommentDto.id = comment.id;
+      getCommentDto.name = comment.user.name;
+      getCommentDto.content = comment.content;
+      getCommentDto.updated = comment.updated;
+
+      // 사용자 프로필 이미지
+      const image = comment.user.profileImage;
+      if(image == null) getCommentDto.image = null;
+      else {
+        const userImageKey = image.imageKey;
+        getCommentDto.image = await this.s3Service.getImageUrl(userImageKey);
+      }
+
+      return getCommentDto;
+    }));
+
+    // (2) 페이징 및 정렬 기준 설정
+    const takePerPage = cursorPageOptionsDto.take;
+    const isLastPage = total <= takePerPage;
+
+    let hasNextData = true;
+    let cursor: number;
+
+    if (isLastPage || result.length <= 0) {
+      hasNextData = false;
+      cursor = null;
+    } else {
+      cursor = result[result.length - 1].id;
+    }
+
+    const cursorPageMetaDto = new CursorPageMetaDto({ cursorPageOptionsDto, total, hasNextData, cursor });
+
+    return new CursorPageDto(result, cursorPageMetaDto);
+  }
 
   // [3] 여행 규칙 나가기
   // -1) 초대 받은 팀원 -> 초대 삭제
