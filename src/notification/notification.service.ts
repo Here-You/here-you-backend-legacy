@@ -27,6 +27,18 @@ export class NotificationService {
         take: 100,
       });
 
+      await NotificationEntity.update(
+        {
+          notificationReceiver: {
+            id: userId,
+          },
+          notificationRead: false,
+        },
+        {
+          notificationRead: true,
+        },
+      );
+
       return new ResponseDto(
         ResponseCode.GET_NOTIFICATION_SUCCESS,
         true,
