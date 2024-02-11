@@ -12,7 +12,7 @@ export class FollowController {
     private readonly followService: FollowService,
   ) {}
 
-    // [1] 메이트 검색 - 무한스크롤 적용
+    // [1] 메이트 검색 - 무한 스크롤 적용
     @Get('/search')
     @UseGuards(UserGuard)
     async getSearchResult(

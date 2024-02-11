@@ -71,7 +71,7 @@ export class CommentService {
       if (!rule) throw new NotFoundException('존재하지 않는 규칙입니다');
 
       const comment = await CommentEntity.findOne({
-        where: {user: {id: userId}, rule: {id: ruleId}}
+        where: {user: {id: userId}, rule: {id: ruleId}},
       })
       if (!comment) throw new NotFoundException("데이터를 찾을 수 없습니다");
 
