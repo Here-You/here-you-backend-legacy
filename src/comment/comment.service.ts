@@ -7,6 +7,7 @@ import {UserEntity} from "../user/user.entity";
 @Injectable()
 export class CommentService {
 
+  // [1] 댓글 작성
   async createComment(dto: CreateCommentDto, ruleId: number, userId: number): Promise<number> {
 
     const comment = new CommentEntity();
@@ -28,6 +29,7 @@ export class CommentService {
     return comment.id;
   }
 
+  // [2] 댓글 수정
   async updateComment(dto: CreateCommentDto, ruleId: number, userId: number, commentId: number) : Promise<number> {
     try {
       // 사용자, 규칙, 댓글 검증
@@ -54,6 +56,7 @@ export class CommentService {
     }
   }
 
+  // [3] 댓글 삭제
   async deleteComment(ruleId: number, userId: number, commentId: number) : Promise<number> {
     try {
       // 사용자, 규칙, 댓글 검증
