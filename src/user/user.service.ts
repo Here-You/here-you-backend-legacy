@@ -7,12 +7,16 @@ import { UserProfileImageEntity } from './user.profile.image.entity';
 import { ResponseDto } from '../response/response.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { UserFollowingEntity } from './user.following.entity';
-import {Like} from "typeorm";
-import {RuleInvitationEntity} from "../rule/domain/rule.invitation.entity";
+import { LessThan, Like } from 'typeorm';
+import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
+import { DiaryEntity } from '../diary/models/diary.entity';
+import { S3UtilService } from '../utils/S3.service';
 
 @Injectable()
 export class UserService {
   private readonly logger: Logger = new Logger(UserService.name);
+
+  constructor(private s3Service: S3UtilService) {}
 
   private _hashPassword(password: string): string {
     return bcrypt.hashSync(password, 10);
@@ -61,20 +65,19 @@ export class UserService {
     const isFollowing = await UserFollowingEntity.findOne({
       where: {
         user: { id: user.id },
-        followUser: { id: targetUserId }
-      }
+        followUser: { id: targetUserId },
+      },
     });
 
-    if(isFollowing) return true;
+    if (isFollowing) return true;
     else return false;
-
   }
 
   async findUserById(userId: number): Promise<UserEntity> {
     try {
       const user: UserEntity = await UserEntity.findOne({
         where: { id: userId },
-        relations: [ 'profileImage' ],
+        relations: ['profileImage'],
       });
       return user;
     } catch (error) {
@@ -91,7 +94,6 @@ export class UserService {
 
       console.log('겟프로필이미지: ', profileImageEntity);
       return profileImageEntity;
-
     } catch (error) {
       console.log('Error on getProfileImage: ' + error);
     }
@@ -155,9 +157,8 @@ export class UserService {
     try {
       return await UserFollowingEntity.find({
         where: { user: { id: userId } },
-        relations: {followUser: {profileImage : true}},
+        relations: { followUser: { profileImage: true } },
       });
-
     } catch (error) {
       console.log('Error on getFollowingList: ' + error);
     }
@@ -167,9 +168,8 @@ export class UserService {
     try {
       return await UserFollowingEntity.find({
         where: { followUser: { id: userId } },
-        relations: {user: {profileImage : true}},
+        relations: { user: { profileImage: true } },
       });
-
     } catch (error) {
       console.log('Error on getFollowingList: ' + error);
     }
@@ -252,7 +252,6 @@ export class UserService {
     } catch (error) {
       console.log('Error on findFollowingMates: ', error);
       throw error;
-
     }
   }
 
@@ -300,7 +299,7 @@ export class UserService {
 
    */
 
-  async isAlreadyFollowing(userId:number, followingId: number) {
+  async isAlreadyFollowing(userId: number, followingId: number) {
     const userEntity = await this.findUserById(userId);
     const followingEntity = await this.findUserById(followingId);
     console.log('현재 로그인한 사용자 : ', userEntity.id);
@@ -308,8 +307,10 @@ export class UserService {
 
     const isFollowing = await UserFollowingEntity.findOne({
       where: {
-        user : {id : userId}, followUser : {id : followingId},
-      }});
+        user: { id: userId },
+        followUser: { id: followingId },
+      },
+    });
 
     // 팔로우 관계 : true 반환
     return !!isFollowing;
@@ -317,10 +318,60 @@ export class UserService {
 
   async checkAlreadyMember(user: UserEntity, ruleID: number) {
     const rule = await RuleInvitationEntity.findOne({
-      where: {member: {id: user.id}, rule: {id: ruleID}}
+      where: { member: { id: user.id }, rule: { id: ruleID } },
     });
     // 이미 규칙 멤버인 경우 : true 반환
     console.log('rule : ', rule);
     return !!rule;
+  }
+
+  async listDiaries(userId: number, cursor?: string, take = 30) {
+    if (!cursor || cursor === '') {
+      cursor = undefined;
+    }
+
+    const diaries = await DiaryEntity.find({
+      where: {
+        author: {
+          id: userId,
+        },
+        id: cursor ? LessThan(Number(cursor)) : undefined,
+      },
+      relations: {
+        image: true,
+        schedule: {
+          location: true,
+        },
+      },
+      order: {
+        id: 'DESC',
+      },
+      take,
+    });
+
+    return new ResponseDto(
+      ResponseCode.GET_DIARY_SUCCESS,
+      true,
+      '일지 목록 조회 성공',
+      {
+        diaries: await Promise.all(
+          diaries.map(async (diary) => ({
+            id: diary.id,
+            title: diary.title,
+            place: diary.place,
+            weather: diary.weather,
+            mood: diary.mood,
+            content: diary.content,
+            location: diary.schedule?.location?.name,
+            diary_image: diary.image
+              ? {
+                  id: diary.image.id,
+                  url: await this.s3Service.getImageUrl(diary.image.imageUrl),
+                }
+              : null,
+          })),
+        ),
+      },
+    );
   }
 }
