@@ -165,12 +165,33 @@ export class RuleService {
     return new CursorPageDto(result, cursorPageMetaDto);
   }
 
-  // [3] 여행 규칙 나가기
+  // [4] 여행 규칙 나가기
   // -1) 초대 받은 팀원 -> 초대 삭제
   async deleteInvitation(ruleId: number, userId: number): Promise<RuleInvitationEntity> {
-    const invitation : RuleInvitationEntity = await RuleInvitationEntity.findInvitationByRuleAndUser(ruleId, userId);
+    try {
+      // 검증1) 사용자가 존재하지 않는 경우
+      const user = await UserEntity.findOne({
+        where: {id : userId},
+      });
+      if (!user) throw new Error('사용자를 찾을 수 없습니다');
 
-    return invitation.softRemove();
+      // 검증2) 규칙이 존재하지 않는 경우
+      const ruleMain = await RuleMainEntity.findOne({
+        where : {id : ruleId},
+      });
+      if (!ruleMain) throw new Error('규칙을 찾을 수 없습니다');
+
+      // 검증3) 규칙에 참여하는 사용자가 아닌 경우
+      const invitation = await RuleInvitationEntity.findOne({
+        where: {member: {id: userId}, rule: {id: ruleId}},
+      })
+      if (!!invitation) {
+        return invitation.softRemove();
+      } else throw new Error('사용자가 참여하는 규칙이 아닙니다');
+    } catch (e) {
+      console.log('여행 규칙 나가기 실패');
+      throw new Error(e.message);
+    }
   }
 
   // [4] 여행 규칙 멤버 리스트 조회
