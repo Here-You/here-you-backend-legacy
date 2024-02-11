@@ -15,7 +15,7 @@ export class FollowController {
   ) {}
 
     // [1] 메이트 검색
-    @Get('/search/:searchTerm')
+    @Get('/search')
     @UseGuards(UserGuard)
     async getSearchResult(
         @Query('searchTerm')searchTerm : string,
