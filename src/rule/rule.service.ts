@@ -34,6 +34,8 @@ export class RuleService {
     await main.save();
     console.log(main);
 
+    dto.rulePairs.sort((a, b) => a.ruleNumber - b.ruleNumber);
+
     // -2) rule 저장
     const subs = await Promise.all(dto.rulePairs.map(async (pair) => {
       const sub = new RuleSubEntity();
