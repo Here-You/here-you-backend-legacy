@@ -134,7 +134,7 @@ export class RuleService {
   // [3] 여행 규칙 상세 페이지 조회 (댓글) - 페이지네이션
   async getComment(cursorPageOptionsDto: CursorPageOptionsDto, ruleId: number): Promise<CursorPageDto<GetCommentDto>> {
 
-    const cursorId: number = cursorPageOptionsDto.cursorId;
+    let cursorId: number = 0;
 
     // (1) 데이터 조회
     const [comments, total] = await CommentEntity.findAndCount({
@@ -322,27 +322,6 @@ export class RuleService {
   async getSearchMemberAtCreate(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, searchTerm: string): Promise<CursorPageDto<GetSearchMemberAtCreateDto>> {
     let cursorId: number = 0;
 
-    // (0) 맨 처음 요청일 경우 랜덤 숫자 생성해서 cursorId에 할당
-    if(cursorPageOptionsDto.cursorId == 0){
-      const newUser = await UserEntity.find({
-        order: {
-          id: 'DESC'
-        },
-        take: 1
-      });
-      const max = newUser[0].id + 1;
-      console.log('max id: ',max);
-
-      const min = 5;
-      // TODO 사용자 늘어나면 min 값 늘리기
-      cursorId = Math.floor(Math.random() * (max - min + 1)) + min;
-      console.log('random cursor: ', cursorId);
-
-    }
-    else {
-      cursorId = cursorPageOptionsDto.cursorId;
-    }
-
     // (1) 데이터 조회
     // 검색 결과에 해당하는 값 찾기
     // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
@@ -350,7 +329,7 @@ export class RuleService {
     const [resultUsers, total] = await UserEntity.findAndCount({
       take: cursorPageOptionsDto.take,
       where: [
-        {id: cursorPageOptionsDto.cursorId ? LessThan(cursorPageOptionsDto.cursorId) : null},
+        {id: cursorId ? LessThan(cursorId) : null},
         { name: Like(`%${searchTerm}%`) },
         { nickname: Like(`%${searchTerm}%`)},
         { id: Not(Equal(userId))}  // 사용자 본인은 검색결과에 뜨지 않도록
@@ -404,27 +383,6 @@ export class RuleService {
   async getSearchMemberAtUpdate(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, ruleId: number, searchTerm: string): Promise<CursorPageDto<GetSearchMemberDto>> {
     let cursorId: number = 0;
 
-    // (0) 맨 처음 요청일 경우 랜덤 숫자 생성해서 cursorId에 할당
-    if(cursorPageOptionsDto.cursorId == 0){
-      const newUser = await UserEntity.find({
-        order: {
-          id: 'DESC'
-        },
-        take: 1
-      });
-      const max = newUser[0].id + 1;
-      console.log('max id: ',max);
-
-      const min = 5;
-      // TODO 사용자 늘어나면 min 값 늘리기
-      cursorId = Math.floor(Math.random() * (max - min + 1)) + min;
-      console.log('random cursor: ', cursorId);
-
-    }
-    else {
-      cursorId = cursorPageOptionsDto.cursorId;
-    }
-
     // (1) 데이터 조회
     // 검색 결과에 해당하는 값 찾기
     // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
@@ -432,7 +390,7 @@ export class RuleService {
     const [resultUsers, total] = await UserEntity.findAndCount({
       take: cursorPageOptionsDto.take,
       where: [
-        {id: cursorPageOptionsDto.cursorId ? LessThan(cursorPageOptionsDto.cursorId) : null},
+        {id: cursorId ? LessThan(cursorId) : null},
         { name: Like(`%${searchTerm}%`) },
         { nickname: Like(`%${searchTerm}%`)},
         { id: Not(Equal(userId))}  // 사용자 본인은 검색결과에 뜨지 않도록
