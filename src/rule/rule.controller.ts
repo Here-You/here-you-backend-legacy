@@ -37,7 +37,7 @@ export class RuleController {
       return new ResponseDto(
           ResponseCode.GET_COMMENT_DETAIL_FAIL,
           false,
-          "여행 규칙 상세 페이지 (댓글) 조회 실패",
+          e.message,
           null
       );
     }
@@ -54,11 +54,11 @@ export class RuleController {
           "여행 규칙 멤버 리스트 불러오기 성공",
           memberList
       );
-    } catch (error) {
+    } catch (e) {
       return new ResponseDto(
           ResponseCode.GET_MEMBER_LIST_FAIL,
           false,
-          "여행 규칙 멤버 리스트 불러오기 실패",
+          e.message,
           null
       );
     }
@@ -80,11 +80,11 @@ export class RuleController {
           "초대할 메이트 검색 결과 리스트 불러오기 성공",
           result
       );
-    } catch (error) {
+    } catch (e) {
       return new ResponseDto(
           ResponseCode.GET_SEARCH_RESULT_FAIL,
           false,
-          "초대할 메이트 검색 결과 리스트 불러오기 실패",
+          e.message,
           null
       );
     }
@@ -97,20 +97,20 @@ export class RuleController {
 
     const result = await this.ruleService.getDetail(req.user.id, ruleId);
 
-    if(!result){
-      return new ResponseDto(
-          ResponseCode.GET_RULE_DETAIL_FAIL,
-          false,
-          "여행 규칙 상세 페이지 (게시글) 조회 실패",
-          null
-      );
-    }
-    else{
+    try {
+      const result = await this.ruleService.getDetail(req.user.id, ruleId);
       return new ResponseDto(
           ResponseCode.GET_RULE_DETAIL_SUCCESS,
           true,
           "여행 규칙 상세 페이지 (게시글) 조회 성공",
           result
+      );
+    } catch (e) {
+      return new ResponseDto(
+          ResponseCode.GET_RULE_DETAIL_FAIL,
+          false,
+          e.message,
+          null
       );
     }
   }
@@ -120,22 +120,20 @@ export class RuleController {
   @UseGuards(UserGuard)
   async updateRule(@Body() updateRuleDto: UpdateRuleDto, @Req() req: Request, @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
 
-    const result = await this.ruleService.updateRule(updateRuleDto, req.user.id, ruleId);
-
-    if(!result){
-      return new ResponseDto(
-          ResponseCode.PATCH_RULE_FAIL,
-          false,
-          "여행 규칙 수정 실패",
-          null
-      );
-    }
-    else{
+    try {
+      const result = await this.ruleService.updateRule(updateRuleDto, req.user.id, ruleId);
       return new ResponseDto(
           ResponseCode.PATCH_RULE_SUCCESS,
           true,
           "여행 규칙 수정 성공",
           result
+      );
+    } catch (e) {
+      return new ResponseDto(
+          ResponseCode.PATCH_RULE_FAIL,
+          false,
+          e.message,
+          null
       );
     }
   }
@@ -144,22 +142,21 @@ export class RuleController {
   @Post('/detail')
   @UseGuards(UserGuard)
   async createRule(@Req() req: Request, @Body() createRuleDto: CreateRuleDto): Promise<ResponseDto<any>> {
-    const result = await this.ruleService.createRule(createRuleDto, req.user.id);
-
-    if(!result){
-      return new ResponseDto(
-          ResponseCode.RULE_CREATION_FAIL,
-          false,
-          "여행 규칙 생성 실패",
-          null);
-
-    }
-    else{
+    try {
+      const result = await this.ruleService.createRule(createRuleDto, req.user.id);
       return new ResponseDto(
           ResponseCode.RULE_CREATED,
           true,
           "여행 규칙 생성 성공",
-          result);
+          result
+      );
+    } catch (e) {
+      return new ResponseDto(
+          ResponseCode.RULE_CREATION_FAIL,
+          false,
+          e.message,
+          null
+      );
     }
   }
 
@@ -189,22 +186,19 @@ export class RuleController {
   @Get()
   @UseGuards(UserGuard)
   async getRuleList(@Req() req: Request): Promise<ResponseDto<any>> {
-    const result = await this.ruleService.getRuleList(req.user.id);
-
-    if(!result){
-      return new ResponseDto(
-          ResponseCode.GET_RULE_LIST_FAIL,
-          false,
-          "여행 규칙 전체 리스트 조회 실패",
-          null);
-
-    }
-    else{
+    try {
+      const result = await this.ruleService.getRuleList(req.user.id);
       return new ResponseDto(
           ResponseCode.GET_RULE_LIST_SUCCESS,
           true,
           "여행 규칙 전체 리스트 조회 성공",
           result);
+    } catch (e) {
+      return new ResponseDto(
+          ResponseCode.GET_RULE_LIST_FAIL,
+          false,
+          e.message,
+          null);
     }
   }
 }
