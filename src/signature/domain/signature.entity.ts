@@ -15,6 +15,7 @@ import { HomeSignatureDto } from '../dto/home-signature.dto';
 import { CreateSignatureDto } from '../dto/create-signature.dto';
 import { SignaturePageEntity } from './signature.page.entity';
 import { SignatureLikeEntity } from './signature.like.entity';
+import { SignatureCommentEntity } from './signature.comment.entity';
 @Entity()
 @EventSubscriber()
 export class SignatureEntity extends BaseEntity implements EntitySubscriberInterface<SignatureLikeEntity>{
@@ -38,6 +39,10 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
   @OneToMany(() => SignatureLikeEntity,
     (signatureLike) => signatureLike.signature)
   likes: SignatureLikeEntity[];
+
+  @OneToMany(() => SignatureCommentEntity,
+    (signatureComment) => signatureComment.signature)
+  comments: SignatureCommentEntity[];
 
   listenTo() {
     return SignatureLikeEntity;
