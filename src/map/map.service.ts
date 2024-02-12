@@ -23,56 +23,54 @@ export class MapService {
     options: CursorBasedPaginationRequestDto,
   ) {
     const user = await UserEntity.findExistUser(userId);
-    const journeys = await JourneyEntity.findExistJourneyByDate(user.id, date);
-
-    // 커서 값에 해당하는 배너들을 가져옴
-    const paginatedJourneys = journeys.slice(
-      options.cursor,
-      options.cursor + options.pageSize,
+    const journey = await JourneyEntity.findExistJourneyByDate(user.id, date);
+    const schedules = await ScheduleEntity.findExistSchedulesByJourneyId(
+      journey.id,
     );
-    if (paginatedJourneys.length === 0) {
-      return {
-        data: response(BaseResponse.SCHEDULE_NOT_FOUND, { nextCursor: null }),
-      };
-    }
-    const result = await Promise.all(
-      paginatedJourneys.map(async (journey) => {
-        const schedules = await ScheduleEntity.findExistSchedulesByJourneyId(
-          journey.id,
-        );
-        const scheduleList = await Promise.all(
-          schedules.map(async (schedule) => {
-            const locations = await this.getLocationList([schedule]); // getLocationList에 schedule 배열을 전달
-            const detailSchedules = await this.getDetailScheduleList([
-              schedule,
-            ]); // getDetailScheduleList에 schedule 배열을 전달
-            const diary = await this.getDiaryStatus([schedule]); // getDiaryStatus에 schedule 배열을 전달
-
-            return {
-              scheduleId: schedule.id,
-              title: schedule.title,
-              date: schedule.date,
-              location: locations,
-              detailSchedules: detailSchedules,
-              diary: diary,
-            };
-          }),
-        );
+    const journeyInfo = {
+      userId: user.id,
+      journeyId: journey.id,
+      startDate: journey.startDate,
+      endDate: journey.endDate,
+    };
+    const scheduleList = await Promise.all(
+      schedules.map(async (schedule) => {
+        const locations = await this.getLocationList([schedule]); // getLocationList에 schedule 배열을 전달
+        const detailSchedules = await this.getDetailScheduleList([schedule]); // getDetailScheduleList에 schedule 배열을 전달
+        const diary = await this.getDiaryStatus([schedule]); // getDiaryStatus에 schedule 배열을 전달
 
         return {
-          userId: user.id,
-          journeyId: journey.id,
-          startDate: journey.startDate,
-          endDate: journey.endDate,
-          scheduleList: scheduleList,
+          scheduleId: schedule.id,
+          title: schedule.title,
+          date: schedule.date,
+          location: locations,
+          detailSchedules: detailSchedules,
+          diary: diary,
         };
       }),
     );
+    //    return {
+    //    userId: user.id,
+    //    journeyId: journey.id,
+    //    startDate: journey.startDate,
+    //    endDate: journey.endDate,
+    //    scheduleList: scheduleList,
+    //  };
+
+    // 페이징 처리
+    const paginatedSchedules = scheduleList.slice(
+      options.cursor,
+      options.cursor + options.pageSize,
+    );
+
     // 다음 페이지를 위한 커서 값 계산
     const nextCursor = Number(options.cursor) + Number(options.pageSize);
 
     return {
-      data: response(BaseResponse.GET_SCHEDULE_SUCCESS, result),
+      data: response(BaseResponse.GET_SCHEDULE_SUCCESS, {
+        journeyInfo,
+        scheduleList,
+      }),
       nextCursor: nextCursor,
     };
   }
