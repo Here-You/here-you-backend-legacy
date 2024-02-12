@@ -318,17 +318,18 @@ export class RuleService {
   }
 
   // [6] 여행 규칙 참여 멤버로 초대할 메이트 검색 결과
-  // case1. 여행 규칙 생성 / case2. 여행 규칙 수정 분리
+  // 여행 규칙 생성 / 여행 규칙 수정 분리
   // case1. 여행 규칙 생성
   async getSearchMemberAtCreate(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, searchTerm: string): Promise<CursorPageDto<GetSearchMemberAtCreateDto>> {
     let cursorId: number = 0;
 
     // (1) 처음 요청인 경우 cursorId 설정
     if(cursorPageOptionsDto.cursorId == 0){
-      const newUser = await UserEntity.findOne({
+      const newUser = await UserEntity.find({
         order: {
           id: 'DESC'  // 가장 최근에 가입한 유저
-        }
+        },
+        take: 1
       });
       const cursorId = newUser[0].id + 1;
 
@@ -402,10 +403,11 @@ export class RuleService {
 
     // (1) 처음 요청인 경우 cursorId 설정
     if(cursorPageOptionsDto.cursorId == 0){
-      const newUser = await UserEntity.findOne({
+      const newUser = await UserEntity.find({
         order: {
           id: 'DESC'  // 가장 최근에 가입한 유저
-        }
+        },
+        take: 1
       });
       const cursorId = newUser[0].id + 1;
 
