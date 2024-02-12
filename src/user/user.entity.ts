@@ -18,6 +18,7 @@ import { CommentEntity } from 'src/comment/domain/comment.entity';
 import { JourneyEntity } from 'src/journey/model/journey.entity';
 import { NotFoundException } from '@nestjs/common';
 import { BaseResponse } from 'src/response/response.status';
+import { SignatureCommentEntity } from '../signature/domain/signature.comment.entity';
 
 @Entity()
 export class UserEntity extends BaseEntity {
@@ -80,6 +81,9 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => JourneyEntity, (journey) => journey.user)
   journeys: JourneyEntity[];
+
+  @OneToMany(() => SignatureCommentEntity, (signatureComment) => signatureComment.user)
+  signatureComments: SignatureCommentEntity[];
 
   @CreateDateColumn()
   created: Date;

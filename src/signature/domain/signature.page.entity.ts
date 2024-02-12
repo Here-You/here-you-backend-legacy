@@ -12,7 +12,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { SignatureEntity } from './signature.entity';
-import { PageSignatureDto } from '../dto/page-signature.dto';
+import { PageSignatureDto } from '../dto/signature/page-signature.dto';
 
 @Entity()
 export class SignaturePageEntity extends BaseEntity {

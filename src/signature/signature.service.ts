@@ -1,21 +1,21 @@
 // signature.service.ts
 
 import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateSignatureDto } from './dto/create-signature.dto';
+import { CreateSignatureDto } from './dto/signature/create-signature.dto';
 import { SignatureEntity } from './domain/signature.entity';
-import { HomeSignatureDto } from './dto/home-signature.dto';
+import { HomeSignatureDto } from './dto/signature/home-signature.dto';
 import { UserEntity } from 'src/user/user.entity';
 import { SignaturePageEntity } from './domain/signature.page.entity';
-import { PageSignatureDto } from './dto/page-signature.dto';
-import { DetailSignatureDto } from './dto/detail-signature.dto';
-import { AuthorSignatureDto } from './dto/author-signature.dto';
-import { HeaderSignatureDto } from './dto/header-signature.dto';
+import { PageSignatureDto } from './dto/signature/page-signature.dto';
+import { DetailSignatureDto } from './dto/signature/detail-signature.dto';
+import { AuthorSignatureDto } from './dto/signature/author-signature.dto';
+import { HeaderSignatureDto } from './dto/signature/header-signature.dto';
 import { UserService } from '../user/user.service';
 import { SignatureLikeEntity } from './domain/signature.like.entity';
-import { GetLikeListDto } from './dto/get-like-list.dto'
-import { LikeProfileDto } from './dto/like-profile.dto';
+import { GetLikeListDto } from './dto/like/get-like-list.dto'
+import { LikeProfileDto } from './dto/like/like-profile.dto';
 import { S3UtilService } from '../utils/S3.service';
-import { ResponsePageSignatureDto } from './dto/response-page-signature.dto';
+import { ResponsePageSignatureDto } from './dto/signature/response-page-signature.dto';
 
 @Injectable()
 export class SignatureService {
