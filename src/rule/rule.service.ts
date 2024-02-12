@@ -9,7 +9,7 @@ import { S3UtilService} from "../utils/S3.service";
 import { GetMemberListDto} from "./dto/get-member-list.dto";
 import {UserService} from "../user/user.service";
 import {GetRuleListDto, MemberPairDto} from "./dto/get-rule-list.dto";
-import { Equal, LessThan, Like, MoreThan, Not } from 'typeorm';
+import {Brackets, Equal, LessThan, Like, MoreThan, Not} from 'typeorm';
 import {GetSearchMemberDto} from "./dto/get-search-member.dto";
 import {UpdateRuleDto} from "./dto/update-rule.dto";
 import {CursorPageOptionsDto} from "../mate/cursor-page/cursor-page-option.dto";
@@ -106,7 +106,7 @@ export class RuleService {
         rulePair.ruleDetail = sub.ruleDetail;
 
         return rulePair;
-      }));
+      })).then(rulePairs => rulePairs.sort((a, b) => a.id - b.id));
 
       // -3) 멤버 정보
       dto.detailMembers = await Promise.all(invitations.map(async(invitation):Promise<DetailMemberDto> => {
@@ -351,8 +351,14 @@ export class RuleService {
     const [resultUsers, total] = await UserEntity.findAndCount({
       take: cursorPageOptionsDto.take,
       where: [
-        { id: cursorId ? LessThan(cursorId) : null, name: Like(`%${searchTerm}%`) },
-        { id: cursorId ? LessThan(cursorId) : null, nickname: Like(`%${searchTerm}%`)},
+        {
+          id: cursorId ? LessThan(cursorId) : null,
+          name: Like(`%${searchTerm}%`),
+        },
+        {
+          id: cursorId ? LessThan(cursorId) : null,
+          nickname: Like(`%${searchTerm}%`),
+        }
       ],
       relations: {profileImage : true, ruleParticipate: {rule: true}},
       order: {
