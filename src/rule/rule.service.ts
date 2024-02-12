@@ -134,7 +134,7 @@ export class RuleService {
   // [3] 여행 규칙 상세 페이지 조회 (댓글) - 페이지네이션
   async getComment(cursorPageOptionsDto: CursorPageOptionsDto, ruleId: number): Promise<CursorPageDto<GetCommentDto>> {
 
-    let cursorId: number = 0;
+    const cursorId: number = cursorPageOptionsDto.cursorId;
 
     // (1) 데이터 조회
     const [comments, total] = await CommentEntity.findAndCount({
@@ -323,6 +323,7 @@ export class RuleService {
   async getSearchMemberAtCreate(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, searchTerm: string): Promise<CursorPageDto<GetSearchMemberAtCreateDto>> {
     let cursorId: number = 0;
 
+    console.log('cursorId : ', cursorPageOptionsDto);
     // (1) 처음 요청인 경우 cursorId 설정
     if(cursorPageOptionsDto.cursorId == 0){
       const newUser = await UserEntity.find({
@@ -333,23 +334,25 @@ export class RuleService {
       });
       const cursorId = newUser[0].id + 1;
 
-      console.log('random cursor: ', cursorId);
+      console.log('cursorPageOptionsDto.cursorId == 0 로 인식');
+      console.log('cursor: ', cursorId);
     }
     else {
       cursorId = cursorPageOptionsDto.cursorId;
+      console.log('cursorPageOptionsDto.cursorId != 0 로 인식')
     }
+    console.log('cursor: ', cursorId);
 
     // (2) 데이터 조회
     // 검색 결과에 해당하는 값 찾기
     // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
+    // { id: Not(Equal(userId))}  // 사용자 본인은 검색결과에 뜨지 않도록
     console.log('검색 값: ', searchTerm);
     const [resultUsers, total] = await UserEntity.findAndCount({
       take: cursorPageOptionsDto.take,
       where: [
-        {id: cursorId ? LessThan(cursorId) : null},
-        { name: Like(`%${searchTerm}%`) },
-        { nickname: Like(`%${searchTerm}%`)},
-        { id: Not(Equal(userId))}  // 사용자 본인은 검색결과에 뜨지 않도록
+        { id: cursorId ? LessThan(cursorId) : null, name: Like(`%${searchTerm}%`) },
+        { id: cursorId ? LessThan(cursorId) : null, nickname: Like(`%${searchTerm}%`)},
       ],
       relations: {profileImage : true, ruleParticipate: {rule: true}},
       order: {
@@ -382,7 +385,10 @@ export class RuleService {
     let cursor: number;
 
     const takePerScroll = cursorPageOptionsDto.take;
+    console.log('takePerScroll : ',takePerScroll);
     const isLastScroll = total <= takePerScroll;
+    console.log('isLastScroll : ', isLastScroll);
+    console.log('total : ', total)
     const lastDataPerScroll = resultUsers[resultUsers.length - 1];
 
     if (isLastScroll) {
@@ -411,7 +417,7 @@ export class RuleService {
       });
       const cursorId = newUser[0].id + 1;
 
-      console.log('random cursor: ', cursorId);
+      console.log('cursor: ', cursorId);
     }
     else {
       cursorId = cursorPageOptionsDto.cursorId;
@@ -424,10 +430,8 @@ export class RuleService {
     const [resultUsers, total] = await UserEntity.findAndCount({
       take: cursorPageOptionsDto.take,
       where: [
-        {id: cursorId ? LessThan(cursorId) : null},
-        { name: Like(`%${searchTerm}%`) },
-        { nickname: Like(`%${searchTerm}%`)},
-        { id: Not(Equal(userId))}  // 사용자 본인은 검색결과에 뜨지 않도록
+        { id: cursorId ? LessThan(cursorId) : null, name: Like(`%${searchTerm}%`) },
+        { id: cursorId ? LessThan(cursorId) : null, nickname: Like(`%${searchTerm}%`)},
       ],
       relations: {profileImage : true, ruleParticipate: {rule: true}},
       order: {
