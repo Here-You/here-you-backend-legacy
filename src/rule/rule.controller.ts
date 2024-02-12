@@ -9,7 +9,7 @@ import {GetSearchMemberDto} from "./dto/get-search-member.dto";
 import { UpdateRuleDto } from "./dto/update-rule.dto";
 import {CursorPageOptionsDto} from "./dto/cursor-page.options.dto";
 import {CursorPageDto} from "./dto/cursor-page.dto";
-import {UserEntity} from "../user/user.entity";
+import {GetSearchMemberAtCreateDto} from "./dto/get-search-member-at-create.dto";
 
 @Controller('mate/rule')
 export class RuleController {
@@ -65,15 +65,41 @@ export class RuleController {
   }
 
   // [3] 여행 규칙 참여 멤버로 초대할 메이트 검색 결과
+  // [3-1] case1. 여행 규칙 생성
+  @Get('/detail/search')
+  @UseGuards(UserGuard)
+  async getSearchMemberAtCreate(
+      @Query('searchTerm')searchTerm : string,
+      @Query() cursorPageOptionsDto: CursorPageOptionsDto,
+      @Req() req: Request): Promise<ResponseDto<any>> {
+    try {
+      const result : CursorPageDto<GetSearchMemberAtCreateDto> = await this.ruleService.getSearchMemberAtCreate(cursorPageOptionsDto, req.user.id, searchTerm)
+      return new ResponseDto(
+          ResponseCode.GET_SEARCH_RESULT_SUCCESS,
+          true,
+          "초대할 메이트 검색 결과 리스트 불러오기 성공",
+          result
+      );
+    } catch (error) {
+      return new ResponseDto(
+          ResponseCode.GET_SEARCH_RESULT_FAIL,
+          false,
+          "초대할 메이트 검색 결과 리스트 불러오기 실패",
+          null
+      );
+    }
+  }
+
+  // [3-2] case2. 여행 규칙 수정
   @Get('/detail/search/:ruleId')
   @UseGuards(UserGuard)
-  async getSearchMember(
+  async getSearchMemberAtUpdate(
       @Query('searchTerm')searchTerm : string,
       @Query() cursorPageOptionsDto: CursorPageOptionsDto,
       @Param('ruleId') ruleId: number,
       @Req() req: Request): Promise<ResponseDto<any>> {
     try {
-      const result : CursorPageDto<GetSearchMemberDto> = await this.ruleService.getSearchMember(cursorPageOptionsDto, req.user.id, ruleId, searchTerm)
+      const result : CursorPageDto<GetSearchMemberDto> = await this.ruleService.getSearchMemberAtUpdate(cursorPageOptionsDto, req.user.id, ruleId, searchTerm)
       return new ResponseDto(
           ResponseCode.GET_SEARCH_RESULT_SUCCESS,
           true,

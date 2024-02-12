@@ -17,6 +17,7 @@ import {CommentEntity} from "../comment/domain/comment.entity";
 import {GetCommentDto } from "./dto/get-comment.dto";
 import {CursorPageDto} from "./dto/cursor-page.dto";
 import {CursorPageMetaDto} from "./dto/cursor-page.meta.dto";
+import {GetSearchMemberAtCreateDto} from "./dto/get-search-member-at-create.dto";
 
 @Injectable()
 export class RuleService {
@@ -316,7 +317,114 @@ export class RuleService {
   }
 
   // [6] 여행 규칙 참여 멤버로 초대할 메이트 검색 결과
-  async getSearchMember(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, ruleId: number, searchTerm: string): Promise<CursorPageDto<GetSearchMemberDto>> {
+  // case1. 여행 규칙 생성 / case2. 여행 규칙 수정 분리
+  // case1. 여행 규칙 생성
+  async getSearchMemberAtCreate(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, searchTerm: string): Promise<CursorPageDto<GetSearchMemberAtCreateDto>> {
+    let cursorId: number = 0;
+
+    // (0) 맨 처음 요청일 경우 랜덤 숫자 생성해서 cursorId에 할당
+    if(cursorPageOptionsDto.cursorId == 0){
+      const newUser = await UserEntity.find({
+        order: {
+          id: 'DESC'
+        },
+        take: 1
+      });
+      const max = newUser[0].id + 1;
+      console.log('max id: ',max);
+
+      const min = 5;
+      // TODO 사용자 늘어나면 min 값 늘리기
+      cursorId = Math.floor(Math.random() * (max - min + 1)) + min;
+      console.log('random cursor: ', cursorId);
+
+    }
+    else {
+      cursorId = cursorPageOptionsDto.cursorId;
+    }
+
+    // (1) 데이터 조회
+    // 검색 결과에 해당하는 값 찾기
+    // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
+    console.log('검색 값: ', searchTerm);
+    const [resultUsers, total] = await UserEntity.findAndCount({
+      take: cursorPageOptionsDto.take,
+      where: [
+        {id: cursorPageOptionsDto.cursorId ? LessThan(cursorPageOptionsDto.cursorId) : null},
+        { name: Like(`%${searchTerm}%`) },
+        { nickname: Like(`%${searchTerm}%`)},
+        { id: Not(Equal(userId))}  // 사용자 본인은 검색결과에 뜨지 않도록
+      ],
+      relations: {profileImage : true, ruleParticipate: {rule: true}},
+      order: {
+        id: cursorPageOptionsDto.sort.toUpperCase() as any,
+      },
+    });
+
+    const searchResult = await Promise.all(resultUsers.map(async (user) => {
+      const dtoAtCreate: GetSearchMemberAtCreateDto = new GetSearchMemberAtCreateDto();
+
+      dtoAtCreate.id = user.id;
+      dtoAtCreate.name = user.name;
+      dtoAtCreate.email = user.email;
+      dtoAtCreate.introduction = user.introduction;
+
+      // 사용자 프로필 이미지
+      const image = user.profileImage;
+      if(image == null) dtoAtCreate.image = null;
+      else{
+        const userImageKey = image.imageKey;
+        dtoAtCreate.image = await this.s3Service.getImageUrl(userImageKey);
+      }
+      return dtoAtCreate;
+    }));
+
+    console.log('searchResult : ',searchResult);
+
+    // (2) 페이징 및 정렬 기준 설정
+    const takePerPage = cursorPageOptionsDto.take;
+    const isLastPage = total <= takePerPage;
+
+    let hasNextData = true;
+    let cursor: number;
+
+    if (isLastPage || searchResult.length <= 0) {
+      hasNextData = false;
+      cursor = null;
+    } else {
+      cursor = searchResult[searchResult.length - 1].id;
+    }
+
+    const cursorPageMetaDto = new CursorPageMetaDto({ cursorPageOptionsDto, total, hasNextData, cursor });
+
+    return new CursorPageDto(searchResult, cursorPageMetaDto);
+  }
+
+  // [6-2] case2. 여행 규칙 수정
+  async getSearchMemberAtUpdate(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, ruleId: number, searchTerm: string): Promise<CursorPageDto<GetSearchMemberDto>> {
+    let cursorId: number = 0;
+
+    // (0) 맨 처음 요청일 경우 랜덤 숫자 생성해서 cursorId에 할당
+    if(cursorPageOptionsDto.cursorId == 0){
+      const newUser = await UserEntity.find({
+        order: {
+          id: 'DESC'
+        },
+        take: 1
+      });
+      const max = newUser[0].id + 1;
+      console.log('max id: ',max);
+
+      const min = 5;
+      // TODO 사용자 늘어나면 min 값 늘리기
+      cursorId = Math.floor(Math.random() * (max - min + 1)) + min;
+      console.log('random cursor: ', cursorId);
+
+    }
+    else {
+      cursorId = cursorPageOptionsDto.cursorId;
+    }
+
     // (1) 데이터 조회
     // 검색 결과에 해당하는 값 찾기
     // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
