@@ -70,14 +70,11 @@ export class CommentService {
       })
       if (!rule) throw new NotFoundException('존재하지 않는 규칙입니다');
 
+      // 해당 규칙에, 해당 사용자가 작성한, 해당 댓글 ID를 가진 댓글이 있는지 검증
       const comment = await CommentEntity.findOne({
-        where: {user: {id: userId}, rule: {id: ruleId}},
+        where: {id: commentId, user:{id: userId}, rule:{id: ruleId}}
       })
-      if (!comment) throw new NotFoundException("데이터를 찾을 수 없습니다");
-
-      if (comment.id != commentId) throw new NotFoundException('해당 댓글을 작성한 사용자가 아닙니다');
-
-      if (comment.id == commentId) {
+      if (!!comment) {
         await comment.softRemove();
         console.log('댓글 삭제 성공');
         return comment.id;
