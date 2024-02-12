@@ -14,7 +14,7 @@ import {
   LessThanOrEqual,
   MoreThanOrEqual,
 } from 'typeorm';
-
+import { startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { MonthInfoDto } from 'src/map/month-info.dto';
@@ -119,11 +119,18 @@ export class JourneyEntity extends BaseEntity {
     const journeys: JourneyEntity[] = await JourneyEntity.find({
       where: {
         user: { id: userId },
-        startDate: Between(new Date(0), date),
-        endDate: Between(date, new Date('9999-12-31')),
       },
     });
-    return journeys;
+
+    // 매개변수로 받은 날짜가 어느 여정에 포함되어 있는지 확인
+    const matchingJourney = journeys.find((journey) => {
+      return isWithinInterval(date, {
+        start: journey.startDate,
+        end: journey.endDate,
+      });
+    });
+
+    return matchingJourney;
   }
 
   //사용자의 월별 여정 조회

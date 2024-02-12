@@ -12,6 +12,7 @@ import {
   Between,
 } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
+import { startOfMonth, endOfMonth } from 'date-fns';
 import { BaseResponse } from 'src/response/response.status';
 import { DetailScheduleEntity } from '../detail-schedule/detail-schedule.entity';
 import { LocationEntity } from 'src/location/location.entity';
@@ -61,7 +62,7 @@ export class ScheduleEntity extends BaseEntity {
   //일정 작성하기
   static async createSchedule(journey: JourneyEntity, currentDate) {
     const schedule = new ScheduleEntity();
-    schedule.date = currentDate.toISOString().split('T')[0];
+    schedule.date = currentDate;
     schedule.journey = journey;
     return await schedule.save();
   }
