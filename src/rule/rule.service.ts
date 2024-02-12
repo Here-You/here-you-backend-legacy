@@ -37,17 +37,15 @@ export class RuleService {
     dto.rulePairs.sort((a, b) => a.ruleNumber - b.ruleNumber);
 
     // -2) rule 저장
-    const subs = await Promise.all(dto.rulePairs.map(async (pair) => {
+    for(const pair of dto.rulePairs) {
+      console.log('현재 저장하는 ruleNumber : ', pair.ruleNumber);
       const sub = new RuleSubEntity();
       sub.ruleTitle = pair.ruleTitle;
       sub.ruleDetail = pair.ruleDetail;
       sub.main = main;
 
       await sub.save();
-      return sub;
-    }));
-    console.log(subs);
-
+    }
 
     // -3) invitation 저장
     const members = await Promise.all(dto.membersId.map(async (memberId) : Promise<RuleInvitationEntity> => {
@@ -111,6 +109,8 @@ export class RuleService {
 
         return rulePair;
       }));
+      dto.rulePairs.sort((a, b) => a.id - b.id);
+
 
       // -3) 멤버 정보
       dto.detailMembers = await Promise.all(invitations.map(async(invitation):Promise<DetailMemberDto> => {
@@ -128,6 +128,8 @@ export class RuleService {
         }
         return detailMember;
       }));
+      dto.detailMembers.sort((a, b) => a.id - b.id);
+
       return dto;
     } catch (e) {
       console.log('게시글 조회에 실패하였습니다');
@@ -512,6 +514,7 @@ export class RuleService {
 
     // 새로운 세부 규칙 리스트
     const updateSubsList = updateRuleDto.rulePairs;
+    updateSubsList.sort((a, b) => a.ruleNumber - b.ruleNumber);
 
     // case1) 규칙 삭제
     for(const sub of subs) {
