@@ -75,10 +75,12 @@ export class RuleService {
     const dto = new DetailRuleDto();
     const main: RuleMainEntity = await RuleMainEntity.findRuleById(ruleId);
     const subs: RuleSubEntity[] = await RuleSubEntity.findSubById(ruleId);
+    subs.sort((a, b) => a.id - b.id);
     const invitations: RuleInvitationEntity[] = await RuleInvitationEntity.find({
       where: {rule: {id: ruleId}},
       relations: {member: {profileImage : true}}
-    })
+    });
+    invitations.sort((a, b) => a.member.id - b.member.id);
 
     try {
       // 요청을 보낸 현재 로그인 사용자가 해당 규칙의 멤버인지 검증 (권한)
@@ -106,7 +108,7 @@ export class RuleService {
         rulePair.ruleDetail = sub.ruleDetail;
 
         return rulePair;
-      })).then(rulePairs => rulePairs.sort((a, b) => a.id - b.id));
+      }));
 
       // -3) 멤버 정보
       dto.detailMembers = await Promise.all(invitations.map(async(invitation):Promise<DetailMemberDto> => {
@@ -123,7 +125,7 @@ export class RuleService {
           detailMember.image = await this.s3Service.getImageUrl(userImageKey);
         }
         return detailMember;
-      }))
+      }));
       return dto;
     } catch (e) {
       console.log('게시글 조회에 실패하였습니다');
