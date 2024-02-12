@@ -394,7 +394,8 @@ export class RuleService {
     for (const updateSub of updateSubsList) {
       // case1) 새로운 규칙
       if (!updateSub.id) {
-        const newSub = new RuleSubEntity();
+        const newSub = new RuleSubEntity()
+        newSub.main = rule;
         newSub.ruleTitle = updateSub.ruleTitle;
         newSub.ruleDetail = updateSub.ruleDetail;
 
