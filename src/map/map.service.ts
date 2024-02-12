@@ -67,6 +67,14 @@ export class MapService {
     if (endIndex < scheduleList.length) {
       nextCursor = endIndex;
     }
+    const total = scheduleList.length;
+    const hasNextData = endIndex < total;
+    const meta = {
+      take: options.pageSize,
+      total: total,
+      hasNextData: hasNextData,
+      cursor: nextCursor,
+    };
 
     // 다음 페이지를 위한 커서 값 계산
     // const nextCursor = Number(options.cursor) + Number(options.pageSize);
@@ -75,8 +83,8 @@ export class MapService {
       data: response(BaseResponse.GET_SCHEDULE_SUCCESS, {
         journeyInfo,
         paginatedSchedules,
+        meta,
       }),
-      nextCursor: nextCursor,
     };
   }
 
