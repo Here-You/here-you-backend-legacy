@@ -115,7 +115,7 @@ export class RuleService {
   // [3] 여행 규칙 상세 페이지 조회 (댓글) - 페이지네이션
   async getComment(cursorPageOptionsDto: CursorPageOptionsDto, ruleId: number): Promise<CursorPageDto<GetCommentDto>> {
 
-    let cursorId: number = 0;
+    const cursorId: number = cursorPageOptionsDto.cursorId;
 
     // (0) 초기값 가져오기
     if(cursorPageOptionsDto.cursorId == 0){
