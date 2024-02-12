@@ -58,13 +58,18 @@ export class MapService {
     //  };
 
     // 페이징 처리
-    const paginatedSchedules = scheduleList.slice(
-      options.cursor,
-      options.cursor + options.pageSize,
-    );
+    const startIndex = options.cursor;
+    const endIndex = Number(options.cursor) + Number(options.pageSize);
+    const paginatedSchedules = scheduleList.slice(startIndex, endIndex);
 
     // 다음 페이지를 위한 커서 값 계산
-    const nextCursor = Number(options.cursor) + Number(options.pageSize);
+    let nextCursor = null;
+    if (endIndex < scheduleList.length) {
+      nextCursor = endIndex;
+    }
+
+    // 다음 페이지를 위한 커서 값 계산
+    // const nextCursor = Number(options.cursor) + Number(options.pageSize);
 
     return {
       data: response(BaseResponse.GET_SCHEDULE_SUCCESS, {
