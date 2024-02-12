@@ -69,7 +69,7 @@ export class MapService {
     return {
       data: response(BaseResponse.GET_SCHEDULE_SUCCESS, {
         journeyInfo,
-        scheduleList,
+        paginatedSchedules,
       }),
       nextCursor: nextCursor,
     };
