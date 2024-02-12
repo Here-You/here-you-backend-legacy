@@ -114,12 +114,29 @@ export class RuleService {
 
   // [3] 여행 규칙 상세 페이지 조회 (댓글) - 페이지네이션
   async getComment(cursorPageOptionsDto: CursorPageOptionsDto, ruleId: number): Promise<CursorPageDto<GetCommentDto>> {
+
+    let cursorId: number = 0;
+
+    // (0) 초기값 가져오기
+    if(cursorPageOptionsDto.cursorId == 0){
+      const recentComment = await CommentEntity.findOne({
+        where: { rule: { id: ruleId } },
+        order: {
+          id: 'DESC' // id를 내림차순으로 정렬해서 가장 최근에 작성한 댓글 가져오기
+        }
+      });
+      cursorId = recentComment.id + 1;
+    }
+    else cursorId = cursorPageOptionsDto.cursorId;
+
+
+
     // (1) 데이터 조회
     const [comments, total] = await CommentEntity.findAndCount({
       take: cursorPageOptionsDto.take,
       where: {
         rule: { id: ruleId },
-        id: cursorPageOptionsDto.cursorId ? LessThan(cursorPageOptionsDto.cursorId) : null,
+        id: cursorId ? LessThan(cursorId) : null,
       },
       relations: {user:{profileImage: true}},
       order: {
