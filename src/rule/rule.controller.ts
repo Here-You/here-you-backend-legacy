@@ -95,7 +95,7 @@ export class RuleController {
   @UseGuards(UserGuard)
   async getDetail(@Req() req: Request, @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
 
-    const result = await this.ruleService.getDetail(ruleId);
+    const result = await this.ruleService.getDetail(req.user.id, ruleId);
 
     if(!result){
       return new ResponseDto(

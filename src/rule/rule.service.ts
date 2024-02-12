@@ -70,7 +70,7 @@ export class RuleService {
   }
 
   // [2] 여행 규칙 상세 페이지 조회 (게시글)
-  async getDetail(ruleId : number): Promise<DetailRuleDto> {
+  async getDetail(userId: number, ruleId : number): Promise<DetailRuleDto> {
     const dto = new DetailRuleDto();
     const main: RuleMainEntity = await RuleMainEntity.findRuleById(ruleId);
     const subs: RuleSubEntity[] = await RuleSubEntity.findSubById(ruleId);
@@ -79,37 +79,55 @@ export class RuleService {
       relations: {member: {profileImage : true}}
     })
 
-    // -1) 제목
-    dto.id = ruleId;
-    dto.mainTitle = main.mainTitle;
-
-    // -2) 규칙
-    dto.rulePairs = await Promise.all(subs.map(async(sub):Promise<RulePairDto> => {
-      const rulePair = new RulePairDto();
-      rulePair.id = sub.id;
-      rulePair.ruleTitle = sub.ruleTitle;
-      rulePair.ruleDetail = sub.ruleDetail;
-
-      return rulePair;
-    }));
-
-    // -3) 멤버 정보
-    dto.detailMembers = await Promise.all(invitations.map(async(invitation):Promise<DetailMemberDto> => {
-      const detailMember = new DetailMemberDto;
-      const memberEntity = invitation.member;
-      detailMember.id = memberEntity.id;
-      detailMember.name = memberEntity.name;
-
-      // 사용자 프로필 이미지
-      const image = memberEntity.profileImage;
-      if(image == null) detailMember.image = null;
-      else{
-        const userImageKey = image.imageKey;
-        detailMember.image = await this.s3Service.getImageUrl(userImageKey);
+    try {
+      // 요청을 보낸 현재 로그인 사용자가 해당 규칙의 멤버인지 검증 (권한)
+      const user = await UserEntity.findExistUser(userId);
+      let checkValidation = false;
+      for(const invitation of invitations) {
+        if(invitation.member.id == user.id) {
+          checkValidation = true;
+          break;
+        }
       }
-      return detailMember;
-    }))
-    return dto;
+      if(!checkValidation) {
+        throw new BadRequestException('해당 여행 규칙의 멤버가 아닙니다');
+      }
+
+      // -1) 제목
+      dto.id = ruleId;
+      dto.mainTitle = main.mainTitle;
+
+      // -2) 규칙
+      dto.rulePairs = await Promise.all(subs.map(async(sub):Promise<RulePairDto> => {
+        const rulePair = new RulePairDto();
+        rulePair.id = sub.id;
+        rulePair.ruleTitle = sub.ruleTitle;
+        rulePair.ruleDetail = sub.ruleDetail;
+
+        return rulePair;
+      }));
+
+      // -3) 멤버 정보
+      dto.detailMembers = await Promise.all(invitations.map(async(invitation):Promise<DetailMemberDto> => {
+        const detailMember = new DetailMemberDto;
+        const memberEntity = invitation.member;
+        detailMember.id = memberEntity.id;
+        detailMember.name = memberEntity.name;
+
+        // 사용자 프로필 이미지
+        const image = memberEntity.profileImage;
+        if(image == null) detailMember.image = null;
+        else{
+          const userImageKey = image.imageKey;
+          detailMember.image = await this.s3Service.getImageUrl(userImageKey);
+        }
+        return detailMember;
+      }))
+      return dto;
+    } catch (e) {
+      console.log('게시글 조회에 실패하였습니다');
+      throw new Error(e.message);
+    }
   };
 
   // [3] 여행 규칙 상세 페이지 조회 (댓글) - 페이지네이션
