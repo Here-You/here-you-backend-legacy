@@ -2,6 +2,7 @@ import { IsNotEmpty, IsNumber, IsString, IsArray, ValidateNested } from 'class-v
 import { Type } from 'class-transformer';
 
 export class RulePairDto {
+    @IsNotEmpty()
     @IsNumber()
     id: number;
 
@@ -15,6 +16,7 @@ export class RulePairDto {
 }
 
 export class DetailMemberDto {
+    @IsNotEmpty()
     @IsNumber()
     id: number;
 
@@ -22,12 +24,12 @@ export class DetailMemberDto {
     @IsString()
     name: string;
 
-    @IsNotEmpty()
     @IsString()
     image: string;
 }
 
 export class DetailRuleDto {
+    @IsNotEmpty()
     @IsNumber()
     id: number;
 
