@@ -21,6 +21,8 @@ export class FollowService {
 
     // [1] 메이트 검색
     async getSearchResult(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, searchTerm: string) {
+        let cursorId: number = 0;
+
         // (1) 데이터 조회
         // 검색 결과에 해당하는 값 찾기
         // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
