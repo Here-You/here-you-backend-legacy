@@ -6,6 +6,10 @@ export class UpdateRulePairDto {
     id: number;
 
     @IsNotEmpty()
+    @IsNumber()
+    ruleNumber: number;
+
+    @IsNotEmpty()
     @IsString()
     ruleTitle: string;
 
