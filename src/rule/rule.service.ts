@@ -126,7 +126,7 @@ export class RuleService {
       },
       relations: {user:{profileImage: true}},
       order: {
-        id: 'ASC'
+        id: "ASC" as any,
       },
     });
 
