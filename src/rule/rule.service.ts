@@ -1,4 +1,4 @@
-import {Injectable, HttpException, BadRequestException} from '@nestjs/common';
+import {Injectable, HttpException, BadRequestException, HttpStatus} from '@nestjs/common';
 import { CreateRuleDto } from './dto/create-rule.dto';
 import { RuleMainEntity } from './domain/rule.main.entity';
 import { RuleSubEntity } from './domain/rule.sub.entity';
@@ -9,10 +9,15 @@ import { S3UtilService} from "../utils/S3.service";
 import { GetMemberListDto} from "./dto/get-member-list.dto";
 import {UserService} from "../user/user.service";
 import {GetRuleListDto, MemberPairDto} from "./dto/get-rule-list.dto";
-import {Like} from "typeorm";
-import {GetSearchMemberDto} from "./dto/get.search.member.dto";
+import { Equal, LessThan, Like, MoreThan, Not } from 'typeorm';
+import {GetSearchMemberDto} from "./dto/get-search-member.dto";
 import {UpdateRuleDto} from "./dto/update-rule.dto";
-import {FollowSearchDto} from "../follow/dto/follow.search.dto";
+import {CursorPageOptionsDto} from "../mate/cursor-page/cursor-page-option.dto";
+import {CommentEntity} from "../comment/domain/comment.entity";
+import {GetCommentDto } from "./dto/get-comment.dto";
+import {CursorPageDto} from "./dto/cursor-page.dto";
+import {CursorPageMetaDto} from "./dto/cursor-page.meta.dto";
+import {GetSearchMemberAtCreateDto} from "./dto/get-search-member-at-create.dto";
 
 @Injectable()
 export class RuleService {
@@ -66,7 +71,7 @@ export class RuleService {
   }
 
   // [2] 여행 규칙 상세 페이지 조회 (게시글)
-  async getDetail(ruleId : number): Promise<DetailRuleDto> {
+  async getDetail(userId: number, ruleId : number): Promise<DetailRuleDto> {
     const dto = new DetailRuleDto();
     const main: RuleMainEntity = await RuleMainEntity.findRuleById(ruleId);
     const subs: RuleSubEntity[] = await RuleSubEntity.findSubById(ruleId);
@@ -75,45 +80,142 @@ export class RuleService {
       relations: {member: {profileImage : true}}
     })
 
-    // -1) 제목
-    dto.id = ruleId;
-    dto.mainTitle = main.mainTitle;
-
-    // -2) 규칙
-    dto.rulePairs = await Promise.all(subs.map(async(sub):Promise<RulePairDto> => {
-      const rulePair = new RulePairDto();
-      rulePair.id = sub.id;
-      rulePair.ruleTitle = sub.ruleTitle;
-      rulePair.ruleDetail = sub.ruleDetail;
-
-      return rulePair;
-    }));
-
-    // -3) 멤버 정보
-    dto.detailMembers = await Promise.all(invitations.map(async(invitation):Promise<DetailMemberDto> => {
-      const detailMember = new DetailMemberDto;
-      const memberEntity = invitation.member;
-      detailMember.id = memberEntity.id;
-      detailMember.name = memberEntity.name;
-
-      // 사용자 프로필 이미지
-      const image = memberEntity.profileImage;
-      if(image == null) detailMember.image = null;
-      else{
-        const userImageKey = image.imageKey;
-        detailMember.image = await this.s3Service.getImageUrl(userImageKey);
+    try {
+      // 요청을 보낸 현재 로그인 사용자가 해당 규칙의 멤버인지 검증 (권한)
+      const user = await UserEntity.findExistUser(userId);
+      let checkValidation = false;
+      for(const invitation of invitations) {
+        if(invitation.member.id == user.id) {
+          checkValidation = true;
+          break;
+        }
       }
-      return detailMember;
-    }))
-    return dto;
+      if(!checkValidation) {
+        throw new BadRequestException('해당 여행 규칙의 멤버가 아닙니다');
+      }
+
+      // -1) 제목
+      dto.id = ruleId;
+      dto.mainTitle = main.mainTitle;
+
+      // -2) 규칙
+      dto.rulePairs = await Promise.all(subs.map(async(sub):Promise<RulePairDto> => {
+        const rulePair = new RulePairDto();
+        rulePair.id = sub.id;
+        rulePair.ruleTitle = sub.ruleTitle;
+        rulePair.ruleDetail = sub.ruleDetail;
+
+        return rulePair;
+      }));
+
+      // -3) 멤버 정보
+      dto.detailMembers = await Promise.all(invitations.map(async(invitation):Promise<DetailMemberDto> => {
+        const detailMember = new DetailMemberDto;
+        const memberEntity = invitation.member;
+        detailMember.id = memberEntity.id;
+        detailMember.name = memberEntity.name;
+
+        // 사용자 프로필 이미지
+        const image = memberEntity.profileImage;
+        if(image == null) detailMember.image = null;
+        else{
+          const userImageKey = image.imageKey;
+          detailMember.image = await this.s3Service.getImageUrl(userImageKey);
+        }
+        return detailMember;
+      }))
+      return dto;
+    } catch (e) {
+      console.log('게시글 조회에 실패하였습니다');
+      throw new Error(e.message);
+    }
   };
 
-  // [3] 여행 규칙 나가기
+  // [3] 여행 규칙 상세 페이지 조회 (댓글) - 페이지네이션
+  async getComment(cursorPageOptionsDto: CursorPageOptionsDto, ruleId: number): Promise<CursorPageDto<GetCommentDto>> {
+
+    let cursorId: number = 0;
+
+    // (1) 데이터 조회
+    const [comments, total] = await CommentEntity.findAndCount({
+      take: cursorPageOptionsDto.take,
+      where: {
+        rule: { id: ruleId },
+        id: cursorId ? MoreThan(cursorId) : null,
+      },
+      relations: {user:{profileImage: true}},
+      order: {
+        id: "ASC" as any,
+      },
+    });
+
+    const result = await Promise.all(comments.map(async (comment) => {
+      const getCommentDto = new GetCommentDto();
+
+      getCommentDto.id = comment.id;
+      getCommentDto.writerId = comment.user.id;
+      getCommentDto.name = comment.user.name;
+      getCommentDto.content = comment.content;
+      getCommentDto.updated = comment.updated;
+
+      // 사용자 프로필 이미지
+      const image = comment.user.profileImage;
+      if(image == null) getCommentDto.image = null;
+      else {
+        const userImageKey = image.imageKey;
+        getCommentDto.image = await this.s3Service.getImageUrl(userImageKey);
+      }
+
+      return getCommentDto;
+    }));
+
+    // (2) 페이징 및 정렬 기준 설정
+    let hasNextData = true;
+    let cursor: number;
+
+    const takePerScroll = cursorPageOptionsDto.take;
+    const isLastScroll = total <= takePerScroll;
+    const lastDataPerScroll = comments[comments.length - 1];
+
+    if (isLastScroll) {
+      hasNextData = false;
+      cursor = null;
+    } else {
+      cursor = lastDataPerScroll.id;
+    }
+
+    const cursorPageMetaDto = new CursorPageMetaDto({ cursorPageOptionsDto, total, hasNextData, cursor });
+
+    return new CursorPageDto(result, cursorPageMetaDto);
+  }
+
+  // [4] 여행 규칙 나가기
   // -1) 초대 받은 팀원 -> 초대 삭제
   async deleteInvitation(ruleId: number, userId: number): Promise<RuleInvitationEntity> {
-    const invitation : RuleInvitationEntity = await RuleInvitationEntity.findInvitationByRuleAndUser(ruleId, userId);
+    try {
+      // 검증1) 사용자가 존재하지 않는 경우
+      const user = await UserEntity.findOne({
+        where: {id : userId},
+      });
+      if (!user) throw new Error('사용자를 찾을 수 없습니다');
 
-    return invitation.softRemove();
+      // 검증2) 규칙이 존재하지 않는 경우
+      const ruleMain = await RuleMainEntity.findOne({
+        where : {id : ruleId},
+      });
+      if (!ruleMain) throw new Error('규칙을 찾을 수 없습니다');
+
+      // 검증3) 규칙에 참여하는 사용자가 아닌 경우
+      const invitation = await RuleInvitationEntity.findOne({
+        where: {member: {id: userId}, rule: {id: ruleId}},
+      })
+      if (!!invitation) {
+        return invitation.softRemove();
+      } else throw new Error('사용자가 참여하는 규칙이 아닙니다');
+    } catch (e) {
+      console.log('여행 규칙 나가기 실패');
+      throw new Error(e.message);
+    }
   }
 
   // [4] 여행 규칙 멤버 리스트 조회
@@ -162,11 +264,6 @@ export class RuleService {
             },
           },
         },
-        // 'ruleParticipate',
-        // 'ruleParticipate.rule',
-        // 'ruleParticipate.rule.invitations',
-        // 'ruleParticipate.rule.invitations.member',
-        // 'ruleParticipate.rule.invitations.member.profileImage'
       },
     });
 
@@ -221,16 +318,124 @@ export class RuleService {
   }
 
   // [6] 여행 규칙 참여 멤버로 초대할 메이트 검색 결과
-  async getSearchMember(userId: number, ruleId: number, searchTerm: string): Promise<GetSearchMemberDto[]> {
+  // 여행 규칙 생성 / 여행 규칙 수정 분리
+  // case1. 여행 규칙 생성
+  async getSearchMemberAtCreate(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, searchTerm: string): Promise<CursorPageDto<GetSearchMemberAtCreateDto>> {
+    let cursorId: number = 0;
+
+    // (1) 처음 요청인 경우 cursorId 설정
+    if(cursorPageOptionsDto.cursorId == 0){
+      const newUser = await UserEntity.find({
+        order: {
+          id: 'DESC'  // 가장 최근에 가입한 유저
+        },
+        take: 1
+      });
+      const cursorId = newUser[0].id + 1;
+
+      console.log('random cursor: ', cursorId);
+    }
+    else {
+      cursorId = cursorPageOptionsDto.cursorId;
+    }
+
+    // (2) 데이터 조회
     // 검색 결과에 해당하는 값 찾기
     // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
     console.log('검색 값: ', searchTerm);
-    const resultUsers = await UserEntity.find({
-      where: [{ name: Like(`%${searchTerm}%`) }, { nickname: Like(`%${searchTerm}%`) }],
-      relations: {profileImage : true, ruleParticipate: true}
+    const [resultUsers, total] = await UserEntity.findAndCount({
+      take: cursorPageOptionsDto.take,
+      where: [
+        {id: cursorId ? LessThan(cursorId) : null},
+        { name: Like(`%${searchTerm}%`) },
+        { nickname: Like(`%${searchTerm}%`)},
+        { id: Not(Equal(userId))}  // 사용자 본인은 검색결과에 뜨지 않도록
+      ],
+      relations: {profileImage : true, ruleParticipate: {rule: true}},
+      order: {
+        id: "DESC" as any,
+      },
     });
 
-    const result = await Promise.all(resultUsers.map(async (user) => {
+    const searchResult = await Promise.all(resultUsers.map(async (user) => {
+      const dtoAtCreate: GetSearchMemberAtCreateDto = new GetSearchMemberAtCreateDto();
+
+      dtoAtCreate.id = user.id;
+      dtoAtCreate.name = user.name;
+      dtoAtCreate.email = user.email;
+      dtoAtCreate.introduction = user.introduction;
+
+      // 사용자 프로필 이미지
+      const image = user.profileImage;
+      if(image == null) dtoAtCreate.image = null;
+      else{
+        const userImageKey = image.imageKey;
+        dtoAtCreate.image = await this.s3Service.getImageUrl(userImageKey);
+      }
+      return dtoAtCreate;
+    }));
+
+    console.log('searchResult : ',searchResult);
+
+    // (3) 페이징 및 정렬 기준 설정
+    let hasNextData = true;
+    let cursor: number;
+
+    const takePerScroll = cursorPageOptionsDto.take;
+    const isLastScroll = total <= takePerScroll;
+    const lastDataPerScroll = resultUsers[resultUsers.length - 1];
+
+    if (isLastScroll) {
+      hasNextData = false;
+      cursor = null;
+    } else {
+      cursor = lastDataPerScroll.id;
+    }
+
+    const cursorPageMetaDto = new CursorPageMetaDto({ cursorPageOptionsDto, total, hasNextData, cursor });
+
+    return new CursorPageDto(searchResult, cursorPageMetaDto);
+  }
+
+  // [6-2] case2. 여행 규칙 수정
+  async getSearchMemberAtUpdate(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, ruleId: number, searchTerm: string): Promise<CursorPageDto<GetSearchMemberDto>> {
+    let cursorId: number = 0;
+
+    // (1) 처음 요청인 경우 cursorId 설정
+    if(cursorPageOptionsDto.cursorId == 0){
+      const newUser = await UserEntity.find({
+        order: {
+          id: 'DESC'  // 가장 최근에 가입한 유저
+        },
+        take: 1
+      });
+      const cursorId = newUser[0].id + 1;
+
+      console.log('random cursor: ', cursorId);
+    }
+    else {
+      cursorId = cursorPageOptionsDto.cursorId;
+    }
+
+    // (2) 데이터 조회
+    // 검색 결과에 해당하는 값 찾기
+    // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
+    console.log('검색 값: ', searchTerm);
+    const [resultUsers, total] = await UserEntity.findAndCount({
+      take: cursorPageOptionsDto.take,
+      where: [
+        {id: cursorId ? LessThan(cursorId) : null},
+        { name: Like(`%${searchTerm}%`) },
+        { nickname: Like(`%${searchTerm}%`)},
+        { id: Not(Equal(userId))}  // 사용자 본인은 검색결과에 뜨지 않도록
+      ],
+      relations: {profileImage : true, ruleParticipate: {rule: true}},
+      order: {
+        id: "DESC" as any,
+      },
+    });
+
+    const searchResult = await Promise.all(resultUsers.map(async (user) => {
       const dto: GetSearchMemberDto = new GetSearchMemberDto();
 
       dto.id = user.id;
@@ -239,20 +444,38 @@ export class RuleService {
       dto.introduction = user.introduction;
 
       // 이미 여행 규칙에 참여하는 멤버인지 여부
-      dto.isInvited = await this.userService.checkAlreadyMember(user, ruleId);
+      dto.isInvited = await this.userService.checkAlreadyMember(user.id, ruleId);
 
-      dto.image
       // 사용자 프로필 이미지
       const image = user.profileImage;
-      dto.image = image.imageKey;
       if(image == null) dto.image = null;
       else{
         const userImageKey = image.imageKey;
         dto.image = await this.s3Service.getImageUrl(userImageKey);
       }
       return dto;
-    }))
-    return result;
+    }));
+
+    console.log('searchResult : ',searchResult);
+
+    // (3) 페이징 및 정렬 기준 설정
+    let hasNextData = true;
+    let cursor: number;
+
+    const takePerScroll = cursorPageOptionsDto.take;
+    const isLastScroll = total <= takePerScroll;
+    const lastDataPerScroll = searchResult[searchResult.length - 1];
+
+    if (isLastScroll) {
+      hasNextData = false;
+      cursor = null;
+    } else {
+      cursor = lastDataPerScroll.id;
+    }
+
+    const cursorPageMetaDto = new CursorPageMetaDto({ cursorPageOptionsDto, total, hasNextData, cursor });
+
+    return new CursorPageDto(searchResult, cursorPageMetaDto);
   }
 
   // [7] 여행 규칙 수정
@@ -263,6 +486,7 @@ export class RuleService {
     })
 
     rule.mainTitle = updateRuleDto.mainTitle
+    await rule.save();
 
     // (1) [상세 규칙 수정]
     // 기존 세부 규칙 정보 리스트
@@ -290,7 +514,8 @@ export class RuleService {
     for (const updateSub of updateSubsList) {
       // case1) 새로운 규칙
       if (!updateSub.id) {
-        const newSub = new RuleSubEntity();
+        const newSub = new RuleSubEntity()
+        newSub.main = rule;
         newSub.ruleTitle = updateSub.ruleTitle;
         newSub.ruleDetail = updateSub.ruleDetail;
 
@@ -323,6 +548,9 @@ export class RuleService {
     for(const invitation of oldInvitations) {
       const member = invitation.member;
       let isDeleteMember : boolean = true;
+
+      // (예외 상황) 현재 로그인한 사용자
+      if (member.id == userId) break;
 
       for(const updateMemberId of updateMemberIds) {
         if(member.id == updateMemberId) {

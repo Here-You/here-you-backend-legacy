@@ -10,9 +10,12 @@ import { LocationEntity } from 'src/location/location.entity';
 import { DiaryImageEntity } from 'src/diary/models/diary.image.entity';
 import { DetailScheduleEntity } from 'src/detail-schedule/detail-schedule.entity';
 import { CursorBasedPaginationRequestDto } from './cursor-based-pagination-request.dto.ts';
+import { S3UtilService } from 'src/utils/S3.service';
 
 @Injectable()
 export class MapService {
+  constructor(private readonly s3UtilService: S3UtilService) {}
+
   /*캘린더에서 사용자의 월별 일정 불러오기*/
   async getMonthlySchedules(
     userId: number,
@@ -20,56 +23,59 @@ export class MapService {
     options: CursorBasedPaginationRequestDto,
   ) {
     const user = await UserEntity.findExistUser(userId);
-    const journeys = await JourneyEntity.findExistJourneyByDate(user.id, date);
-
-    // 커서 값에 해당하는 배너들을 가져옴
-    const paginatedJourneys = journeys.slice(
-      options.cursor,
-      options.cursor + options.pageSize,
+    const journey = await JourneyEntity.findExistJourneyByDate(user.id, date);
+    const schedules = await ScheduleEntity.findExistSchedulesByJourneyId(
+      journey.id,
     );
-    if (paginatedJourneys.length === 0) {
-      return {
-        data: response(BaseResponse.SCHEDULE_NOT_FOUND, { nextCursor: null }),
-      };
-    }
-    const result = await Promise.all(
-      paginatedJourneys.map(async (journey) => {
-        const schedules = await ScheduleEntity.findExistSchedulesByJourneyId(
-          journey.id,
-        );
-        const scheduleList = await Promise.all(
-          schedules.map(async (schedule) => {
-            const locations = await this.getLocationList([schedule]); // getLocationList에 schedule 배열을 전달
-            const detailSchedules = await this.getDetailScheduleList([
-              schedule,
-            ]); // getDetailScheduleList에 schedule 배열을 전달
-            const diary = await this.getDiaryStatus([schedule]); // getDiaryStatus에 schedule 배열을 전달
-
-            return {
-              scheduleId: schedule.id,
-              title: schedule.title,
-              date: schedule.date,
-              location: locations,
-              detailSchedules: detailSchedules,
-              diary: diary,
-            };
-          }),
-        );
+    const journeyInfo = {
+      userId: user.id,
+      journeyId: journey.id,
+      startDate: journey.startDate,
+      endDate: journey.endDate,
+    };
+    const scheduleList = await Promise.all(
+      schedules.map(async (schedule) => {
+        const locations = await this.getLocationList([schedule]); // getLocationList에 schedule 배열을 전달
+        const detailSchedules = await this.getDetailScheduleList([schedule]); // getDetailScheduleList에 schedule 배열을 전달
+        const diary = await this.getDiaryStatus([schedule]); // getDiaryStatus에 schedule 배열을 전달
 
         return {
-          userId: user.id,
-          journeyId: journey.id,
-          startDate: journey.startDate,
-          endDate: journey.endDate,
-          scheduleList: scheduleList,
+          scheduleId: schedule.id,
+          title: schedule.title,
+          date: schedule.date,
+          location: locations,
+          detailSchedules: detailSchedules,
+          diary: diary,
         };
       }),
     );
+    //    return {
+    //    userId: user.id,
+    //    journeyId: journey.id,
+    //    startDate: journey.startDate,
+    //    endDate: journey.endDate,
+    //    scheduleList: scheduleList,
+    //  };
+
+    // 페이징 처리
+    const startIndex = options.cursor;
+    const endIndex = Number(options.cursor) + Number(options.pageSize);
+    const paginatedSchedules = scheduleList.slice(startIndex, endIndex);
+
     // 다음 페이지를 위한 커서 값 계산
-    const nextCursor = Number(options.cursor) + Number(options.pageSize);
+    let nextCursor = null;
+    if (endIndex < scheduleList.length) {
+      nextCursor = endIndex;
+    }
+
+    // 다음 페이지를 위한 커서 값 계산
+    // const nextCursor = Number(options.cursor) + Number(options.pageSize);
 
     return {
-      data: response(BaseResponse.GET_SCHEDULE_SUCCESS, result),
+      data: response(BaseResponse.GET_SCHEDULE_SUCCESS, {
+        journeyInfo,
+        paginatedSchedules,
+      }),
       nextCursor: nextCursor,
     };
   }
@@ -155,16 +161,20 @@ export class MapService {
           return null;
         }
         const diaryImg = await DiaryImageEntity.findExistImgUrl(diary);
+        const imageUrl = await this.s3UtilService.getImageUrl(
+          diaryImg.imageUrl,
+        );
         if (!diaryImg) {
           return null;
         }
         return {
           journeyId: journeyId,
+          scheduleId: schedule.id,
           date: schedule.date,
           diary: diary,
           diaryImage: {
             id: diaryImg.id,
-            imageUrl: diaryImg.imageUrl,
+            imageUrl: imageUrl,
           },
         };
       }),
@@ -246,9 +256,12 @@ export class MapService {
           return null;
         }
         const diaryImage = await DiaryImageEntity.findExistImgUrl(diary);
+        const imageUrl = await this.s3UtilService.getImageUrl(
+          diaryImage.imageUrl,
+        );
         return {
           imageId: diaryImage.id,
-          imageUrl: diaryImage.imageUrl,
+          imageUrl: imageUrl,
         };
       }),
     );

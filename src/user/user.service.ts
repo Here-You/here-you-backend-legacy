@@ -9,10 +9,16 @@ import { ResponseDto } from '../response/response.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { UserFollowingEntity } from './user.following.entity';
 import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
+import { LessThan } from 'typeorm';
+import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
+import { DiaryEntity } from '../diary/models/diary.entity';
+import { S3UtilService } from '../utils/S3.service';
 
 @Injectable()
 export class UserService {
   private readonly logger: Logger = new Logger(UserService.name);
+
+  constructor(private s3Service: S3UtilService) {}
 
   private _hashPassword(password: string): string {
     return bcrypt.hashSync(password, 10);
@@ -427,12 +433,70 @@ export class UserService {
     return !!isFollowing;
   }
 
-  async checkAlreadyMember(user: UserEntity, ruleID: number) {
+  async checkAlreadyMember(userId: number, ruleID: number) {
     const rule = await RuleInvitationEntity.findOne({
-      where: { member: { id: user.id }, rule: { id: ruleID } },
+      where: { member: { id: userId }, rule: { id: ruleID } },
     });
     // 이미 규칙 멤버인 경우 : true 반환
     console.log('rule : ', rule);
     return !!rule;
+  }
+
+  async listDiaries(userId: number, cursor?: string, take = 10) {
+    if (!cursor || cursor === '') {
+      cursor = undefined;
+    }
+
+    // user -> journey -> schedules -> diary -> diaryImage
+    const diaries = await DiaryEntity.find({
+      where: {
+        schedule: {
+          journey: {
+            user: {
+              id: userId,
+            },
+          },
+        },
+        id: cursor ? LessThan(Number(cursor)) : undefined,
+      },
+      relations: {
+        image: true,
+        schedule: {
+          journey: {
+            user: true,
+          },
+        },
+      },
+      order: {
+        id: 'DESC',
+      },
+      take,
+    });
+
+    return new ResponseDto(
+      ResponseCode.GET_DIARY_SUCCESS,
+      true,
+      '일지 목록 조회 성공',
+      {
+        diaries: await Promise.all(
+          diaries.map(async (diary) => ({
+            scheduleId: diary.schedule.id,
+            id: diary.id,
+            title: diary.title,
+            place: diary.place,
+            weather: diary.weather,
+            mood: diary.mood,
+            content: diary.content,
+            date: diary.schedule.date,
+            diary_image: diary.image
+              ? {
+                  id: diary.image.id,
+                  url: await this.s3Service.getImageUrl(diary.image.imageUrl),
+                }
+              : null,
+          })),
+        ),
+      },
+    );
   }
 }
