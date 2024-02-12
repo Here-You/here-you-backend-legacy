@@ -170,17 +170,18 @@ export class RuleService {
     }));
 
     // (2) 페이징 및 정렬 기준 설정
-    const takePerPage = cursorPageOptionsDto.take;
-    const isLastPage = total <= takePerPage;
-
     let hasNextData = true;
     let cursor: number;
 
-    if (isLastPage || result.length <= 0) {
+    const takePerScroll = cursorPageOptionsDto.take;
+    const isLastScroll = total <= takePerScroll;
+    const lastDataPerScroll = comments[comments.length - 1];
+
+    if (isLastScroll) {
       hasNextData = false;
       cursor = null;
     } else {
-      cursor = result[result.length - 1].id;
+      cursor = lastDataPerScroll.id;
     }
 
     const cursorPageMetaDto = new CursorPageMetaDto({ cursorPageOptionsDto, total, hasNextData, cursor });
@@ -336,7 +337,7 @@ export class RuleService {
       ],
       relations: {profileImage : true, ruleParticipate: {rule: true}},
       order: {
-        id: cursorPageOptionsDto.sort.toUpperCase() as any,
+        id: "DESC" as any,
       },
     });
 
@@ -361,17 +362,18 @@ export class RuleService {
     console.log('searchResult : ',searchResult);
 
     // (2) 페이징 및 정렬 기준 설정
-    const takePerPage = cursorPageOptionsDto.take;
-    const isLastPage = total <= takePerPage;
-
     let hasNextData = true;
     let cursor: number;
 
-    if (isLastPage || searchResult.length <= 0) {
+    const takePerScroll = cursorPageOptionsDto.take;
+    const isLastScroll = total <= takePerScroll;
+    const lastDataPerScroll = resultUsers[resultUsers.length - 1];
+
+    if (isLastScroll) {
       hasNextData = false;
       cursor = null;
     } else {
-      cursor = searchResult[searchResult.length - 1].id;
+      cursor = lastDataPerScroll.id;
     }
 
     const cursorPageMetaDto = new CursorPageMetaDto({ cursorPageOptionsDto, total, hasNextData, cursor });
@@ -397,7 +399,7 @@ export class RuleService {
       ],
       relations: {profileImage : true, ruleParticipate: {rule: true}},
       order: {
-        id: cursorPageOptionsDto.sort.toUpperCase() as any,
+        id: "DESC" as any,
       },
     });
 
