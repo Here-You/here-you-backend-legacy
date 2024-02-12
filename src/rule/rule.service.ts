@@ -134,6 +134,7 @@ export class RuleService {
       const getCommentDto = new GetCommentDto();
 
       getCommentDto.id = comment.id;
+      getCommentDto.writerId = comment.user.id;
       getCommentDto.name = comment.user.name;
       getCommentDto.content = comment.content;
       getCommentDto.updated = comment.updated;

@@ -6,6 +6,10 @@ export class GetCommentDto {
     id: number;
 
     @IsNotEmpty()
+    @IsNumber()
+    writerId: number;
+
+    @IsNotEmpty()
     @IsString()
     content: string;
 
