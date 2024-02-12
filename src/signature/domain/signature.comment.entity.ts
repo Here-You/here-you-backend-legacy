@@ -29,12 +29,12 @@ export class SignatureCommentEntity extends BaseEntity {
   @OneToMany(() => SignatureCommentEntity,
     (childComment) => childComment.parentComment)
   @JoinColumn()
-  childComments: SignatureCommentEntity;
+  childComments: SignatureCommentEntity[];
 
   @ManyToOne(() => SignatureCommentEntity,
     (parentComment) => parentComment.childComments)
   @JoinColumn()
-  parentComment: SignatureCommentEntity[];
+  parentComment: SignatureCommentEntity;
 
   @Column()
   content: string;
