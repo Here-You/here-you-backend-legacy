@@ -323,7 +323,22 @@ export class RuleService {
   async getSearchMemberAtCreate(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, searchTerm: string): Promise<CursorPageDto<GetSearchMemberAtCreateDto>> {
     let cursorId: number = 0;
 
-    // (1) 데이터 조회
+    // (1) 처음 요청인 경우 cursorId 설정
+    if(cursorPageOptionsDto.cursorId == 0){
+      const newUser = await UserEntity.findOne({
+        order: {
+          id: 'DESC'  // 가장 최근에 가입한 유저
+        }
+      });
+      const cursorId = newUser[0].id + 1;
+
+      console.log('random cursor: ', cursorId);
+    }
+    else {
+      cursorId = cursorPageOptionsDto.cursorId;
+    }
+
+    // (2) 데이터 조회
     // 검색 결과에 해당하는 값 찾기
     // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
     console.log('검색 값: ', searchTerm);
@@ -361,7 +376,7 @@ export class RuleService {
 
     console.log('searchResult : ',searchResult);
 
-    // (2) 페이징 및 정렬 기준 설정
+    // (3) 페이징 및 정렬 기준 설정
     let hasNextData = true;
     let cursor: number;
 
