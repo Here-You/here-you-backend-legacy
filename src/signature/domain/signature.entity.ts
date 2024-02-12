@@ -11,8 +11,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from 'src/user/user.entity';
-import { HomeSignatureDto } from '../dto/home-signature.dto';
-import { CreateSignatureDto } from '../dto/create-signature.dto';
+import { HomeSignatureDto } from '../dto/signature/home-signature.dto';
+import { CreateSignatureDto } from '../dto/signature/create-signature.dto';
 import { SignaturePageEntity } from './signature.page.entity';
 import { SignatureLikeEntity } from './signature.like.entity';
 import { SignatureCommentEntity } from './signature.comment.entity';
