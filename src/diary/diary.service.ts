@@ -23,9 +23,15 @@ export class DiaryService {
   /*일지 수정하기*/
   async updateDiary(diaryId, diaryInfo: PostDiaryDto) {
     const diary = await DiaryEntity.updateDiary(diaryId, diaryInfo);
-    const diaryImg = await this.getDiaryImgUrl(diary, diaryInfo.fileName);
-    await DiaryImageEntity.updateDiaryImg(diary, diaryImg);
-    return response(BaseResponse.DIARY_CREATED);
+    if (
+      diaryInfo.fileName.startsWith('https://hereyou-cdn.kaaang.dev/diary/')
+    ) {
+      return response(BaseResponse.DIARY_CREATED);
+    } else {
+      const diaryImg = await this.getDiaryImgUrl(diary, diaryInfo.fileName);
+      await DiaryImageEntity.updateDiaryImg(diary, diaryImg);
+      return response(BaseResponse.DIARY_CREATED);
+    }
   }
 
   /*일지 사진 S3에 업로드 후 url 받기- 생성 */
