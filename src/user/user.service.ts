@@ -8,7 +8,6 @@ import { UserProfileImageEntity } from './user.profile.image.entity';
 import { ResponseDto } from '../response/response.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { UserFollowingEntity } from './user.following.entity';
-import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
 import { LessThan } from 'typeorm';
 import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
 import { DiaryEntity } from '../diary/models/diary.entity';
