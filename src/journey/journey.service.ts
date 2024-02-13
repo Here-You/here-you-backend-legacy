@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { addDays, isAfter } from 'date-fns';
+import { addDays, isAfter, isEqual } from 'date-fns';
 import { JourneyEntity } from './model/journey.entity';
 import { errResponse, response } from 'src/response/response';
 import { BaseResponse } from 'src/response/response.status';
@@ -46,20 +46,24 @@ export class JourneyService {
     let currentDate = startDate;
     const schedules = [];
 
-    // endDate가 startDate 이후인지 확인
-    if (isAfter(endDate, startDate)) {
-      while (currentDate <= endDate) {
-        const schedule = await ScheduleEntity.createSchedule(
-          journey,
-          currentDate,
-        );
-        schedules.push(schedule);
-        currentDate = addDays(currentDate, 1); // 다음 날짜로 이동
-      }
+    // startDate와 endDate가 같은 경우 하나의 schedule 생성
+    if (isEqual(startDate, endDate)) {
+      const schedule = await ScheduleEntity.createSchedule(journey, startDate);
+      schedules.push(schedule);
     } else {
-      throw new Error('endDate는 startDate보다 이후여야 합니다.');
+      let currentDate = startDate;
+      // endDate가 startDate 이후인지 확인하여 일정 배너 생성
+      if (isAfter(endDate, startDate)) {
+        while (currentDate <= endDate) {
+          const schedule = await ScheduleEntity.createSchedule(
+            journey,
+            currentDate,
+          );
+          schedules.push(schedule);
+          currentDate = addDays(currentDate, 1); // 다음 날짜로 이동
+        }
+      }
     }
-
     return schedules;
   }
 
