@@ -20,6 +20,7 @@ import { MemberModule } from './member/member.module';
 import { SearchModule } from './search/search.module';
 import { MapModule } from './map/map.module';
 import { MateModule } from './mate/mate.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { MateModule } from './mate/mate.module';
     SearchModule,
     MapModule,
     MateModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
