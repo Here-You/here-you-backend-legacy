@@ -272,14 +272,18 @@ export class RuleService {
         },
       },
     });
+    console.log('현재 로그인한 사용자 : ', userEntity.id);
 
     try {
       const invitationEntities = userEntity.ruleParticipate;
+      // 수정한 날짜 updated 내림차순으로 정렬
+      invitationEntities.sort((a, b) => new Date(b.rule.updated).getTime() - new Date(a.rule.updated).getTime());
+      console.log('invitationEntities 출력 : ', invitationEntities);
 
       if (!!invitationEntities) {
         const ruleMains = await Promise.all(invitationEntities.map(async (invitation : RuleInvitationEntity) : Promise<GetRuleListDto> => {
-          console.log(invitation);
-          const ruleMain : RuleMainEntity = invitation.rule as RuleMainEntity;
+          console.log('참여하는 규칙 ID : ', invitation.rule.id);
+          const ruleMain : RuleMainEntity = invitation.rule;
           const ruleListDto : GetRuleListDto = new GetRuleListDto;
 
           console.log('ruleMain.id : ', ruleMain.id);
@@ -356,6 +360,7 @@ export class RuleService {
 
 
     console.log('검색 값: ', searchTerm);
+
     const [resultUsers, total] = await UserEntity.findAndCount({
       take: cursorPageOptionsDto.take,
       where: [
