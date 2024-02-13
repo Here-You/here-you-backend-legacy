@@ -1,6 +1,6 @@
 // signature.comment.controller.ts
 
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { SignatureCommentService } from './signature.comment.service';
 import { UserGuard } from '../user/user.guard';
 import { Request } from 'express';
@@ -9,11 +9,11 @@ import { ResponseDto } from '../response/response.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { CursorPageOptionsDto } from '../rule/dto/cursor-page.options.dto';
 
-@Controller('signature/:signatureId')
+@Controller('signature/:signatureId/comment')
 export class SignatureCommentController{
   constructor(private readonly signatureCommentService: SignatureCommentService) {}
 
-  @Post('/comment')
+  @Post('/')
   @UseGuards(UserGuard)
   async createSignatureComment( // 시그니처 댓글 생성하기
     @Req() req: Request,
@@ -42,16 +42,16 @@ export class SignatureCommentController{
     }
   }
 
-  @Post('/comment/:commentId')
+  @Post('/:parentId')
   @UseGuards(UserGuard)
   async createSignatureReplyComment(  // 시그니처 답글 생성하기
     @Req() req: Request,
     @Param('signatureId') signatureId: number,
-    @Param('commentId') commentId: number,
+    @Param('parentId') parentId: number,
     @Body() newComment: CreateCommentDto,
   ){
     try{
-      const result = await this.signatureCommentService.createSignatureComment(newComment, req.user.id, signatureId, commentId)
+      const result = await this.signatureCommentService.createSignatureComment(newComment, req.user.id, signatureId, parentId)
 
       return new ResponseDto(
         ResponseCode.CREATE_SIGNATURE_COMMENT_SUCCESS,
@@ -72,7 +72,7 @@ export class SignatureCommentController{
     }
   }
 
-  @Get('/comment')
+  @Get('/')
   @UseGuards(UserGuard)
   async getSignatureComment(  // 시그니처 댓글 조회하기 (무한 스크롤)
     @Req() req: Request,
@@ -100,8 +100,17 @@ export class SignatureCommentController{
     }
   }
 
+  @Patch('/:commentId')
+  async patchSignatureComment(
+    @Param('signatureId') signatureId: number,
+    @Param('commentId') commentId: number,
+    @Query() cursorPageOptionsDto: CursorPageOptionsDto,
+  ){
+    try{
 
+    }
+    catch(error){
 
-
-
+    }
+  }
 }
