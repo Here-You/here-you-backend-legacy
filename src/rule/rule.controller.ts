@@ -25,7 +25,7 @@ export class RuleController {
                    @Query() cursorPageOptionsDto: CursorPageOptionsDto
   ): Promise<ResponseDto<any>> {
     try {
-      const result = await this.ruleService.getComment(cursorPageOptionsDto, ruleId);
+      const result = await this.ruleService.getComment(cursorPageOptionsDto, ruleId, req.user.id);
 
       return new ResponseDto(
           ResponseCode.GET_COMMENT_DETAIL_SUCCESS,
@@ -80,11 +80,11 @@ export class RuleController {
           "초대할 메이트 검색 결과 리스트 불러오기 성공",
           result
       );
-    } catch (error) {
+    } catch (e) {
       return new ResponseDto(
           ResponseCode.GET_SEARCH_RESULT_FAIL,
           false,
-          "초대할 메이트 검색 결과 리스트 불러오기 실패",
+          e.message,
           null
       );
     }
