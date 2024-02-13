@@ -126,8 +126,14 @@ export class SignatureCommentService{
       getCommentDto.date = comment.updated;
 
       // 댓글 수정 여부 구하기
-      if(comment.created.getTime() === comment.updated.getTime()) getCommentDto.is_edited = false;
-      else getCommentDto.is_edited = true;
+      const createdTime = comment.created.getTime();
+      const updatedTime = comment.updated.getTime();
+
+      if (Math.abs(createdTime - updatedTime) <= 2000) {  // 두 시간 차가 2초 이하면 수정 안함
+        getCommentDto.is_edited = false;
+      } else {
+        getCommentDto.is_edited = true;
+      }
 
       return getCommentDto;
 
