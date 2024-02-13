@@ -6,7 +6,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateSignatureDto } from './dto/create-signature.dto';
+import { CreateSignatureDto } from './dto/signature/create-signature.dto';
 import { SignatureEntity } from './domain/signature.entity';
 import { HomeSignatureDto } from './dto/signature/home-signature.dto';
 import { UserEntity } from 'src/user/user.entity';
@@ -17,10 +17,10 @@ import { AuthorSignatureDto } from './dto/signature/author-signature.dto';
 import { HeaderSignatureDto } from './dto/signature/header-signature.dto';
 import { UserService } from '../user/user.service';
 import { SignatureLikeEntity } from './domain/signature.like.entity';
-import { GetLikeListDto } from './dto/get-like-list.dto';
-import { LikeProfileDto } from './dto/like-profile.dto';
+import { GetLikeListDto } from './dto/like/get-like-list.dto';
+import { LikeProfileDto } from './dto/like/like-profile.dto';
 import { S3UtilService } from '../utils/S3.service';
-import { ResponsePageSignatureDto } from './dto/response-page-signature.dto';
+import { ResponsePageSignatureDto } from './dto/signature/response-page-signature.dto';
 import { NotificationEntity } from '../notification/notification.entity';
 import { NotificationService } from '../notification/notification.service';
 
@@ -353,21 +353,29 @@ export class SignatureService {
           originalPage.location = patchedPage.location;
 
           // base64로 들어온 이미지면 디코딩해서 새롭게 저장 / 아니면 그대로 두기
-          if(patchedPage.image.startsWith("https://hereyou-cdn.kaaang.dev/signature/")){
+          if (
+            patchedPage.image.startsWith(
+              'https://hereyou-cdn.kaaang.dev/signature/',
+            )
+          ) {
             // 이미지 그대로 들어왔다면 이미지를 수정할 필요 없음
-            console.log(patchedPage._id,": original Image - 수정할 필요 없음");
-
-          }
-          else{
+            console.log(patchedPage._id, ': original Image - 수정할 필요 없음');
+          } else {
             // 새로운 이미지가 인코딩돼서 들어왔다면 해당 이미지를 새로 저장해야
-            console.log(patchedPage._id,": patched Image - 이미지키 수정 진행");
+            console.log(
+              patchedPage._id,
+              ': patched Image - 이미지키 수정 진행',
+            );
 
             // 랜덤 이미지 키 생성
-            const key = `signature/${this.s3Service.generateRandomImageKey('signaturePage.png')}`;
+            const key = `signature/${this.s3Service.generateRandomImageKey(
+              'signaturePage.png',
+            )}`;
 
             // Base64 이미지 업로드
             const uploadedImage = await this.s3Service.putObjectFromBase64(
-              key, patchedPage.image
+              key,
+              patchedPage.image,
             );
 
             // 이미지 키 저장
