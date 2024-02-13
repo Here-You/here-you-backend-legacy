@@ -82,7 +82,6 @@ export class RuleService {
   // [2] 여행 규칙 상세 페이지 조회 (게시글)
   async getDetail(userId: number, ruleId: number): Promise<DetailRuleDto> {
     const dto = new DetailRuleDto();
-    const sortedDto = new DetailRuleDto();
     const main: RuleMainEntity = await RuleMainEntity.findRuleById(ruleId);
     const subs: RuleSubEntity[] = await RuleSubEntity.findSubById(ruleId);
     const invitations: RuleInvitationEntity[] = await RuleInvitationEntity.find({
@@ -111,11 +110,11 @@ export class RuleService {
 
       if(!!invitation) {
         // -1) 제목
-        sortedDto.id = ruleId;
-        sortedDto.mainTitle = main.mainTitle;
+        dto.id = ruleId;
+        dto.mainTitle = main.mainTitle;
 
         // -2) 규칙
-        dto.rulePairs = await Promise.all(subs.map(async (sub): Promise<RulePairDto> => {
+        const rulePairs = await Promise.all(subs.map(async (sub): Promise<RulePairDto> => {
           const rulePair = new RulePairDto();
           rulePair.id = sub.id;
           rulePair.ruleTitle = sub.ruleTitle;
@@ -123,10 +122,13 @@ export class RuleService {
 
           return rulePair;
         }));
-        sortedDto.rulePairs = dto.rulePairs.sort((a, b) => a.id - b.id);
+        console.log('Before sorting : ', rulePairs);
+        rulePairs.sort((a, b) => a.id - b.id);
+        console.log('After sorting : ', rulePairs);
+        dto.rulePairs = rulePairs;
 
         // -3) 멤버 정보
-        dto.detailMembers = await Promise.all(invitations.map(async (invitation): Promise<DetailMemberDto> => {
+        const detailMembers = await Promise.all(invitations.map(async (invitation): Promise<DetailMemberDto> => {
           const detailMember = new DetailMemberDto;
           const memberEntity = invitation.member;
           detailMember.id = memberEntity.id;
@@ -141,9 +143,10 @@ export class RuleService {
           }
           return detailMember;
         }));
-        sortedDto.detailMembers = dto.detailMembers.sort((a, b) => a.id - b.id);
+        detailMembers.sort((a, b) => a.id - b.id);
+        dto.detailMembers = detailMembers;
 
-        return sortedDto;
+        return dto;
       } else {
         throw new Error('여행 규칙에 참여하는 사용자가 아닙니다');
       }
