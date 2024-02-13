@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { IUserProfile } from './user.dto';
 import { UserGuard } from './user.guard';
@@ -11,6 +11,15 @@ export class UserController {
   @Post('/login')
   Login(@Body('email') email: string, @Body('password') password: string) {
     return this.userService.Login(email, password);
+  }
+
+  @Post('/login/oauth')
+  SNSLogin(
+    @Body('type') type: 'KAKAO' | 'GOOGLE',
+    @Body('token') token: string,
+    @Body('redirect_uri') redirectUrl: string,
+  ) {
+    return this.userService.SNSLogin(type, token, redirectUrl);
   }
 
   @Post('/profile')
@@ -44,5 +53,11 @@ export class UserController {
   @UseGuards(UserGuard)
   DeleteAccount(@Req() req: Request) {
     return this.userService.deleteAccount(req.user.id);
+  }
+
+  @Get('/diaries')
+  @UseGuards(UserGuard)
+  ListDiaries(@Req() req: Request, @Query('cursor') cursor: string) {
+    return this.userService.listDiaries(req.user.id, cursor);
   }
 }

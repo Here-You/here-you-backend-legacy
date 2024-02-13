@@ -2,6 +2,10 @@ import { IsNotEmpty, IsNumber, IsString, IsArray, ValidateNested } from 'class-v
 import { Type } from 'class-transformer';
 class RulePairDto {
   @IsNotEmpty()
+  @IsNumber()
+  ruleNumber: number;
+
+  @IsNotEmpty()
   @IsString()
   ruleTitle: string;
 

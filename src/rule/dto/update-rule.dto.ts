@@ -1,9 +1,14 @@
-import { IsNotEmpty, IsNumber, IsString, IsArray, ValidateNested } from 'class-validator';
+import {IsNotEmpty, IsNumber, IsString, IsArray, ValidateNested, IsOptional} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateRulePairDto {
+    @IsOptional()
     @IsNumber()
     id: number;
+
+    @IsNotEmpty()
+    @IsNumber()
+    ruleNumber: number;
 
     @IsNotEmpty()
     @IsString()
