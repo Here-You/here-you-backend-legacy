@@ -2,7 +2,7 @@
 
 import {
   Body,
-  Controller,
+  Controller, Delete,
   ForbiddenException,
   Get,
   NotFoundException,
@@ -144,7 +144,44 @@ export class SignatureCommentController{
         errorMessage,
         null
       );
+    }
+  }
+
+
+  @Delete('/:commentId')
+  @UseGuards(UserGuard)
+  async deleteSignatureComment(  // 시그니처 수정하기
+    @Param('signatureId') signatureId: number,
+    @Param('commentId') commentId: number,
+    @Req() req: Request,
+  ){
+    try{
+      const result = await this.signatureCommentService.deleteSignatureComment(req.user.id,signatureId,commentId);
+
+      return new ResponseDto(
+        ResponseCode.COMMENT_DELETE_SUCCESS,
+        true,
+        "시그니처 댓글 삭제하기 성공",
+        result
+      );
+    }
+    catch(error){
+      console.log("Err on DeleteSigComment: "+ error);
+      let errorMessage = "";
+
+      if(error instanceof NotFoundException)  errorMessage = error.message;
+      else if(error instanceof ForbiddenException) errorMessage = error.message;
+      else errorMessage = "시그니처 댓글 삭제하기 실패";
+
+      return new ResponseDto(
+        ResponseCode.COMMENT_DELETE_FAIL,
+        false,
+        errorMessage,
+        null
+      );
 
     }
   }
+
+
 }

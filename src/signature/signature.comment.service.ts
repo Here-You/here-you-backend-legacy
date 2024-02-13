@@ -87,7 +87,10 @@ export class SignatureCommentService{
       },
       relations: {
         user: { profileImage: true },
-        parentComment: true
+        parentComment: true,
+        signature:{
+          user: true,
+        }
       },
       order: {
         parentComment: { id: "ASC" as any,},
@@ -103,8 +106,8 @@ export class SignatureCommentService{
       writerProfile._id = comment.user.id;
       writerProfile.name = comment.user.nickname;
 
-      // 로그인한 사용자가 댓글 작성자인지 확인
-      if( userId == comment.user.id ) writerProfile.is_writer = true;
+      // 로그인한 사용자가 댓글 작성자 혹은 시그니처 작성자인지 확인
+      if( userId == comment.user.id || userId == comment.signature.user.id ) writerProfile.is_writer = true;
       else writerProfile.is_writer = false;
 
       // 작성자 프로필 이미지
@@ -160,24 +163,98 @@ export class SignatureCommentService{
     patchedComment: CreateCommentDto) {
 
     // 시그니처 유효한지 확인
-    const signature = await SignatureEntity.findOne({ where:{ id: signatureId }});
+    const signature = await SignatureEntity.findOne({
+      where:{ id: signatureId },
+      relations: { user: true }
+    });
     if(!signature) throw new NotFoundException('존재하지 않는 시그니처입니다');
 
     // 댓글 데이터 유효한지 확인
     const comment = await SignatureCommentEntity.findOne({
         where:{ id: commentId },
-        relations: ['user']
+        relations: { user: true }
       },
     );
     if(!comment) throw new NotFoundException('존재하지 않는 댓글입니다');
 
-    // 댓글 작성자가 로그인한 사용자 본인이 맞는지 확인
-    if(comment.user.id != userId ) throw new ForbiddenException('댓글 수정 권한이 없습니다');
+
+    let forbiddenUser = true;
+    // 댓글 작성자가 로그인한 사용자 본인 혹은 시그니처 작성자가 맞는지 확인
+    if(signature.user){ // 시그니처 작성자가 존재한다면 시그니처 작성자와 로그인한 사용자가 일치하는지 확인
+      if( signature.user.id == userId ) forbiddenUser = false;
+    }
+
+    if(comment.user.id){ // 댓글 작성자가 존재한다면 댓글 작성자와 로그인한 사용자가 일치하는지 확인
+      if(comment.user.id == userId ) forbiddenUser = false;
+    }
+
+    if(forbiddenUser) throw new ForbiddenException('댓글 수정 권한이 없습니다');
+
 
     // 댓글 수정하기
     comment.content = patchedComment.content;
     await comment.save();
     return comment.id;
 
+  }
+
+  async deleteSignatureComment(userId: number, signatureId: number, commentId: number) {
+    try {
+      // 시그니처 유효한지 확인
+      const signature = await SignatureEntity.findOne({
+        where: { id: signatureId },
+        relations: { user: true }
+      });
+      if (!signature) throw new NotFoundException('존재하지 않는 시그니처입니다');
+
+      // 댓글 데이터 유효한지 확인
+      const comment = await SignatureCommentEntity.findOne({
+          where: { id: commentId },
+          relations: ['user', 'parentComment', 'signature']
+        },
+      );
+      if (!comment) throw new NotFoundException('존재하지 않는 댓글입니다');
+
+
+      let forbiddenUser = true;
+      // 댓글 작성자가 로그인한 사용자 본인 혹은 시그니처 작성자가 맞는지 확인
+      if(signature.user){ // 시그니처 작성자가 존재한다면 시그니처 작성자와 로그인한 사용자가 일치하는지 확인
+        if( signature.user.id == userId ) forbiddenUser = false;
+      }
+
+      if(comment.user.id){ // 댓글 작성자가 존재한다면 댓글 작성자와 로그인한 사용자가 일치하는지 확인
+        if(comment.user.id == userId ) forbiddenUser = false;
+      }
+
+      if(forbiddenUser) throw new ForbiddenException('댓글 삭제 권한이 없습니다');
+
+
+      // 해당 댓글이 부모 댓글인 경우 자식 댓글 모두 삭제
+      if (commentId == comment.parentComment.id) {
+
+        // 자식 댓글 모두 찾아오기
+        const replyComments: SignatureCommentEntity[] = await SignatureCommentEntity.find({
+          where: { parentComment: { id: commentId } }
+        });
+
+        // 자식 댓글 모두 삭제
+        for (const reply of replyComments) {
+          await reply.softRemove();
+        }
+
+        // 자식 모두 삭제했으면 부모 댓글 삭제
+        await comment.softRemove();
+
+      }
+      else{ // 자식 댓글 없는 경우 본인만 삭제
+        await comment.softRemove();
+      }
+
+      return commentId;
+
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 }
