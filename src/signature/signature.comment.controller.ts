@@ -1,6 +1,18 @@
 // signature.comment.controller.ts
 
-import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { SignatureCommentService } from './signature.comment.service';
 import { UserGuard } from '../user/user.guard';
 import { Request } from 'express';
@@ -101,15 +113,37 @@ export class SignatureCommentController{
   }
 
   @Patch('/:commentId')
-  async patchSignatureComment(
+  @UseGuards(UserGuard)
+  async patchSignatureComment(  // 시그니처 수정하기
     @Param('signatureId') signatureId: number,
     @Param('commentId') commentId: number,
-    @Query() cursorPageOptionsDto: CursorPageOptionsDto,
+    @Body() patchedComment: CreateCommentDto,
+    @Req() req: Request,
   ){
     try{
+      const result = await this.signatureCommentService.patchSignatureComment(req.user.id,signatureId,commentId,patchedComment);
 
+      return new ResponseDto(
+        ResponseCode.COMMENT_UPDATE_SUCCESS,
+        true,
+        "시그니처 댓글 수정하기 성공",
+        result
+      );
     }
     catch(error){
+      console.log("Err on PatchSigComment: "+ error);
+      let errorMessage = "";
+
+      if(error instanceof NotFoundException)  errorMessage = error.message;
+      else if(error instanceof ForbiddenException) errorMessage = error.message;
+      else errorMessage = "시그니처 댓글 수정하기 실패";
+
+      return new ResponseDto(
+        ResponseCode.COMMENT_UPDATE_FAIL,
+        false,
+        errorMessage,
+        null
+      );
 
     }
   }

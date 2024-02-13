@@ -1,6 +1,6 @@
 // signature.comment.service.ts
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { S3UtilService } from '../utils/S3.service';
 import { SignatureService } from './signature.service';
@@ -120,10 +120,10 @@ export class SignatureCommentService{
       getCommentDto.content = comment.content;
       getCommentDto.parentId = comment.parentComment.id;
       getCommentDto.writer = writerProfile;
-      getCommentDto.date = await SignatureEntity.formatDateString(comment.updated);
+      getCommentDto.date = comment.updated;
 
       // 댓글 수정 여부 구하기
-      if(comment.created != comment.updated) getCommentDto.is_edited = false;
+      if(comment.created.getTime() === comment.updated.getTime()) getCommentDto.is_edited = false;
       else getCommentDto.is_edited = true;
 
       return getCommentDto;
@@ -150,6 +150,34 @@ export class SignatureCommentService{
 
     return new CursorPageDto( result, cursorPageMetaDto );
 
+
+  }
+
+  async patchSignatureComment(  // 댓글 수정하기
+    userId: number,
+    signatureId: number,
+    commentId: number,
+    patchedComment: CreateCommentDto) {
+
+    // 시그니처 유효한지 확인
+    const signature = await SignatureEntity.findOne({ where:{ id: signatureId }});
+    if(!signature) throw new NotFoundException('존재하지 않는 시그니처입니다');
+
+    // 댓글 데이터 유효한지 확인
+    const comment = await SignatureCommentEntity.findOne({
+        where:{ id: commentId },
+        relations: ['user']
+      },
+    );
+    if(!comment) throw new NotFoundException('존재하지 않는 댓글입니다');
+
+    // 댓글 작성자가 로그인한 사용자 본인이 맞는지 확인
+    if(comment.user.id != userId ) throw new ForbiddenException('댓글 수정 권한이 없습니다');
+
+    // 댓글 수정하기
+    comment.content = patchedComment.content;
+    await comment.save();
+    return comment.id;
 
   }
 }
