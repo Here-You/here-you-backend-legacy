@@ -103,7 +103,9 @@ export class SignatureCommentService{
       writerProfile._id = comment.user.id;
       writerProfile.name = comment.user.nickname;
 
-      // 로그인한 사용자가 댓글 작성자인지 확인
+
+      // 로그인한 사용자가 댓글 작성자(혹은 시그니처 작성자-> 보류)인지 확인
+      //if( userId == comment.user.id || userId == comment.signature.user.id ) writerProfile.is_writer = true;
       if( userId == comment.user.id ) writerProfile.is_writer = true;
       else writerProfile.is_writer = false;
 
