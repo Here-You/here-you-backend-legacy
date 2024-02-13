@@ -310,17 +310,27 @@ export class SignatureService {
           originalPage.content = patchedPage.content;
           originalPage.location = patchedPage.location;
 
-          // 랜덤 이미지 키 생성
-          const key = `signature/${this.s3Service.generateRandomImageKey('signaturePage.png')}`;
+          // base64로 들어온 이미지면 디코딩해서 새롭게 저장 / 아니면 그대로 두기
+          if(patchedPage.image.startsWith("https://hereyou-cdn.kaaang.dev/signature/")){
+            // 이미지 그대로 들어왔다면 이미지를 수정할 필요 없음
+            console.log(patchedPage._id,": original Image - 수정할 필요 없음");
 
-          // Base64 이미지 업로드
-          const uploadedImage = await this.s3Service.putObjectFromBase64(
-            key, patchedPage.image
-          );
+          }
+          else{
+            // 새로운 이미지가 인코딩돼서 들어왔다면 해당 이미지를 새로 저장해야
+            console.log(patchedPage._id,": patched Image - 이미지키 수정 진행");
 
-          // 이미지 키 저장
-          console.log(uploadedImage);
-          originalPage.image = key;
+            // 랜덤 이미지 키 생성
+            const key = `signature/${this.s3Service.generateRandomImageKey('signaturePage.png')}`;
+
+            // Base64 이미지 업로드
+            const uploadedImage = await this.s3Service.putObjectFromBase64(
+              key, patchedPage.image
+            );
+
+            // 이미지 키 저장
+            originalPage.image = key;
+          }
 
         }
         await SignaturePageEntity.save(originalPage);
