@@ -2,15 +2,15 @@
 
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { SignatureService } from './signature.service';
-import { CreateSignatureDto } from './dto/create-signature.dto';
+import { CreateSignatureDto } from './dto/signature/create-signature.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { ResponseDto } from '../response/response.dto';
-import { HomeSignatureDto } from './dto/home-signature.dto';
-import { DetailSignatureDto } from './dto/detail-signature.dto';
+import { HomeSignatureDto } from './dto/signature/home-signature.dto';
+import { DetailSignatureDto } from './dto/signature/detail-signature.dto';
 import { SignatureEntity } from './domain/signature.entity';
 import { SignatureLikeEntity } from './domain/signature.like.entity';
-import { LikeSignatureDto } from './dto/like-signature.dto';
-import { GetLikeListDto } from './dto/get-like-list.dto';
+import { LikeSignatureDto } from './dto/like/like-signature.dto';
+import { GetLikeListDto } from './dto/like/get-like-list.dto';
 import { UserGuard } from '../user/user.guard';
 import { Request } from 'express';
 

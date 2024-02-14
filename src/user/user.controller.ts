@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { IUserProfile } from './user.dto';
 import { UserGuard } from './user.guard';
@@ -28,6 +37,12 @@ export class UserController {
     return this.userService.updateUserProfile(req.user.id, body);
   }
 
+  @Get('/profile')
+  @UseGuards(UserGuard)
+  GetUserProfile(@Req() req: Request) {
+    return this.userService.GetUserProfile(req.user.id);
+  }
+
   @Post('/profile/nickname')
   @UseGuards(UserGuard)
   UpdateNickname(@Body('nickname') nickname: string, @Req() req: Request) {
@@ -53,5 +68,11 @@ export class UserController {
   @UseGuards(UserGuard)
   DeleteAccount(@Req() req: Request) {
     return this.userService.deleteAccount(req.user.id);
+  }
+
+  @Get('/diaries')
+  @UseGuards(UserGuard)
+  ListDiaries(@Req() req: Request, @Query('cursor') cursor: string) {
+    return this.userService.listDiaries(req.user.id, cursor);
   }
 }
