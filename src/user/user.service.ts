@@ -9,10 +9,14 @@ import { ResponseDto } from '../response/response.dto';
 import { ResponseCode } from '../response/response-code.enum';
 import { UserFollowingEntity } from './user.following.entity';
 import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
+import * as md5 from 'md5';
+import { S3UtilService } from '../utils/S3.service';
 
 @Injectable()
 export class UserService {
   private readonly logger: Logger = new Logger(UserService.name);
+
+  constructor(private s3Service: S3UtilService) {}
 
   private _hashPassword(password: string): string {
     return bcrypt.hashSync(password, 10);
@@ -82,6 +86,12 @@ export class UserService {
     );
 
     return await response.json();
+  }
+
+  private async downloadImage(url: string) {
+    const response = await fetch(url);
+
+    return await response.buffer();
   }
 
   async Login(email: string, password: string) {
@@ -156,7 +166,35 @@ export class UserService {
       userEntity.password = '';
       userEntity.nickname = userProfile?.nickname;
 
-      // Todo: 프로필 이미지 저장하기
+      if (userProfile?.profile_image_url) {
+        const urlHash = md5(userProfile.profile_image_url);
+        const extension = userProfile.profile_image_url.split('.').pop();
+        const profileFilename = `profile/kakao_${urlHash}.${extension}`;
+
+        if (
+          !userEntity.profileImage ||
+          userEntity.profileImage.imageKey !== profileFilename
+        ) {
+          const profileImageEntity = new UserProfileImageEntity();
+          profileImageEntity.imageKey = urlHash;
+
+          const profileImageFile = await this.downloadImage(
+            userProfile.profile_image_url,
+          );
+          await this.s3Service.putObject(profileFilename, profileImageFile);
+
+          profileImageEntity.imageKey = profileFilename;
+          if (userEntity.profileImage) {
+            userEntity.profileImage = null;
+            await userEntity.save();
+          }
+
+          await profileImageEntity.save();
+
+          userEntity.profileImage = profileImageEntity;
+        }
+      }
+
       await userEntity.save();
 
       return {
@@ -203,7 +241,32 @@ export class UserService {
       userEntity.password = '';
       userEntity.nickname = googleInfo.name;
 
-      // Todo: 프로필 이미지 저장하기
+      if (googleInfo.picture) {
+        const urlHash = md5(googleInfo.picture);
+        const profileFilename = `profile/google_${urlHash}`;
+
+        if (
+          !userEntity.profileImage ||
+          userEntity.profileImage.imageKey !== profileFilename
+        ) {
+          const profileImageEntity = new UserProfileImageEntity();
+          profileImageEntity.imageKey = urlHash;
+
+          const profileImageFile = await this.downloadImage(googleInfo.picture);
+          await this.s3Service.putObject(profileFilename, profileImageFile);
+
+          profileImageEntity.imageKey = profileFilename;
+          if (userEntity.profileImage) {
+            userEntity.profileImage = null;
+            await userEntity.save();
+          }
+
+          await profileImageEntity.save();
+
+          userEntity.profileImage = profileImageEntity;
+        }
+      }
+
       await userEntity.save();
 
       return {
