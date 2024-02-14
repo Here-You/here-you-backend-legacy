@@ -9,7 +9,7 @@ import { S3UtilService} from "../utils/S3.service";
 import { GetMemberListDto} from "./dto/get-member-list.dto";
 import {UserService} from "../user/user.service";
 import {GetRuleListDto, MemberPairDto} from "./dto/get-rule-list.dto";
-import { LessThan, Like, MoreThan } from 'typeorm';
+import {Equal, LessThan, Like, MoreThan, Not} from 'typeorm';
 import {GetSearchMemberDto} from "./dto/get-search-member.dto";
 import {UpdateRuleDto} from "./dto/update-rule.dto";
 import {CursorPageOptionsDto} from "../mate/cursor-page/cursor-page-option.dto";
@@ -82,12 +82,6 @@ export class RuleService {
   // [2] 여행 규칙 상세 페이지 조회 (게시글)
   async getDetail(userId: number, ruleId: number): Promise<DetailRuleDto> {
     const dto = new DetailRuleDto();
-    const main: RuleMainEntity = await RuleMainEntity.findRuleById(ruleId);
-    const subs: RuleSubEntity[] = await RuleSubEntity.findSubById(ruleId);
-    const invitations: RuleInvitationEntity[] = await RuleInvitationEntity.find({
-      where: {rule: {id: ruleId}},
-      relations: {member: {profileImage: true}}
-    });
 
     try {
       // 검증1) 사용자가 존재하지 않는 경우
@@ -97,21 +91,29 @@ export class RuleService {
       if (!user) throw new Error('사용자를 찾을 수 없습니다');
 
       // 검증2) 규칙이 존재하지 않는 경우
-      const rule = await RuleMainEntity.findOne({
+      const ruleMain = await RuleMainEntity.findOne({
         where: {id: ruleId},
         relations: {rules: true, invitations: {member: true}}
       })
-      if (!rule) throw new Error('규칙을 찾을 수 없습니다');
+      if (!ruleMain) throw new Error('규칙을 찾을 수 없습니다');
 
       // 검증3) 규칙에 참여하는 사용자인지 체크
       const invitation = await RuleInvitationEntity.findOne({
         where: {member: {id: userId}, rule: {id: ruleId}},
       })
 
+      const subs: RuleSubEntity[] = await RuleSubEntity.find({
+        where: {main: {id: ruleId}}
+      })
+      const invitations: RuleInvitationEntity[] = await RuleInvitationEntity.find({
+        where: {rule: {id: ruleId}},
+        relations: {member: {profileImage: true}}
+      });
+
       if(!!invitation) {
         // -1) 제목
         dto.id = ruleId;
-        dto.mainTitle = main.mainTitle;
+        dto.mainTitle = ruleMain.mainTitle;
 
         // -2) 규칙
         const rulePairs = await Promise.all(subs.map(async (sub): Promise<RulePairDto> => {
@@ -122,9 +124,9 @@ export class RuleService {
 
           return rulePair;
         }));
-        console.log('Before sorting : ', rulePairs);
+        console.log('Before sorting rulePairs : ', rulePairs);
         rulePairs.sort((a, b) => a.id - b.id);
-        console.log('After sorting : ', rulePairs);
+        console.log('After sorting rulePairs : ', rulePairs);
         dto.rulePairs = rulePairs;
 
         // -3) 멤버 정보
@@ -435,12 +437,14 @@ export class RuleService {
         take: cursorPageOptionsDto.take,
         where: [
           {
-            id: cursorId ? LessThan(cursorId) : null,
+            following : {id: cursorId ? LessThan(cursorId) : null},
             name: Like(`%${searchTerm}%`),
+            id: Not(Equal(userId))
           },
           {
-            id: cursorId ? LessThan(cursorId) : null,
+            following : {id: cursorId ? LessThan(cursorId) : null},
             nickname: Like(`%${searchTerm}%`),
+            id: Not(Equal(userId))
           }
         ],
         relations: {profileImage: true, ruleParticipate: {rule: true}},
