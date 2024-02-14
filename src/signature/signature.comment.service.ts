@@ -137,6 +137,15 @@ export class SignatureCommentService{
         getCommentDto.is_edited = true;
       }
 
+      // 로그인한 사용자가 시그니처 작성하면 can_delete = true
+      let can_delete = false;
+      if(comment.signature.user){ // 시그니처 작성자가 존재할 경우
+        if(comment.signature.user.id == userId){  // 로그인한 사용자가 시그니처 작성자일 경우 댓글 삭제 가능
+          can_delete = true;
+        }
+      }
+      getCommentDto.can_delete = can_delete;
+
       return getCommentDto;
 
     }));
