@@ -268,34 +268,53 @@ export class RuleService {
   }
 
   // [4] 여행 규칙 멤버 리스트 조회
-  async getMemberList(ruleId: number): Promise<GetMemberListDto[]> {
+  async getMemberList(userId: number, ruleId: number): Promise<GetMemberListDto[]> {
     try {
-      const invitationsList: RuleInvitationEntity[] = await RuleInvitationEntity.find({
-        where: {rule: {id: ruleId}},
-        relations: {member: true}
+      // 검증1) 사용자가 존재하지 않는 경우
+      const user = await UserEntity.findOne({
+        where: {id: userId},
       });
+      if (!user) throw new Error('사용자를 찾을 수 없습니다');
 
-      const membersList: GetMemberListDto[] = await Promise.all(invitationsList.map(async (invitation): Promise<GetMemberListDto> => {
-        const memberEntity: UserEntity = invitation.member;
-        const memberDto: GetMemberListDto = new GetMemberListDto();
+      // 검증2) 규칙이 존재하지 않는 경우
+      const ruleMain = await RuleMainEntity.findOne({
+        where: {id: ruleId},
+      });
+      if (!ruleMain) throw new Error('규칙을 찾을 수 없습니다');
 
-        console.log('memberEntity : ', memberEntity);
-        memberDto.id = memberEntity.id;
-        memberDto.name = memberEntity.nickname;
-        memberDto.email = memberEntity.email;
-        memberDto.introduction = memberEntity.introduction;
+      // 검증3) 규칙에 참여하는 사용자가 아닌 경우
+      const invitation = await RuleInvitationEntity.findOne({
+        where: {member: {id: userId}, rule: {id: ruleId}},
+      })
 
-        // 사용자 프로필 이미지
-        const image = await this.userService.getProfileImage(memberEntity.id);
-        if (image == null) memberDto.image = null;
-        else {
-          const userImageKey = image.imageKey;
-          memberDto.image = await this.s3Service.getImageUrl(userImageKey);
-        }
-        return memberDto;
-      }));
-      const sortedList = membersList.sort((a, b) => a.id - b.id);
-      return sortedList;
+      if(!!invitation) {
+        const invitationsList: RuleInvitationEntity[] = await RuleInvitationEntity.find({
+          where: {rule: {id: ruleId}},
+          relations: {member: true}
+        });
+
+        const membersList: GetMemberListDto[] = await Promise.all(invitationsList.map(async (invitation): Promise<GetMemberListDto> => {
+          const memberEntity: UserEntity = invitation.member;
+          const memberDto: GetMemberListDto = new GetMemberListDto();
+
+          console.log('memberEntity : ', memberEntity);
+          memberDto.id = memberEntity.id;
+          memberDto.name = memberEntity.nickname;
+          memberDto.email = memberEntity.email;
+          memberDto.introduction = memberEntity.introduction;
+
+          // 사용자 프로필 이미지
+          const image = await this.userService.getProfileImage(memberEntity.id);
+          if (image == null) memberDto.image = null;
+          else {
+            const userImageKey = image.imageKey;
+            memberDto.image = await this.s3Service.getImageUrl(userImageKey);
+          }
+          return memberDto;
+        }));
+        const sortedList = membersList.sort((a, b) => a.id - b.id);
+        return sortedList;
+      } else throw new Error('사용자가 참여하는 규칙이 아닙니다');
     } catch (e) {
       throw new Error(e.message);
     }
