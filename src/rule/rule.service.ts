@@ -404,10 +404,17 @@ export class RuleService {
   async getSearchMemberAtCreate(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, searchTerm: string): Promise<CursorPageDto<GetSearchMemberAtCreateDto>> {
 
     try {
-      let cursorId: number = 0;
+      // 검증1) 사용자가 존재하지 않는 경우
+      const user = await UserEntity.findOne({
+        where: {id: userId},
+      });
+      if (!user) throw new Error('사용자를 찾을 수 없습니다');
 
+      // (1) cursorId 설정
+      let cursorId: number = 0;
       console.log('cursorId : ', cursorPageOptionsDto);
-      // (1) 처음 요청인 경우 cursorId 설정
+
+      // -1) 처음 요청인 경우
       if (cursorPageOptionsDto.cursorId == 0) {
         const newUser = await UserEntity.find({
           order: {
@@ -419,6 +426,7 @@ export class RuleService {
 
         console.log('cursorPageOptionsDto.cursorId == 0 로 인식');
         console.log('cursor: ', cursorId);
+        // -2) 처음 요청이 아닌 경우
       } else {
         cursorId = cursorPageOptionsDto.cursorId;
         console.log('cursorPageOptionsDto.cursorId != 0 로 인식')
@@ -427,9 +435,9 @@ export class RuleService {
 
       // (2) 데이터 조회
       // 검색 결과에 해당하는 값 찾기
+      // [검색 조건]
       // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
-      // { id: Not(Equal(userId))}  // 사용자 본인은 검색결과에 뜨지 않도록
-
+      // 본인이 팔로우 하는 사용자 중에서만 검색이 가능하도록 (본인은 자동으로 검색 결과에서 제외)
 
       console.log('검색 값: ', searchTerm);
 
@@ -438,13 +446,11 @@ export class RuleService {
         where: [
           {
             following : {id: cursorId ? LessThan(cursorId) : null},
-            name: Like(`%${searchTerm}%`),
-            id: Not(Equal(userId))
+            name: Like(`%${searchTerm}%`)
           },
           {
             following : {id: cursorId ? LessThan(cursorId) : null},
-            nickname: Like(`%${searchTerm}%`),
-            id: Not(Equal(userId))
+            nickname: Like(`%${searchTerm}%`)
           }
         ],
         relations: {profileImage: true, ruleParticipate: {rule: true}},
