@@ -132,7 +132,7 @@ export class RuleService {
           const detailMember = new DetailMemberDto;
           const memberEntity = invitation.member;
           detailMember.id = memberEntity.id;
-          detailMember.name = memberEntity.name;
+          detailMember.name = memberEntity.nickname;
 
           // 사용자 프로필 이미지
           const image = memberEntity.profileImage;
@@ -200,7 +200,7 @@ export class RuleService {
 
         getCommentDto.id = comment.id;
         getCommentDto.writerId = comment.user.id;
-        getCommentDto.name = comment.user.name;
+        getCommentDto.name = comment.user.nickname;
         getCommentDto.content = comment.content;
         getCommentDto.updated = comment.updated;
 
@@ -281,7 +281,7 @@ export class RuleService {
 
         console.log('memberEntity : ', memberEntity);
         memberDto.id = memberEntity.id;
-        memberDto.name = memberEntity.name;
+        memberDto.name = memberEntity.nickname;
         memberDto.email = memberEntity.email;
         memberDto.introduction = memberEntity.introduction;
 
@@ -363,7 +363,7 @@ export class RuleService {
 
       console.log('user.id : ', user.id);
       memberPair.id = user.id;
-      memberPair.name = user.name;
+      memberPair.name = user.nickname;
 
       // 사용자 프로필 이미지
       const image = user.profileImage;
@@ -434,7 +434,7 @@ export class RuleService {
         const dtoAtCreate: GetSearchMemberAtCreateDto = new GetSearchMemberAtCreateDto();
 
         dtoAtCreate.id = user.id;
-        dtoAtCreate.name = user.name;
+        dtoAtCreate.name = user.nickname;
         dtoAtCreate.email = user.email;
         dtoAtCreate.introduction = user.introduction;
 
@@ -517,7 +517,7 @@ export class RuleService {
         const dto: GetSearchMemberDto = new GetSearchMemberDto();
 
         dto.id = user.id;
-        dto.name = user.name;
+        dto.name = user.nickname;
         dto.email = user.email;
         dto.introduction = user.introduction;
 
