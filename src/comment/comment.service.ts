@@ -3,6 +3,8 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { CommentEntity } from './domain/comment.entity';
 import {RuleMainEntity} from "../rule/domain/rule.main.entity";
 import {UserEntity} from "../user/user.entity";
+import { NotificationEntity } from '../notification/notification.entity';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class CommentService {
@@ -13,7 +15,7 @@ export class CommentService {
     const comment = new CommentEntity();
 
     const user = await UserEntity.findOneOrFail({ where: { id: userId } });
-    const rule = await RuleMainEntity.findOneOrFail({ where: { id: ruleId } });
+    const rule = await RuleMainEntity.findOneOrFail({ where: { id: ruleId }, relations: { invitations: { member: true } } });
 
     if(!user || !rule){
       throw new Error('Data not found');
@@ -25,6 +27,22 @@ export class CommentService {
       comment.rule = rule;
       comment.content = dto.content;
       await comment.save();
+
+      // 댓글 알림
+      for (const invitation of rule.invitations) {
+        const receiver = invitation.member;
+        if (receiver.id === user.id) {
+          continue;
+        }
+
+        const notification = new NotificationEntity();
+        notification.notificationReceiver = invitation.member;
+        notification.notificationType = 'COMMENT';
+        notification.notificationContent =
+          NotificationService.createNotificationContent('LIKE', user.nickname);
+        notification.notificationItemId = rule.id;
+        await notification.save();
+      }
     }
     return comment.id;
   }
