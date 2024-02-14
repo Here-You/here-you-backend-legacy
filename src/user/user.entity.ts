@@ -55,7 +55,9 @@ export class UserEntity extends BaseEntity {
   @Column()
   oauthToken: string;
 
-  @OneToOne(() => UserProfileImageEntity, (profileImage) => profileImage.user)
+  @OneToOne(() => UserProfileImageEntity, (profileImage) => profileImage.user, {
+    cascade: true,
+  })
   profileImage: UserProfileImageEntity;
 
   @OneToMany(() => UserFollowingEntity, (following) => following.user)
