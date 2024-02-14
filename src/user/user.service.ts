@@ -76,6 +76,19 @@ export class UserService {
     return await response.json();
   }
 
+  private async getGoogleInformation(accessToken: string) {
+    const response = await fetch(
+      'https://www.googleapis.com/oauth2/v3/userinfo',
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    return await response.json();
+  }
+
   async Login(email: string, password: string) {
     console.log(email, password);
     const user = await UserEntity.findOne({
@@ -161,7 +174,52 @@ export class UserService {
         register_required: isNewUser,
       };
     } else if (type === 'GOOGLE') {
-      // Todo
+      // 사용자 정보 받기
+      const googleInfo = await this.getKakaoInformation(code);
+
+      const userId = googleInfo.sub;
+      const userEmail = googleInfo.email;
+
+      // 사용자 정보로 DB 조회
+      let userEntity = await UserEntity.findOne({
+        where: {
+          oauthType: 'GOOGLE',
+          oauthToken: userId.toString(),
+        },
+        relations: {
+          profileImage: true,
+        },
+      });
+
+      let isNewUser = false;
+      if (!userEntity) {
+        isNewUser = true;
+        userEntity = new UserEntity();
+        userEntity.oauthType = 'GOOGLE';
+        userEntity.oauthToken = userId.toString();
+
+        userEntity.introduction = '';
+        userEntity.visibility = 'PUBLIC';
+        userEntity.name = '';
+        userEntity.age = 0;
+      }
+
+      userEntity.email = userEmail;
+      userEntity.password = '';
+      userEntity.nickname = googleInfo.name;
+
+      // Todo: 프로필 이미지 저장하기
+      await userEntity.save();
+
+      return {
+        status: 200,
+        success: true,
+        message: '로그인 성공',
+        token: this._generateToken({
+          id: userEntity.id,
+        }),
+        register_required: isNewUser,
+      };
     } else {
       return new ResponseDto(
         ResponseCode.INTERNAL_SERVEr_ERROR,
