@@ -175,7 +175,7 @@ export class UserService {
       };
     } else if (type === 'GOOGLE') {
       // 사용자 정보 받기
-      const googleInfo = await this.getKakaoInformation(code);
+      const googleInfo = await this.getGoogleInformation(code);
 
       const userId = googleInfo.sub;
       const userEmail = googleInfo.email;
