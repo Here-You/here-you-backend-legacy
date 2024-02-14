@@ -498,4 +498,39 @@ export class UserService {
       },
     );
   }
+
+  async GetUserProfile(userId: number) {
+    const user = await UserEntity.findOne({
+      where: {
+        id: userId,
+      },
+      relations: {
+        profileImage: true,
+        follower: true,
+        following: true,
+      },
+    });
+
+    const profileImage = user.profileImage
+      ? await this.s3Service.getImageUrl(user.profileImage.imageKey)
+      : null;
+
+    return new ResponseDto(
+      ResponseCode.GET_USER_PROFILE_SUCCESS,
+      true,
+      '유저 프로필 조회 성공',
+      {
+        user: {
+          id: user.id,
+          email: user.email,
+          nickname: user.nickname,
+          introduction: user.introduction,
+          visibility: user.visibility,
+          profileImage: profileImage,
+          followers: user.follower.length,
+          followings: user.following.length,
+        },
+      },
+    );
+  }
 }
