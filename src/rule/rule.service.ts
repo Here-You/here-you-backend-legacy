@@ -18,6 +18,7 @@ import {GetCommentDto } from "./dto/get-comment.dto";
 import {CursorPageDto} from "./dto/cursor-page.dto";
 import {CursorPageMetaDto} from "./dto/cursor-page.meta.dto";
 import {GetSearchMemberAtCreateDto} from "./dto/get-search-member-at-create.dto";
+import {UserFollowingEntity} from "../user/user.following.entity";
 
 @Injectable()
 export class RuleService {
@@ -114,6 +115,7 @@ export class RuleService {
         // -1) 제목
         dto.id = ruleId;
         dto.mainTitle = ruleMain.mainTitle;
+        console.log('dto.id : ', dto.id);
 
         // -2) 규칙
         const rulePairs = await Promise.all(subs.map(async (sub): Promise<RulePairDto> => {
@@ -121,13 +123,11 @@ export class RuleService {
           rulePair.id = sub.id;
           rulePair.ruleTitle = sub.ruleTitle;
           rulePair.ruleDetail = sub.ruleDetail;
+          console.log('rulePair.id', rulePair.id);
 
           return rulePair;
         }));
-        console.log('Before sorting rulePairs : ', rulePairs);
-        rulePairs.sort((a, b) => a.id - b.id);
-        console.log('After sorting rulePairs : ', rulePairs);
-        dto.rulePairs = rulePairs;
+        dto.rulePairs = rulePairs.sort((a, b) => a.id - b.id);
 
         // -3) 멤버 정보
         const detailMembers = await Promise.all(invitations.map(async (invitation): Promise<DetailMemberDto> => {
@@ -135,6 +135,7 @@ export class RuleService {
           const memberEntity = invitation.member;
           detailMember.id = memberEntity.id;
           detailMember.name = memberEntity.nickname;
+          console.log('detailMember.id : ', detailMember.id);
 
           // 사용자 프로필 이미지
           const image = memberEntity.profileImage;
@@ -143,10 +144,10 @@ export class RuleService {
             const userImageKey = image.imageKey;
             detailMember.image = await this.s3Service.getImageUrl(userImageKey);
           }
+
           return detailMember;
         }));
-        detailMembers.sort((a, b) => a.id - b.id);
-        dto.detailMembers = detailMembers;
+        dto.detailMembers = detailMembers.sort((a, b) => a.id - b.id);
 
         return dto;
       } else {
@@ -346,28 +347,33 @@ export class RuleService {
       console.log('현재 로그인한 사용자 : ', user.id);
       if (!user) throw new Error('사용자를 찾을 수 없습니다');
 
-      const invitationEntities = user.ruleParticipate;
-      // 수정한 날짜 updated 내림차순으로 정렬
-      invitationEntities.sort((a, b) => new Date(b.rule.updated).getTime() - new Date(a.rule.updated).getTime());
-      console.log('invitationEntities 출력 : ', invitationEntities);
+      const invitationEntities = await RuleInvitationEntity.find({
+        where: {member: {id: userId}},
+        relations: {
+          rule: {
+            invitations: true
+          }
+        }
+      });
 
       if (!!invitationEntities) {
-        const ruleMains = await Promise.all(invitationEntities.map(async (invitation: RuleInvitationEntity): Promise<GetRuleListDto> => {
-          console.log('참여하는 규칙 ID : ', invitation.rule.id);
-          const ruleMain: RuleMainEntity = invitation.rule;
+        const getRuleListDtos = await Promise.all(invitationEntities.map(async (invitation: RuleInvitationEntity): Promise<GetRuleListDto> => {
           const ruleListDto: GetRuleListDto = new GetRuleListDto;
-
-          console.log('ruleMain.id : ', ruleMain.id);
+          const ruleId = invitation.rule.id;
+          const ruleMain = invitation.rule;
 
           ruleListDto.id = ruleMain.id;
           ruleListDto.title = ruleMain.mainTitle;
           ruleListDto.updated = ruleMain.updated;
           ruleListDto.memberCnt = ruleMain.invitations.length;
-          ruleListDto.memberPairs = await this.getMemberPairs(ruleMain);
+          ruleListDto.memberPairs = await this.getMemberPairs(ruleId);
 
           return ruleListDto;
         }));
-        return ruleMains;
+
+        const sortedGetRuleListDtos = getRuleListDtos.sort((a, b) => new Date(b.updated).getTime() - new Date(a.updated).getTime());
+
+        return sortedGetRuleListDtos;
       }
     } catch (e) {
       console.log('참여하는 여행 규칙이 없습니다');
@@ -375,8 +381,15 @@ export class RuleService {
     }
   }
 
-  async getMemberPairs(ruleMain: RuleMainEntity): Promise<MemberPairDto[]> {
-    const invitations: RuleInvitationEntity[] = ruleMain.invitations;
+  async getMemberPairs(ruleId: number): Promise<MemberPairDto[]> {
+    const invitations = await RuleInvitationEntity.find({
+      where: {rule: {id: ruleId}},
+      relations: {
+        member: {
+          profileImage: true
+        }
+      }
+    })
 
     const result: MemberPairDto[] = await Promise.all(invitations.map(async (invitation): Promise<MemberPairDto> => {
       const memberPair = new MemberPairDto;
@@ -436,6 +449,7 @@ export class RuleService {
       // (2) 데이터 조회
       // 검색 결과에 해당하는 값 찾기
       // [검색 조건]
+      // 검색 기준 UserEntity : 검색 결과로 나와야 하는 사용자 (searchTerm 에 해당하는)
       // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
       // 본인이 팔로우 하는 사용자 중에서만 검색이 가능하도록 (본인은 자동으로 검색 결과에서 제외)
 
@@ -445,12 +459,14 @@ export class RuleService {
         take: cursorPageOptionsDto.take,
         where: [
           {
-            following : {id: cursorId ? LessThan(cursorId) : null},
-            name: Like(`%${searchTerm}%`)
+            name: Like(`%${searchTerm}%`),
+            follower: {id: userId},
+            id: cursorId ? LessThan(cursorId) : null
           },
           {
-            following : {id: cursorId ? LessThan(cursorId) : null},
-            nickname: Like(`%${searchTerm}%`)
+            nickname: Like(`%${searchTerm}%`),
+            follower: {id: userId},
+            id: cursorId ? LessThan(cursorId) : null
           }
         ],
         relations: {profileImage: true, ruleParticipate: {rule: true}},
