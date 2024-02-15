@@ -55,6 +55,9 @@ export class UserEntity extends BaseEntity {
   @Column()
   oauthToken: string;
 
+  @Column({ default: false })
+  isQuit: boolean;
+
   @OneToOne(() => UserProfileImageEntity, (profileImage) => profileImage.user, {
     cascade: true,
   })
@@ -84,7 +87,10 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => JourneyEntity, (journey) => journey.user)
   journeys: JourneyEntity[];
 
-  @OneToMany(() => SignatureCommentEntity, (signatureComment) => signatureComment.user)
+  @OneToMany(
+    () => SignatureCommentEntity,
+    (signatureComment) => signatureComment.user,
+  )
   signatureComments: SignatureCommentEntity[];
 
   @CreateDateColumn()

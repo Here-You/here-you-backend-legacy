@@ -497,7 +497,17 @@ export class UserService {
         },
       });
 
-      await user.softRemove();
+      user.name = '탈퇴한 사용자';
+      user.email = '';
+      user.password = '';
+      user.nickname = '탈퇴한 사용자';
+      user.introduction = '탈퇴한 사용자입니다.';
+      user.age = 0;
+      user.gender = 'UNKNOWN';
+      user.profileImage = null;
+      user.oauthToken = '';
+      user.isQuit = true;
+      await user.save();
 
       return new ResponseDto(
         ResponseCode.DELETE_ACCOUNT_SUCCESS,
