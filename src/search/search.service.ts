@@ -121,7 +121,7 @@ export class SearchService{
     signatureCover._id = signature.id;
     signatureCover.title = signature.title;
     signatureCover.liked = signature.liked;
-    signatureCover.userName = signature.user.name;
+    signatureCover.userName = signature.user.nickname;
 
     // 시그니처 썸네일 이미지 가져오기
     signatureCover.date = await SignatureEntity.formatDateString(signature.created);

@@ -3,6 +3,5 @@
 import { SignatureCoverDto } from './signature-cover.dto';
 
 export class GetSearchMainDto{
-  hot: SignatureCoverDto[];
-  new: SignatureCoverDto[];
+  covers: SignatureCoverDto[];
 }
