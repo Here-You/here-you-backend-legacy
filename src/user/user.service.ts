@@ -166,7 +166,30 @@ export class UserService {
 
       userEntity.email = userEmail;
       userEntity.password = '';
-      userEntity.nickname = userProfile?.nickname;
+
+      if (userEntity.nickname !== userProfile?.nickname) {
+        // 중복 닉네임 확인
+        const existingNickname = await UserEntity.count({
+          where: {
+            nickname: userProfile?.nickname,
+          },
+        });
+        if (existingNickname > 0) {
+          // 난수 추가
+          const availableChars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+          const randomStringLength = 5;
+          let randomString = '';
+          for (let i = 0; i < randomStringLength; i++) {
+            randomString += availableChars.charAt(
+              Math.floor(Math.random() * availableChars.length),
+            );
+          }
+
+          userEntity.nickname = `${userProfile?.nickname}_${randomString}`;
+        } else {
+          userEntity.nickname = userProfile?.nickname;
+        }
+      }
 
       if (userProfile?.profile_image_url) {
         const urlHash = md5(userProfile.profile_image_url);
@@ -241,7 +264,30 @@ export class UserService {
 
       userEntity.email = userEmail;
       userEntity.password = '';
-      userEntity.nickname = googleInfo.name;
+
+      if (userEntity.nickname !== googleInfo.name) {
+        // 중복 닉네임 확인
+        const existingNickname = await UserEntity.count({
+          where: {
+            nickname: googleInfo.name,
+          },
+        });
+        if (existingNickname > 0) {
+          // 난수 추가
+          const availableChars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+          const randomStringLength = 5;
+          let randomString = '';
+          for (let i = 0; i < randomStringLength; i++) {
+            randomString += availableChars.charAt(
+              Math.floor(Math.random() * availableChars.length),
+            );
+          }
+
+          userEntity.nickname = `${googleInfo.name}_${randomString}`;
+        } else {
+          userEntity.nickname = googleInfo.name;
+        }
+      }
 
       if (googleInfo.picture) {
         const urlHash = md5(googleInfo.picture);
