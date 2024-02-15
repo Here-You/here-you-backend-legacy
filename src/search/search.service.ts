@@ -48,7 +48,7 @@ export class SearchService{
       /********************************************************
        내 메이트 최신 시그니처 로직:
         [1] 내가 팔로우하고 있는 메이트 목록 가져오기
-        [2] 각 메이트가 작성한 시그니처 중 일주일 안으로 작성된 것만 가져오기
+        [2] 각 메이트가 작성한 시그니처 중 20일 안으로 작성된 것 가져오기
         [3] 최신순으로 정렬해서 20개만 리턴
       ********************************************************/
 
@@ -121,7 +121,7 @@ export class SearchService{
     signatureCover._id = signature.id;
     signatureCover.title = signature.title;
     signatureCover.liked = signature.liked;
-    signatureCover.userName = signature.user.name;
+    signatureCover.userName = signature.user.nickname;
 
     // 시그니처 썸네일 이미지 가져오기
     signatureCover.date = await SignatureEntity.formatDateString(signature.created);

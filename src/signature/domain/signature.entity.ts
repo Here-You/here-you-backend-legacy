@@ -137,14 +137,14 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
   }
 
   static async findNewSignaturesByUser(userId: number) {
-    // [1] 기준이 되는 일주일 전 날짜
-    const sevenDaysAgo: Date = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
-    console.log(sevenDaysAgo);
+    // [1] 기준이 되는 20일 전 날짜
+    const twentyDaysAgo: Date = new Date();
+    twentyDaysAgo.setDate(twentyDaysAgo.getDate()-20);
+    console.log(twentyDaysAgo);
 
-    // [2] 일주일 전에 쓰인 메이트의 최신 시그니처 가져오기
+    // [2] 20일 전에 쓰인 메이트의 최신 시그니처 가져오기
     const signatures = await SignatureEntity.find({
-      where:{user:{id: userId}, created: MoreThan(sevenDaysAgo)},
+      where:{user:{id: userId}, created: MoreThan(twentyDaysAgo)},
       relations: ['user'] // user 포함
     })
     return signatures;
