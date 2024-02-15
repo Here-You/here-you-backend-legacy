@@ -101,6 +101,7 @@ export class UserService {
     const user = await UserEntity.findOne({
       where: {
         email: email.toString() ?? '',
+        isQuit: false,
       },
     });
 
@@ -145,6 +146,7 @@ export class UserService {
         where: {
           oauthType: 'KAKAO',
           oauthToken: userId.toString(),
+          isQuit: false,
         },
         relations: {
           profileImage: true,
@@ -243,6 +245,7 @@ export class UserService {
         where: {
           oauthType: 'GOOGLE',
           oauthToken: userId.toString(),
+          isQuit: false,
         },
         relations: {
           profileImage: true,
