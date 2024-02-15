@@ -419,7 +419,10 @@ export class RuleService {
     try {
       // 검증1) 사용자가 존재하지 않는 경우
       const user = await UserEntity.findOne({
-        where: {id: userId},
+        where: {
+          id: userId,
+          isQuit: false,
+        },
       });
       if (!user) throw new Error('사용자를 찾을 수 없습니다');
 
@@ -547,7 +550,10 @@ export class RuleService {
     try {
       // 검증1) 사용자가 존재하지 않는 경우
       const user = await UserEntity.findOne({
-        where: {id: userId},
+        where: {
+          id: userId,
+          isQuit: false,
+        },
       });
       if (!user) throw new Error('사용자를 찾을 수 없습니다');
       // 검증2) 규칙이 존재하지 않는 경우
