@@ -545,9 +545,29 @@ export class RuleService {
   async getSearchMemberAtUpdate(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, ruleId: number, searchTerm: string): Promise<CursorPageDto<GetSearchMemberDto>> {
 
     try {
-      let cursorId: number = 0;
+      // 검증1) 사용자가 존재하지 않는 경우
+      const user = await UserEntity.findOne({
+        where: {id: userId},
+      });
+      if (!user) throw new Error('사용자를 찾을 수 없습니다');
+      // 검증2) 규칙이 존재하지 않는 경우
+      const rule = await RuleMainEntity.findOne({
+        where: {id: ruleId},
+        relations: {rules: true, invitations: {member: true}}
+      })
+      if (!rule) throw new Error('규칙을 찾을 수 없습니다');
+      // 검증3) 규칙에 참여하는 사용자인지 체크
+      const invitation = await RuleInvitationEntity.findOne({
+        where: {member: {id: userId}, rule: {id: ruleId}},
+      })
 
-      // (1) 처음 요청인 경우 cursorId 설정
+      if(!invitation) throw new Error('규칙에 참여하지 않는 사용자 입니다');
+
+      // (1) cursorId 설정
+      let cursorId: number = 0;
+      console.log('cursorPageOptionsDto : ', cursorPageOptionsDto);
+
+      // -1) 처음 요청인 경우
       if (cursorPageOptionsDto.cursorId == 0) {
         const newUser = await UserEntity.find({
           order: {
@@ -555,54 +575,83 @@ export class RuleService {
           },
           take: 1
         });
-        const cursorId = newUser[0].id + 1;
+        cursorId = newUser[0].id + 1;
 
+        console.log('cursorPageOptionsDto.cursorId == 0 로 인식');
         console.log('cursor: ', cursorId);
+        // -2) 처음 요청이 아닌 경우
       } else {
         cursorId = cursorPageOptionsDto.cursorId;
+        console.log('cursorPageOptionsDto.cursorId != 0 로 인식')
       }
+      console.log('cursor: ', cursorId);
 
       // (2) 데이터 조회
       // 검색 결과에 해당하는 값 찾기
-      // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
+      // [검색 조건]
+      // 검색 기준 UserFollowingEntity : 검색 결과로 나와야 하는 사용자 (searchTerm 에 해당하는)
+      // 해당 결과값을 nickName 에 포함하고 있는 사용자 찾기
+      // 본인이 팔로우 하는 사용자 중에서만 검색이 가능하도록 (본인은 자동으로 검색 결과에서 제외)
+
       console.log('검색 값: ', searchTerm);
-      const [resultUsers, total] = await UserEntity.findAndCount({
-        take: cursorPageOptionsDto.take,
-        where: [
-          {
-            nickname: Like(`%${searchTerm}%`),
-            follower: In([userId]),
-            id: cursorId ? LessThan(cursorId) : null
-          },
-          {
-            name: Like(`%${searchTerm}%`),
-            follower: In([userId]),
-            id: cursorId ? LessThan(cursorId) : null
-          }
-        ],
-        relations: {profileImage: true, ruleParticipate: {rule: true}},
-        order: {
-          id: "DESC" as any,
+
+      // 조건에 맞는 유저 검색해서 [] 에 담고
+      // 해당 리스트에서 UserEntity 의 id, cursorId 이용해서 가져오기
+
+      // 1번 검색 조건) searchTerm 을 name 이나 nickname 에 포함하고 있는
+      // 2번 검색 조건) 유저가 팔로우하는 유저
+      // userFollowingEntity) user: 로그인한 유저, followUser: 유저가 팔로우하는 유저
+      let resultFollowingEntities = await UserFollowingEntity.find({
+        where: {
+          user: {id: userId},
+          followUser: {nickname: Like(`%${searchTerm}%`)}
         },
+        relations: {
+          followUser: {profileImage : true, ruleParticipate: {rule: true} }
+        },
+        order: {
+          followUser: {id: 'DESC'}
+        }
       });
+      console.log('resultFollowingEntities', resultFollowingEntities);
 
-      const searchResult = await Promise.all(resultUsers.map(async (user) => {
+      const total = resultFollowingEntities.length;
+
+      // 3번 검색 조건) id 가 cursorId 보다 작은
+      // 해당 요소보다 작은 요소들만 필터링
+      for(const userFollowingEntity of resultFollowingEntities) {
+        console.log('userFollowingEntity.followUser.id : ', userFollowingEntity.followUser.id);
+      }
+
+      resultFollowingEntities = resultFollowingEntities.filter(userFollowingEntity => userFollowingEntity.followUser.id < cursorId);
+
+      // take 초기값 설정
+      console.log('cursorPageOptionsDto.take : ', cursorPageOptionsDto.take);
+      if (cursorPageOptionsDto.take == 0) {
+        cursorPageOptionsDto.take = 5;
+      }
+      const results = resultFollowingEntities.slice(0, cursorPageOptionsDto.take);
+
+      console.log('results (UserFollowingEntity[]) : ', results);
+
+      // dto 데이터 넣기
+      const searchResult = await Promise.all(results.map(async (result) => {
         const dto: GetSearchMemberDto = new GetSearchMemberDto();
+        const follower = result.followUser;
 
-        dto.id = user.id;
-        dto.name = user.nickname;
-        dto.email = user.email;
-        dto.introduction = user.introduction;
-
+        dto.id = follower.id;
+        dto.name = follower.nickname;
+        dto.email = follower.email;
+        dto.introduction = follower.introduction;
         // 이미 여행 규칙에 참여하는 멤버인지 여부
-        dto.isInvited = await this.userService.checkAlreadyMember(user.id, ruleId);
+        dto.isInvited = await this.userService.checkAlreadyMember(follower.id, ruleId);
 
         // 사용자 프로필 이미지
-        const image = user.profileImage;
+        const image = follower.profileImage;
         if (image == null) dto.image = null;
         else {
-          const userImageKey = image.imageKey;
-          dto.image = await this.s3Service.getImageUrl(userImageKey);
+          const followerImageKey = image.imageKey;
+          dto.image = await this.s3Service.getImageUrl(followerImageKey);
         }
         return dto;
       }));
