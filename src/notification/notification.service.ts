@@ -62,4 +62,24 @@ export class NotificationService {
       );
     }
   }
+
+  async countUnreadNotification(userId: number) {
+    const unreadCount = await NotificationEntity.count({
+      where: {
+        notificationReceiver: {
+          id: userId,
+        },
+        notificationRead: false,
+      },
+    });
+
+    return new ResponseDto(
+      ResponseCode.GET_NOTIFICATION_COUNT_SUCCESS,
+      true,
+      '읽지 않은 알림 개수 조회 성공',
+      {
+        unreadCount,
+      },
+    );
+  }
 }
