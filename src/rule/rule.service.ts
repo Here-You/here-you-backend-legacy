@@ -421,7 +421,6 @@ export class RuleService {
       const user = await UserEntity.findOne({
         where: {
           id: userId,
-          isQuit: true,
         },
       });
       if (!user) throw new Error('사용자를 찾을 수 없습니다');
@@ -478,9 +477,12 @@ export class RuleService {
       });
       console.log('resultFollowingEntities', resultFollowingEntities);
 
+      // 3번 검색 조건) 탈퇴 여부 확인
+      resultFollowingEntities = resultFollowingEntities.filter(userFollowingEntity => userFollowingEntity.followUser.isQuit == false);
+
       const total = resultFollowingEntities.length;
 
-      // 3번 검색 조건) id 가 cursorId 보다 작은
+      // 4번 검색 조건) id 가 cursorId 보다 작은
       // 해당 요소보다 작은 요소들만 필터링
       for(const userFollowingEntity of resultFollowingEntities) {
         console.log('userFollowingEntity.followUser.id : ', userFollowingEntity.followUser.id);
@@ -552,7 +554,6 @@ export class RuleService {
       const user = await UserEntity.findOne({
         where: {
           id: userId,
-          isQuit: true,
         },
       });
       if (!user) throw new Error('사용자를 찾을 수 없습니다');
@@ -621,9 +622,12 @@ export class RuleService {
       });
       console.log('resultFollowingEntities', resultFollowingEntities);
 
+      // 3번 검색 조건) 탈퇴 여부 확인
+      resultFollowingEntities = resultFollowingEntities.filter(userFollowingEntity => userFollowingEntity.followUser.isQuit == false);
+
       const total = resultFollowingEntities.length;
 
-      // 3번 검색 조건) id 가 cursorId 보다 작은
+      // 4번 검색 조건) id 가 cursorId 보다 작은
       // 해당 요소보다 작은 요소들만 필터링
       for(const userFollowingEntity of resultFollowingEntities) {
         console.log('userFollowingEntity.followUser.id : ', userFollowingEntity.followUser.id);
