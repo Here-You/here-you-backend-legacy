@@ -47,8 +47,7 @@ export class FollowService {
         const [resultUsers, total] = await UserEntity.findAndCount({
             take: cursorPageOptionsDto.take,
             where: [
-                {id: cursorId ? LessThan(cursorId) : null, name: Like(`%${searchTerm}%`)},
-                {id: cursorId ? LessThan(cursorId) : null, name: Like(`%${searchTerm}%`)},
+                {id: cursorId ? LessThan(cursorId) : null, nickname: Like(`%${searchTerm}%`)}
             ],
             relations: {profileImage : true, follower : true, following : true},
             order: {

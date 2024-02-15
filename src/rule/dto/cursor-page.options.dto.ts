@@ -7,13 +7,13 @@ export class CursorPageOptionsDto {
     @Type(() => String)
     @IsEnum(Order)
     @IsOptional()
-    readonly sort?: Order = Order.DESC;
+    sort?: Order = Order.DESC;
 
     @Type(() => Number)
     @IsOptional()
-    readonly take?: number = 5;
+    take?: number = 5;
 
-    @Type(() => String)
+    @Type(() => Number)
     @IsOptional()
-    readonly cursorId?: number = "" as any;
+    cursorId?: number = "" as any;
 }
