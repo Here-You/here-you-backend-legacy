@@ -20,8 +20,4 @@ export class GetSearchMemberAtCreateDto {
     @IsOptional()
     @IsString()
     image: string;
-
-    @IsOptional()
-    @IsBoolean()
-    isInvited: boolean;
 }

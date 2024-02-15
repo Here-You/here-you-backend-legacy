@@ -15,7 +15,7 @@ export class CursorPageOptionsDto {
   @IsOptional()
   readonly take?: number = 5;
 
-  @Type(() => String)
+  @Type(() => Number)
   @IsOptional()
   readonly cursorId?: number = "" as any;
 }

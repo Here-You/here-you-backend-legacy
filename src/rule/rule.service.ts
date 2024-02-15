@@ -9,10 +9,10 @@ import { S3UtilService} from "../utils/S3.service";
 import { GetMemberListDto} from "./dto/get-member-list.dto";
 import {UserService} from "../user/user.service";
 import {GetRuleListDto, MemberPairDto} from "./dto/get-rule-list.dto";
-import {Equal, LessThan, Like, MoreThan, Not} from 'typeorm';
+import {Equal, In, LessThan, Like, MoreThan, Not} from 'typeorm';
 import {GetSearchMemberDto} from "./dto/get-search-member.dto";
 import {UpdateRuleDto} from "./dto/update-rule.dto";
-import {CursorPageOptionsDto} from "../mate/cursor-page/cursor-page-option.dto";
+import {CursorPageOptionsDto} from "./dto/cursor-page.options.dto";
 import {CommentEntity} from "../comment/domain/comment.entity";
 import {GetCommentDto } from "./dto/get-comment.dto";
 import {CursorPageDto} from "./dto/cursor-page.dto";
@@ -425,7 +425,7 @@ export class RuleService {
 
       // (1) cursorId 설정
       let cursorId: number = 0;
-      console.log('cursorId : ', cursorPageOptionsDto);
+      console.log('cursorPageOptionsDto : ', cursorPageOptionsDto);
 
       // -1) 처음 요청인 경우
       if (cursorPageOptionsDto.cursorId == 0) {
@@ -435,7 +435,7 @@ export class RuleService {
           },
           take: 1
         });
-        const cursorId = newUser[0].id + 1;
+        cursorId = newUser[0].id + 1;
 
         console.log('cursorPageOptionsDto.cursorId == 0 로 인식');
         console.log('cursor: ', cursorId);
@@ -449,46 +449,66 @@ export class RuleService {
       // (2) 데이터 조회
       // 검색 결과에 해당하는 값 찾기
       // [검색 조건]
-      // 검색 기준 UserEntity : 검색 결과로 나와야 하는 사용자 (searchTerm 에 해당하는)
-      // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
+      // 검색 기준 UserFollowingEntity : 검색 결과로 나와야 하는 사용자 (searchTerm 에 해당하는)
+      // 해당 결과값을 nickName 에 포함하고 있는 사용자 찾기
       // 본인이 팔로우 하는 사용자 중에서만 검색이 가능하도록 (본인은 자동으로 검색 결과에서 제외)
 
       console.log('검색 값: ', searchTerm);
 
-      const [resultUsers, total] = await UserEntity.findAndCount({
-        take: cursorPageOptionsDto.take,
-        where: [
-          {
-            name: Like(`%${searchTerm}%`),
-            follower: {id: userId},
-            id: cursorId ? LessThan(cursorId) : null
-          },
-          {
-            nickname: Like(`%${searchTerm}%`),
-            follower: {id: userId},
-            id: cursorId ? LessThan(cursorId) : null
-          }
-        ],
-        relations: {profileImage: true, ruleParticipate: {rule: true}},
-        order: {
-          id: "DESC" as any,
+      // 조건에 맞는 유저 검색해서 [] 에 담고
+      // 해당 리스트에서 UserEntity 의 id, cursorId 이용해서 가져오기
+
+      // 1번 검색 조건) searchTerm 을 name 이나 nickname 에 포함하고 있는
+      // 2번 검색 조건) 유저가 팔로우하는 유저
+      // userFollowingEntity) user: 로그인한 유저, followUser: 유저가 팔로우하는 유저
+      let resultFollowingEntities = await UserFollowingEntity.find({
+        where: {
+          user: {id: userId},
+          followUser: {nickname: Like(`%${searchTerm}%`)}
         },
+        relations: {
+          followUser: { profileImage : true }
+        },
+        order: {
+          followUser: {id: 'DESC'}
+        }
       });
+      console.log('resultFollowingEntities', resultFollowingEntities);
 
-      const searchResult = await Promise.all(resultUsers.map(async (user) => {
+      const total = resultFollowingEntities.length;
+
+      // 3번 검색 조건) id 가 cursorId 보다 작은
+      // 해당 요소보다 작은 요소들만 필터링
+      for(const userFollowingEntity of resultFollowingEntities) {
+        console.log('userFollowingEntity.followUser.id : ', userFollowingEntity.followUser.id);
+      }
+
+      resultFollowingEntities = resultFollowingEntities.filter(userFollowingEntity => userFollowingEntity.followUser.id < cursorId);
+
+      // take 초기값 설정
+      console.log('cursorPageOptionsDto.take : ', cursorPageOptionsDto.take);
+      if (cursorPageOptionsDto.take == 0) {
+        cursorPageOptionsDto.take = 5;
+      }
+      const results = resultFollowingEntities.slice(0, cursorPageOptionsDto.take);
+
+      console.log('results (UserFollowingEntity[]) : ', results);
+
+      const searchResult = await Promise.all(results.map(async (result) => {
         const dtoAtCreate: GetSearchMemberAtCreateDto = new GetSearchMemberAtCreateDto();
+        const follower = result.followUser;
 
-        dtoAtCreate.id = user.id;
-        dtoAtCreate.name = user.nickname;
-        dtoAtCreate.email = user.email;
-        dtoAtCreate.introduction = user.introduction;
+        dtoAtCreate.id = follower.id;
+        dtoAtCreate.name = follower.nickname;
+        dtoAtCreate.email = follower.email;
+        dtoAtCreate.introduction = follower.introduction;
 
         // 사용자 프로필 이미지
-        const image = user.profileImage;
+        const image = follower.profileImage;
         if (image == null) dtoAtCreate.image = null;
         else {
-          const userImageKey = image.imageKey;
-          dtoAtCreate.image = await this.s3Service.getImageUrl(userImageKey);
+          const followerImageKey = image.imageKey;
+          dtoAtCreate.image = await this.s3Service.getImageUrl(followerImageKey);
         }
         return dtoAtCreate;
       }));
@@ -504,7 +524,7 @@ export class RuleService {
       const isLastScroll = total <= takePerScroll;
       console.log('isLastScroll : ', isLastScroll);
       console.log('total : ', total)
-      const lastDataPerScroll = resultUsers[resultUsers.length - 1];
+      const lastDataPerScroll = searchResult[searchResult.length - 1];
 
       if (isLastScroll) {
         hasNextData = false;
@@ -517,7 +537,7 @@ export class RuleService {
 
       return new CursorPageDto(searchResult, cursorPageMetaDto);
     } catch (e) {
-      throw new Error(e.message());
+      throw new Error(e.message);
     }
   }
 
@@ -549,8 +569,16 @@ export class RuleService {
       const [resultUsers, total] = await UserEntity.findAndCount({
         take: cursorPageOptionsDto.take,
         where: [
-          {id: cursorId ? LessThan(cursorId) : null, name: Like(`%${searchTerm}%`)},
-          {id: cursorId ? LessThan(cursorId) : null, nickname: Like(`%${searchTerm}%`)},
+          {
+            nickname: Like(`%${searchTerm}%`),
+            follower: In([userId]),
+            id: cursorId ? LessThan(cursorId) : null
+          },
+          {
+            name: Like(`%${searchTerm}%`),
+            follower: In([userId]),
+            id: cursorId ? LessThan(cursorId) : null
+          }
         ],
         relations: {profileImage: true, ruleParticipate: {rule: true}},
         order: {
