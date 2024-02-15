@@ -4,11 +4,9 @@ import { FollowDto } from './dto/follow.dto';
 import { UserEntity } from "../user/user.entity";
 import { UserService } from "../user/user.service";
 import { S3UtilService } from "../utils/S3.service";
-import {SignatureEntity} from "../signature/domain/signature.entity";
 import {LessThan, Like} from "typeorm";
 import {FollowSearchDto} from "./dto/follow.search.dto";
-import {CursorPageOptionsDto} from "../mate/cursor-page/cursor-page-option.dto";
-import {CommentEntity} from "../comment/domain/comment.entity";
+import {CursorPageOptionsDto} from "../rule/dto/cursor-page.options.dto";
 import {CursorPageMetaDto} from "../rule/dto/cursor-page.meta.dto";
 import {CursorPageDto} from "../rule/dto/cursor-page.dto";
 
@@ -22,83 +20,103 @@ export class FollowService {
     // [1] 메이트 검색
     async getSearchResult(cursorPageOptionsDto: CursorPageOptionsDto, userId: number, searchTerm: string) {
 
-        let cursorId: number = 0;
-
-        // (1) 처음 요청인 경우 cursorId 설정
-        if(cursorPageOptionsDto.cursorId == 0){
-            const newUser = await UserEntity.find({
-                order: {
-                    id: 'DESC'  // 가장 최근에 가입한 유저
-                },
-                take: 1
+        try {
+            // 검증1) 사용자가 존재하지 않는 경우
+            const userEntity = await UserEntity.findOne({
+                where: {id: userId},
             });
-            const cursorId = newUser[0].id + 1;
+            if (!userEntity) throw new Error('사용자를 찾을 수 없습니다');
 
-            console.log('random cursor: ', cursorId);
-        }
-        else {
-            cursorId = cursorPageOptionsDto.cursorId;
-        }
+            let cursorId: number = 0;
 
-        // (2) 데이터 조회
-        // 검색 결과에 해당하는 값 찾기
-        // 해당 결과값을 name 혹은 nickName 에 포함하고 있는 사용자 찾기
-        console.log('검색 값: ', searchTerm);
-        const [resultUsers, total] = await UserEntity.findAndCount({
-            take: cursorPageOptionsDto.take,
-            where: [
-                {id: cursorId ? LessThan(cursorId) : null, nickname: Like(`%${searchTerm}%`)}
-            ],
-            relations: {profileImage : true, follower : true, following : true},
-            order: {
-                id: "DESC" as any,
-            },
-        });
+            // (1) cursorId 설정
+            // -1) 처음 요청인 경우
+            if (cursorPageOptionsDto.cursorId == 0) {
+                const newUser = await UserEntity.find({
+                    order: {
+                        id: 'DESC'  // 가장 최근에 가입한 유저
+                    },
+                    take: 1
+                });
+                cursorId = newUser[0].id + 1;
 
-        const userEntity = await UserEntity.findExistUser(userId);
-
-        const searchResult = await Promise.all(resultUsers.map(async (user) => {
-            const followSearchDto = new FollowSearchDto();
-
-            console.log('현재의 유저 : ', user.id);
-            followSearchDto.id = user.id;
-            followSearchDto.nickName = user.nickname;
-            followSearchDto.introduction = user.introduction;
-
-            followSearchDto.followerCnt = user.follower.length;
-            followSearchDto.followingCnt = user.following.length;
-
-            // 팔로우 여부
-            followSearchDto.isFollowing = await this.userService.checkIfFollowing(userEntity, followSearchDto.id);
-
-            // 사용자 프로필 이미지
-            const image = user.profileImage;
-            if(image == null) followSearchDto.image = null;
-            else{
-                const userImageKey = image.imageKey;
-                followSearchDto.image = await this.s3Service.getImageUrl(userImageKey);
+                console.log('cursorPageOptionsDto.cursorId == 0 로 인식');
+                console.log('cursor: ', cursorId);
+                // -2) 처음 요청이 아닌 경우
+            } else {
+                cursorId = cursorPageOptionsDto.cursorId;
+                console.log('cursorPageOptionsDto.cursorId != 0 로 인식')
             }
-            return followSearchDto;
-        }));
+            console.log('cursor: ', cursorId);
 
-        // (3) 페이징 및 정렬 기준 설정
-        let hasNextData = true;
-        let cursor: number;
+            // (2) 데이터 조회
+            // 검색 결과에 해당하는 값 찾기
+            // 해당 결과값을 nickName 에 포함하고 있는 사용자 찾기
 
-        const takePerScroll = cursorPageOptionsDto.take;
-        const isLastScroll = total <= takePerScroll;
-        const lastDataPerScroll = resultUsers[resultUsers.length - 1];
+            console.log('검색 값: ', searchTerm);
 
-        if (isLastScroll) {
-            hasNextData = false;
-            cursor = null;
-        } else {
-            cursor = lastDataPerScroll.id;
+            // take 초기값 설정
+            console.log('cursorPageOptionsDto.take : ', cursorPageOptionsDto.take);
+            if (cursorPageOptionsDto.take == 0) {
+                cursorPageOptionsDto.take = 5;
+            }
+
+            const [resultUsers, total] = await UserEntity.findAndCount({
+                take: cursorPageOptionsDto.take,
+                where: [
+                    {id: cursorId ? LessThan(cursorId) : null, nickname: Like(`%${searchTerm}%`)}
+                ],
+                relations: {profileImage : true, follower : true, following : true},
+                order: {
+                    id: "DESC" as any,
+                },
+            });
+
+            const searchResult = await Promise.all(resultUsers.map(async (user) => {
+                const followSearchDto = new FollowSearchDto();
+
+                console.log('현재의 유저 : ', user.id);
+                followSearchDto.id = user.id;
+                followSearchDto.nickName = user.nickname;
+                followSearchDto.introduction = user.introduction;
+
+                followSearchDto.followerCnt = user.follower.length;
+                followSearchDto.followingCnt = user.following.length;
+
+                // 팔로우 여부
+                followSearchDto.isFollowing = await this.userService.checkIfFollowing(userEntity, followSearchDto.id);
+
+                // 사용자 프로필 이미지
+                const image = user.profileImage;
+                if(image == null) followSearchDto.image = null;
+                else{
+                    const userImageKey = image.imageKey;
+                    followSearchDto.image = await this.s3Service.getImageUrl(userImageKey);
+                }
+                return followSearchDto;
+            }));
+
+            // (3) 페이징 및 정렬 기준 설정
+            let hasNextData = true;
+            let cursor: number;
+
+            const takePerScroll = cursorPageOptionsDto.take;
+            const isLastScroll = total <= takePerScroll;
+            const lastDataPerScroll = resultUsers[resultUsers.length - 1];
+
+            if (isLastScroll) {
+                hasNextData = false;
+                cursor = null;
+            } else {
+                cursor = lastDataPerScroll.id;
+            }
+
+            const cursorPageMetaDto = new CursorPageMetaDto({ cursorPageOptionsDto, total, hasNextData, cursor });
+
+            return new CursorPageDto(searchResult, cursorPageMetaDto);
+        } catch (e) {
+            throw new Error(e.message);
         }
-
-        const cursorPageMetaDto = new CursorPageMetaDto({ cursorPageOptionsDto, total, hasNextData, cursor });
-
-        return new CursorPageDto(searchResult, cursorPageMetaDto);
     }
 
     // [2] 팔로우 리스트 조회
