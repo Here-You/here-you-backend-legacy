@@ -23,7 +23,10 @@ export class FollowService {
         try {
             // 검증1) 사용자가 존재하지 않는 경우
             const userEntity = await UserEntity.findOne({
-                where: {id: userId},
+                where: {
+                    id: userId,
+                    isQuit: false,
+                },
             });
             if (!userEntity) throw new Error('사용자를 찾을 수 없습니다');
 
