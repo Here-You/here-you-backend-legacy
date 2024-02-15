@@ -421,7 +421,7 @@ export class RuleService {
       const user = await UserEntity.findOne({
         where: {
           id: userId,
-          isQuit: false,
+          isQuit: true,
         },
       });
       if (!user) throw new Error('사용자를 찾을 수 없습니다');
@@ -552,7 +552,7 @@ export class RuleService {
       const user = await UserEntity.findOne({
         where: {
           id: userId,
-          isQuit: false,
+          isQuit: true,
         },
       });
       if (!user) throw new Error('사용자를 찾을 수 없습니다');
