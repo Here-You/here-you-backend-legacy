@@ -25,7 +25,6 @@ export class FollowService {
             const userEntity = await UserEntity.findOne({
                 where: {
                     id: userId,
-                    isQuit: true,
                 },
             });
             if (!userEntity) throw new Error('사용자를 찾을 수 없습니다');
@@ -69,8 +68,8 @@ export class FollowService {
                 where: [
                     {
                         id: cursorId ? LessThan(cursorId) : null,
-                        nickname: Like(`%${searchTerm}%`),
                         isQuit: false,
+                        nickname: Like(`%${searchTerm}%`),
                     }
                 ],
                 relations: {profileImage : true, follower : true, following : true},
