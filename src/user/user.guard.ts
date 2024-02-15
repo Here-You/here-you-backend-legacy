@@ -1,18 +1,20 @@
 import Express from 'express';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { Observable } from 'rxjs';
 import * as jsonwebtoken from 'jsonwebtoken';
 import { IReqUser } from './user.dto';
+import { UserEntity } from './user.entity';
 
 @Injectable()
 export class UserGuard implements CanActivate {
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Express.Request>();
     const authorization = request.headers['authorization']?.split(' ');
 
-    if (authorization.length === 2 && authorization[0] === 'Bearer') {
+    if (
+      authorization &&
+      authorization.length === 2 &&
+      authorization[0] === 'Bearer'
+    ) {
       const token = authorization[1];
 
       try {
@@ -20,6 +22,17 @@ export class UserGuard implements CanActivate {
           token,
           process.env.JWT_SECRET,
         ) as IReqUser;
+
+        // 사용자 검증
+        const isValidUser = await UserEntity.findOne({
+          where: {
+            id: request.user.id,
+          },
+        });
+
+        if (!isValidUser) {
+          return false;
+        }
       } catch (error) {
         return false;
       }
