@@ -8,6 +8,7 @@ import { SignatureCoverDto } from './dto/signature-cover.dto';
 import { SearchService } from './search.service';
 import { UserGuard } from '../user/user.guard';
 import { Request } from 'express';
+import { OptionalUserGuard } from '../user/optional.user.guard';
 
 @Controller('search')
 export class SearchController{
@@ -41,15 +42,18 @@ export class SearchController{
   }
 
   @Get('/new') // 팀색탭 메인: 인기 급상승, 메이트의 최신 시그니처
-  @UseGuards(UserGuard)
+  @UseGuards(OptionalUserGuard)
   async getSearchNewSignatures(
-    @Req() req: Request,
+    @Req() req?: Request,
   ): Promise<ResponseDto<GetSearchMainDto>>{
     try{
       const getMatesNewSignatureDto:GetSearchMainDto = new GetSearchMainDto();
 
-      // 내가 팔로우하는 메이트들의 최신 시그니처 가져오기
-      getMatesNewSignatureDto.covers = await this.searchService.findMatesNewSignatures(req.user.id);
+      // 로그인 했을 경우 내가 팔로우하는 메이트들의 최신 시그니처 가져오기
+      if(req.user != null) getMatesNewSignatureDto.covers = await this.searchService.findMatesNewSignatures(req.user.id);
+
+      // 로그인 안했으면 빈 배열
+      else getMatesNewSignatureDto.covers = null;
 
       return new ResponseDto(
         ResponseCode.GET_SEARCH_MAIN_SUCCESS,
