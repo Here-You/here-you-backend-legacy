@@ -164,12 +164,7 @@ export class UserService {
         userEntity.visibility = 'PUBLIC';
         userEntity.name = '';
         userEntity.age = 0;
-      }
 
-      userEntity.email = userEmail;
-      userEntity.password = '';
-
-      if (userEntity.nickname !== userProfile?.nickname) {
         // 중복 닉네임 확인
         const existingNickname = await UserEntity.count({
           where: {
@@ -192,6 +187,9 @@ export class UserService {
           userEntity.nickname = userProfile?.nickname;
         }
       }
+
+      userEntity.email = userEmail;
+      userEntity.password = '';
 
       if (userProfile?.profile_image_url) {
         const urlHash = md5(userProfile.profile_image_url);
@@ -263,12 +261,7 @@ export class UserService {
         userEntity.visibility = 'PUBLIC';
         userEntity.name = '';
         userEntity.age = 0;
-      }
 
-      userEntity.email = userEmail;
-      userEntity.password = '';
-
-      if (userEntity.nickname !== googleInfo.name) {
         // 중복 닉네임 확인
         const existingNickname = await UserEntity.count({
           where: {
@@ -291,6 +284,9 @@ export class UserService {
           userEntity.nickname = googleInfo.name;
         }
       }
+
+      userEntity.email = userEmail;
+      userEntity.password = '';
 
       if (googleInfo.picture) {
         const urlHash = md5(googleInfo.picture);
