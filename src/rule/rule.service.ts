@@ -479,6 +479,9 @@ export class RuleService {
 
       // 3번 검색 조건) 탈퇴 여부 확인
       resultFollowingEntities = resultFollowingEntities.filter(userFollowingEntity => userFollowingEntity.followUser.isQuit == false);
+      for(const userFollowingEntity of resultFollowingEntities) {
+        console.log('isQuit == false : ', userFollowingEntity.followUser.isQuit);
+      }
 
       const total = resultFollowingEntities.length;
 
@@ -624,6 +627,9 @@ export class RuleService {
 
       // 3번 검색 조건) 탈퇴 여부 확인
       resultFollowingEntities = resultFollowingEntities.filter(userFollowingEntity => userFollowingEntity.followUser.isQuit == false);
+      for(const userFollowingEntity of resultFollowingEntities) {
+        console.log('isQuit == false : ', userFollowingEntity.followUser.isQuit);
+      }
 
       const total = resultFollowingEntities.length;
 
