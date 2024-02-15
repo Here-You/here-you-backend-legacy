@@ -27,6 +27,7 @@ export class UserGuard implements CanActivate {
         const isValidUser = await UserEntity.findOne({
           where: {
             id: request.user.id,
+            isQuit: false,
           },
         });
 
