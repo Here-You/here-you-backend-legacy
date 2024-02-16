@@ -104,7 +104,10 @@ export class UserEntity extends BaseEntity {
 
   static async findExistUser(userId) {
     const user = await UserEntity.findOne({
-      where: { id: userId },
+      where: {
+        id: userId,
+        isQuit: false,
+      },
     });
     if (!user) {
       throw new NotFoundException(BaseResponse.USER_NOT_FOUND);
