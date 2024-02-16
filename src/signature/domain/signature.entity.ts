@@ -129,7 +129,10 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
 
     // [2] 오늘로부터 일주일 안으로 쓰여진 시그니처 가져오기
     const recentSignatures = await SignatureEntity.find({
-      where:{ created: MoreThan(sevenDaysAgo) },
+      where:{
+        created: MoreThan(sevenDaysAgo),
+        user: { isQuit: false },            // 탈퇴한 사용자의 시그니처는 추천에서 제외
+      },
       relations: ['user'] // user 포함
     });
 

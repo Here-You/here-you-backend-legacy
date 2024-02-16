@@ -159,7 +159,7 @@ export class SignatureService {
       // [2] 시그니처 작성자 정보 가져오기
       const authorDto: AuthorSignatureDto = new AuthorSignatureDto();
 
-      if (signature.user) {
+      if (!signature.user.isQuit) { // 유저가 탈퇴하지 않았다면
         authorDto._id = signature.user.id;
         authorDto.name = signature.user.nickname;
 
@@ -179,7 +179,7 @@ export class SignatureService {
         }
         detailSignatureDto.author = authorDto;
       } else {
-        // 해당 시그니처를 작성한 유저가 존재하지 않는 경우(탈퇴한 경우)
+        // 해당 시그니처를 작성한 유저가 탈퇴한 경우
         console.log('작성자 유저가 존재하지 않습니다.');
         authorDto._id = null;
         authorDto.name = null;
