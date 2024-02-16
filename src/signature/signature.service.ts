@@ -109,6 +109,7 @@ export class SignatureService {
     const mySignatureList: HomeSignatureDto[] = [];
     const signatures = await SignatureEntity.find({
       where: { user: { id: user_id } },
+      order: { created: 'DESC' }          // 내가 작성한 시그니처 최신 순으로 보여주도록
     });
 
     for (const signature of signatures) {
