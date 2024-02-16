@@ -87,8 +87,6 @@ export class SearchService{
       const signature = signatureEntities[i];
       const signatureCover = await this.getSignatureCover(signature);
       if(signatureCover) signatureCovers.push(signatureCover);
-
-      signatureCovers.push(signatureCover);
     }
 
     return signatureCovers;
