@@ -268,6 +268,7 @@ export class MateService{
       mateProfileResponseDto._id = targetUserEntity.id;
       mateProfileResponseDto.nickname = targetUserEntity.nickname;
       mateProfileResponseDto.introduction = targetUserEntity.introduction;
+      mateProfileResponseDto.isQuit = targetUserEntity.isQuit;
 
       // 타겟 유저 프로필 이미지 가져오기
       const userProfileImageEntity = await this.userService.getProfileImage(targetUserId);
