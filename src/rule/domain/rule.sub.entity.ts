@@ -15,7 +15,7 @@ export class RuleSubEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 200 })
   ruleTitle: string;
 
   @Column({ type: 'text' })
