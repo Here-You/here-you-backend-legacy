@@ -203,10 +203,10 @@ export class FollowService {
             if(!userEntity) throw new NotFoundException('요청을 보낸 사용자를 찾을 수 없습니다')
             const followingUser = await UserEntity.findOne({
                 where: {
-                    id: followingId,
-                    isQuit: false
+                    id: followingId
                 }
             });
+            if (followingUser.isQuit == true) throw new BadRequestException('탈퇴한 회원 입니다');
             if (!followingUser) throw new NotFoundException('대상 사용자를 찾을 수 없습니다');
             console.log('현재 로그인한 유저 : ', userEntity);
             console.log('팔로우 대상 유저 : ', followingUser);

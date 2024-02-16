@@ -535,7 +535,6 @@ export class UserService {
         await invitation.softRemove();
       }
 
-
       return new ResponseDto(
         ResponseCode.DELETE_ACCOUNT_SUCCESS,
         true,
