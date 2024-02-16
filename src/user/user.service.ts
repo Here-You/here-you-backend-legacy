@@ -535,6 +535,7 @@ export class UserService {
       const followingMates = await UserEntity.find({
         where: {
           follower: { user: { id: userId } },
+          isQuit: false,                          // 탈퇴한 메이트는 팔로잉 목록에서 제외
         },
       });
       return followingMates;

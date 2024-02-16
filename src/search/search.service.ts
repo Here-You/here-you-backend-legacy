@@ -93,7 +93,7 @@ export class SearchService{
     return signatureCovers;
   }
 
-  async searchByKeyword(keyword: string) {  // 키워드로 검색하기
+  async searchByKeyword(keyword: string) {  // 키워드로 검색하기: 탈퇴한 메이트의 시그니처도 반환
     try{
       const resultSignatures = await SignatureEntity.find({
         where:{ title: Like(`%${keyword}%`) },
