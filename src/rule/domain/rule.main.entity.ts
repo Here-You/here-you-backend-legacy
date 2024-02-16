@@ -16,7 +16,7 @@ export class RuleMainEntity extends BaseEntity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 200 })
   mainTitle: string;
 
   @CreateDateColumn()
