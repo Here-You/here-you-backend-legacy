@@ -86,14 +86,13 @@ export class SearchService{
     for (let i = 0; i < signatureEntities.length && i < 20; i++) {
       const signature = signatureEntities[i];
       const signatureCover = await this.getSignatureCover(signature);
-
-      signatureCovers.push(signatureCover);
+      if(signatureCover) signatureCovers.push(signatureCover);
     }
 
     return signatureCovers;
   }
 
-  async searchByKeyword(keyword: string) {  // 키워드로 검색하기
+  async searchByKeyword(keyword: string) {  // 키워드로 검색하기: 탈퇴한 메이트의 시그니처도 반환
     try{
       const resultSignatures = await SignatureEntity.find({
         where:{ title: Like(`%${keyword}%`) },
@@ -101,9 +100,13 @@ export class SearchService{
       });
 
       const resultCovers = [];
+
+      // 검색 결과 최신 순으로 정렬
+      resultSignatures.sort((a, b) => b.created.getTime() - a.created.getTime());
+      
       for(const signature of resultSignatures){
         const signatureCover = await this.getSignatureCover(signature);
-        resultCovers.push(signatureCover);
+        if(signatureCover) resultCovers.push(signatureCover);
       }
       return resultCovers;
 
@@ -125,8 +128,12 @@ export class SearchService{
 
     // 시그니처 썸네일 이미지 가져오기
     signatureCover.date = await SignatureEntity.formatDateString(signature.created);
+
     const signatureImageKey = await SignaturePageEntity.findThumbnail(signature.id);
-    signatureCover.image = await this.s3Service.getImageUrl(signatureImageKey);
+    if(signatureImageKey != null ){
+      signatureCover.image = await this.s3Service.getImageUrl(signatureImageKey);
+    }
+    else return null;
 
     // 시그니처 작성자 프로필 이미지 가져오기
     const userProfileImageEntity = await this.userService.getProfileImage(signature.user.id);

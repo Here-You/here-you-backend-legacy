@@ -34,7 +34,12 @@ export class MateService{
       // 1. 메이트 탐색의 기준이 될 장소 가져오기 = 사용자의 가장 최신 시그니처의 첫 번째 페이지 장소
       const mySignaturePageEntity = await SignaturePageEntity.findOne({
         where: {
-          signature:{ user:{ id: userId } },
+          signature:{
+            user:{
+              id: userId,
+              isQuit: false     // 탈퇴한 사용자 필터링
+            },
+          },
           page: 1
         },
         order: {
@@ -117,6 +122,7 @@ export class MateService{
     // [0] 맨 처음 요청일 경우 랜덤 숫자 생성해서 cursorId에 할당
     if(cursorPageOptionsDto.cursorId == 0){
       const newUser = await UserEntity.find({
+        where: { isQuit: false },    // 탈퇴 필터링
         order: {
           id: 'DESC' // id를 내림차순으로 정렬해서 가장 최근에 가입한 유저 가져오기
         },
@@ -139,9 +145,10 @@ export class MateService{
     // [1] 무한 스크롤: take만큼 cursorId보다 id값이 작은 유저들 불러오기
     const [mates, total] = await UserEntity.findAndCount({
       take: cursorPageOptionsDto.take,
-      where: cursorId ? {
-        id: LessThan(cursorId)
-      }: null,
+      where: {
+        id: LessThan(cursorId),
+        isQuit: false
+      },
       order: {
         id: "DESC" as any,
       },
@@ -261,6 +268,7 @@ export class MateService{
       mateProfileResponseDto._id = targetUserEntity.id;
       mateProfileResponseDto.nickname = targetUserEntity.nickname;
       mateProfileResponseDto.introduction = targetUserEntity.introduction;
+      mateProfileResponseDto.isQuit = targetUserEntity.isQuit;
 
       // 타겟 유저 프로필 이미지 가져오기
       const userProfileImageEntity = await this.userService.getProfileImage(targetUserId);

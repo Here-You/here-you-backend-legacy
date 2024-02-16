@@ -50,11 +50,12 @@ export class SignatureLikeEntity extends BaseEntity {
   }
 
   static async findSignatureLikes(signatureId: number) {
-    const signatureLikeEntities = await SignatureLikeEntity.find({
-      where:{ signature:{id: signatureId} },
+    return await SignatureLikeEntity.find({
+      where:{
+        signature:{id: signatureId},
+        user: { isQuit: false }         // 탈퇴한 유저의 좋아요는 가져오지 않음
+      },
       relations: ['user', 'signature'],
     })
-
-    return signatureLikeEntities;
   }
 }

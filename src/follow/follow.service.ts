@@ -178,7 +178,7 @@ export class FollowService {
             followDto.mateId = mateEntity.id;
             followDto.email = mateEntity.email;
             followDto.introduction = mateEntity.introduction;
-            followDto.isFollowing = !!follow.id;
+            followDto.isFollowing = await this.userService.checkIfFollowing(user,mateEntity.id);
 
             // 사용자 프로필 이미지
             const image = await this.userService.getProfileImage(mateEntity.id);

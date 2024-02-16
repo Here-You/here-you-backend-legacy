@@ -24,15 +24,22 @@ export class MapService {
   ) {
     const user = await UserEntity.findExistUser(userId);
     const journey = await JourneyEntity.findExistJourneyByDate(user.id, date);
+    if (!journey) {
+      return errResponse(BaseResponse.JOURNEY_NOT_FOUND);
+    }
     const schedules = await ScheduleEntity.findExistSchedulesByJourneyId(
       journey.id,
     );
+    if (!schedules) {
+      return errResponse(BaseResponse.SCHEDULE_NOT_FOUND);
+    }
     const journeyInfo = {
       userId: user.id,
       journeyId: journey.id,
       startDate: journey.startDate,
       endDate: journey.endDate,
     };
+
     const scheduleList = await Promise.all(
       schedules.map(async (schedule) => {
         const locations = await this.getLocationList([schedule]); // getLocationList에 schedule 배열을 전달

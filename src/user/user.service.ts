@@ -437,8 +437,8 @@ export class UserService {
     try {
       return await UserFollowingEntity.find({
         where: {
-          user: { id: userId },
-          followUser: {isQuit: false},
+          user: { id: userId, isQuit: false },
+          followUser: { isQuit: false },
         },
         relations: { followUser: { profileImage: true } },
       });
@@ -451,7 +451,8 @@ export class UserService {
     try {
       return await UserFollowingEntity.find({
         where: {
-          followUser: { id: userId, isQuit: false  }
+          followUser: { id: userId, isQuit: false  },
+          user: { isQuit: false },
         },
         relations: { user: { profileImage: true } },
       });
@@ -562,6 +563,7 @@ export class UserService {
       const followingMates = await UserEntity.find({
         where: {
           follower: { user: { id: userId } },
+          isQuit: false,                          // 탈퇴한 메이트는 팔로잉 목록에서 제외
         },
       });
       return followingMates;

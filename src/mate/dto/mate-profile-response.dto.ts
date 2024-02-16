@@ -10,4 +10,5 @@ export class MateProfileResponseDto {
   signatures: number;   // 시그니처 개수
   follower: number;     // 팔로워 수
   following: number;    // 팔로잉 수
+  isQuit: boolean;      // 탈퇴 여부
 }
