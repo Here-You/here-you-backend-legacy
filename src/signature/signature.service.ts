@@ -94,10 +94,10 @@ export class SignatureService {
   async homeSignature(userId: number): Promise<HomeSignatureDto[]> {
     try {
       console.log('userId; ', userId);
-      const homeSignatureList: HomeSignatureDto[] = await this.findMySignature(
+      return this.findMySignature(
         userId,
       );
-      return homeSignatureList;
+
     } catch (error) {
       // 예외 처리
       console.error('Error on HomeSignature: ', error);

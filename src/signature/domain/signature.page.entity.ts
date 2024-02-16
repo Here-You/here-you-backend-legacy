@@ -55,8 +55,13 @@ export class SignaturePageEntity extends BaseEntity {
         },
       });
 
-      console.log("썸네일 이미지: ",firstPage.image);
-      return firstPage.image;
+      console.log("첫번째 페이지: ",firstPage);
+
+      if(firstPage == null) return null;
+      else {
+        console.log("썸네일 이미지: ",firstPage.image);
+        return firstPage.image;
+      }
 
     } catch (error) {
       console.log('Error on findThumbnail: ', error);

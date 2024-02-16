@@ -86,6 +86,7 @@ export class SearchService{
     for (let i = 0; i < signatureEntities.length && i < 20; i++) {
       const signature = signatureEntities[i];
       const signatureCover = await this.getSignatureCover(signature);
+      if(signatureCover) signatureCovers.push(signatureCover);
 
       signatureCovers.push(signatureCover);
     }
@@ -103,7 +104,7 @@ export class SearchService{
       const resultCovers = [];
       for(const signature of resultSignatures){
         const signatureCover = await this.getSignatureCover(signature);
-        resultCovers.push(signatureCover);
+        if(signatureCover) resultCovers.push(signatureCover);
       }
       return resultCovers;
 
@@ -125,8 +126,12 @@ export class SearchService{
 
     // 시그니처 썸네일 이미지 가져오기
     signatureCover.date = await SignatureEntity.formatDateString(signature.created);
+
     const signatureImageKey = await SignaturePageEntity.findThumbnail(signature.id);
-    signatureCover.image = await this.s3Service.getImageUrl(signatureImageKey);
+    if(signatureImageKey != null ){
+      signatureCover.image = await this.s3Service.getImageUrl(signatureImageKey);
+    }
+    else return null;
 
     // 시그니처 작성자 프로필 이미지 가져오기
     const userProfileImageEntity = await this.userService.getProfileImage(signature.user.id);
