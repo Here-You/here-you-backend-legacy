@@ -435,7 +435,7 @@ export class UserService {
   async getFollowingList(userId: number) {
     try {
       return await UserFollowingEntity.find({
-        where: { user: { id: userId } },
+        where: { user: { id: userId, isQuit: false } },
         relations: { followUser: { profileImage: true } },
       });
     } catch (error) {
@@ -446,7 +446,7 @@ export class UserService {
   async getFollowerList(userId: number) {
     try {
       return await UserFollowingEntity.find({
-        where: { followUser: { id: userId } },
+        where: { followUser: { id: userId, isQuit: false  } },
         relations: { user: { profileImage: true } },
       });
     } catch (error) {
