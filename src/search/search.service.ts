@@ -100,6 +100,10 @@ export class SearchService{
       });
 
       const resultCovers = [];
+
+      // 검색 결과 최신 순으로 정렬
+      resultSignatures.sort((a, b) => b.created.getTime() - a.created.getTime());
+      
       for(const signature of resultSignatures){
         const signatureCover = await this.getSignatureCover(signature);
         if(signatureCover) resultCovers.push(signatureCover);
