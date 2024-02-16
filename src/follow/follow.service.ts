@@ -197,9 +197,17 @@ export class FollowService {
     async checkFollow(userId : number, followingId : number): Promise<UserFollowingEntity> {
         try {
             // case1) 유효한 유저인지 검증
-            const userEntity : UserEntity = await this.userService.findUserById(userId);
-            const followingUser = await UserEntity.findExistUser(followingId);
-            if (!followingUser) throw new NotFoundException('해당 사용자를 찾을 수 없습니다');
+            const userEntity : UserEntity = await UserEntity.findOne({
+                where: {id: userId}
+            });
+            if(!userEntity) throw new NotFoundException('요청을 보낸 사용자를 찾을 수 없습니다')
+            const followingUser = await UserEntity.findOne({
+                where: {
+                    id: followingId
+                }
+            });
+            if (followingUser.isQuit == true) throw new BadRequestException('탈퇴한 회원 입니다');
+            if (!followingUser) throw new NotFoundException('대상 사용자를 찾을 수 없습니다');
             console.log('현재 로그인한 유저 : ', userEntity);
             console.log('팔로우 대상 유저 : ', followingUser);
 

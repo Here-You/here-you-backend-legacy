@@ -6,10 +6,6 @@ export class GetCommentDto {
     id: number;
 
     @IsNotEmpty()
-    @IsNumber()
-    writerId: number;
-
-    @IsNotEmpty()
     @IsString()
     content: string;
 
@@ -17,7 +13,12 @@ export class GetCommentDto {
     @IsDate()
     updated: Date;
 
-    @IsNotEmpty()
+    // 탈퇴한 회원이 작성한 댓글도 표시 -> null 허용
+    @IsOptional()
+    @IsNumber()
+    writerId: number;
+
+    @IsOptional()
     @IsString()
     name: string;
 

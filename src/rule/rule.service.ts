@@ -1,4 +1,4 @@
-import {Injectable } from '@nestjs/common';
+import {BadRequestException, Injectable, NotFoundException} from '@nestjs/common';
 import { CreateRuleDto } from './dto/create-rule.dto';
 import { RuleMainEntity } from './domain/rule.main.entity';
 import { RuleSubEntity } from './domain/rule.sub.entity';
@@ -59,7 +59,11 @@ export class RuleService {
       const members = await Promise.all(dto.membersId.map(async (memberId): Promise<RuleInvitationEntity> => {
         const ruleInvitationEntity = new RuleInvitationEntity();
 
-        const userEntity = await UserEntity.findOneOrFail({where: {id: memberId}});
+        const userEntity = await UserEntity.findOne({
+          where: {id: memberId }
+        });
+        if(!userEntity) throw new NotFoundException('멤버로 초대한 회원을 찾을 수 없습니다');
+        if(userEntity.isQuit == true) throw new BadRequestException('탈퇴한 회원은 멤버로 초대할 수 없습니다');
         ruleInvitationEntity.rule = main;
         ruleInvitationEntity.member = userEntity;
 
@@ -133,16 +137,27 @@ export class RuleService {
         const detailMembers = await Promise.all(invitations.map(async (invitation): Promise<DetailMemberDto> => {
           const detailMember = new DetailMemberDto;
           const memberEntity = invitation.member;
-          detailMember.id = memberEntity.id;
-          detailMember.name = memberEntity.nickname;
-          console.log('detailMember.id : ', detailMember.id);
+          if (memberEntity.isQuit == false) {
+            detailMember.id = memberEntity.id;
+            detailMember.name = memberEntity.nickname;
+            console.log('detailMember.id : ', detailMember.id);
 
-          // 사용자 프로필 이미지
-          const image = memberEntity.profileImage;
-          if (image == null) detailMember.image = null;
+            // 사용자 프로필 이미지
+            const image = memberEntity.profileImage;
+            if (image == null) detailMember.image = null;
+            else {
+              const userImageKey = image.imageKey;
+              detailMember.image = await this.s3Service.getImageUrl(userImageKey);
+            }
+          }
+          // 탈퇴한 회원인데 ruleInvitationEntity 삭제 안된 경우)
           else {
-            const userImageKey = image.imageKey;
-            detailMember.image = await this.s3Service.getImageUrl(userImageKey);
+            console.log('탈퇴한 회원의 ruleInvitationEntity 가 삭제되지 않았습니다');
+            console.log('탈퇴한 회원의 ID : ', memberEntity.id);
+            console.log('해당 ruleInvitationEntity ID : ', invitation.id);
+            detailMember.id = null;
+            detailMember.name = null;
+            detailMember.image = null;
           }
 
           return detailMember;
@@ -202,17 +217,31 @@ export class RuleService {
         const getCommentDto = new GetCommentDto();
 
         getCommentDto.id = comment.id;
-        getCommentDto.writerId = comment.user.id;
-        getCommentDto.name = comment.user.nickname;
         getCommentDto.content = comment.content;
         getCommentDto.updated = comment.updated;
 
-        // 사용자 프로필 이미지
-        const image = comment.user.profileImage;
-        if (image == null) getCommentDto.image = null;
+        // 댓글 작성자 정보
+        // 탈퇴한 사용자가 작성한 댓글도 표시
+        // -> 댓글 작성자 (user) 존재 여부 확인
+        const writerEntity = comment.user;
+        if (writerEntity.isQuit == false) {
+          getCommentDto.writerId = comment.user.id;
+          getCommentDto.name = comment.user.nickname;
+
+          // 사용자 프로필 이미지
+          const image = comment.user.profileImage;
+          if (image == null) getCommentDto.image = null;
+          else {
+            const userImageKey = image.imageKey;
+            getCommentDto.image = await this.s3Service.getImageUrl(userImageKey);
+          }
+        }
+        // 댓글 작성자가 탈퇴한 사용자인 경우
         else {
-          const userImageKey = image.imageKey;
-          getCommentDto.image = await this.s3Service.getImageUrl(userImageKey);
+          console.log('탈퇴한 회원이 작성한 댓글 입니다');
+          getCommentDto.writerId = null;
+          getCommentDto.name = null;
+          getCommentDto.image = null;
         }
 
         return getCommentDto;
@@ -242,7 +271,6 @@ export class RuleService {
   }
 
   // [4] 여행 규칙 나가기
-  // -1) 초대 받은 팀원 -> 초대 삭제
   async deleteInvitation(ruleId: number, userId: number): Promise<RuleInvitationEntity> {
     try {
       // 검증1) 사용자가 존재하지 않는 경우
