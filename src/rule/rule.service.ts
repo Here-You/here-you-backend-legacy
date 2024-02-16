@@ -202,17 +202,31 @@ export class RuleService {
         const getCommentDto = new GetCommentDto();
 
         getCommentDto.id = comment.id;
-        getCommentDto.writerId = comment.user.id;
-        getCommentDto.name = comment.user.nickname;
         getCommentDto.content = comment.content;
         getCommentDto.updated = comment.updated;
 
-        // 사용자 프로필 이미지
-        const image = comment.user.profileImage;
-        if (image == null) getCommentDto.image = null;
+        // 댓글 작성자 정보
+        // 탈퇴한 사용자가 작성한 댓글도 표시
+        // -> 댓글 작성자 (user) 존재 여부 확인
+        const writerEntity = comment.user;
+        if (!!writerEntity) {
+          getCommentDto.writerId = comment.user.id;
+          getCommentDto.name = comment.user.nickname;
+
+          // 사용자 프로필 이미지
+          const image = comment.user.profileImage;
+          if (image == null) getCommentDto.image = null;
+          else {
+            const userImageKey = image.imageKey;
+            getCommentDto.image = await this.s3Service.getImageUrl(userImageKey);
+          }
+        }
+        // 댓글 작성자가 탈퇴한 사용자인 경우
         else {
-          const userImageKey = image.imageKey;
-          getCommentDto.image = await this.s3Service.getImageUrl(userImageKey);
+          console.log('탈퇴한 회원이 작성한 댓글 입니다');
+          getCommentDto.writerId = null;
+          getCommentDto.name = null;
+          getCommentDto.image = null;
         }
 
         return getCommentDto;

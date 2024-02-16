@@ -16,11 +16,9 @@ export class RulePairDto {
 }
 
 export class DetailMemberDto {
-    @IsNotEmpty()
     @IsNumber()
     id: number;
 
-    @IsNotEmpty()
     @IsString()
     name: string;
 
