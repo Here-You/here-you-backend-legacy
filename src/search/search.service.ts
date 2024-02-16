@@ -125,8 +125,11 @@ export class SearchService{
 
     // 시그니처 썸네일 이미지 가져오기
     signatureCover.date = await SignatureEntity.formatDateString(signature.created);
+
     const signatureImageKey = await SignaturePageEntity.findThumbnail(signature.id);
-    signatureCover.image = await this.s3Service.getImageUrl(signatureImageKey);
+    if(signatureImageKey != null ){
+      signatureCover.image = await this.s3Service.getImageUrl(signatureImageKey);
+    }
 
     // 시그니처 작성자 프로필 이미지 가져오기
     const userProfileImageEntity = await this.userService.getProfileImage(signature.user.id);
