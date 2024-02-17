@@ -78,26 +78,82 @@ export class SignatureCommentService{
     signatureId: number,
   ) {
 
-    // 1. 'cursorId'부터 오름차순 정령된 댓글 'take'만큼 가져오기
-    const [comments, total] = await SignatureCommentEntity.findAndCount({
-      take: cursorPageOptionsDto.take,
+    // cursorId 이용해서 마지막으로 보낸 댓글 정보 알아내기
+    const lastComment = await SignatureCommentEntity.findOne({
       where: {
         signature: { id: signatureId },
-        parentComment: { id: cursorPageOptionsDto.cursorId ? MoreThan(cursorPageOptionsDto.cursorId) : null },
+        id: cursorPageOptionsDto.cursorId
       },
-      relations: {
-        user: { profileImage: true },
-        parentComment: true,
-        signature:{
-          user: true,
-        }
+      relations: {parentComment: true}
+    });
+
+    let comments = [];
+    let total: number = 0;
+
+    // lastComment 가 자신과 부모가 같으면서 자신보다 depth 가 깊은 대댓글이 있는, 대댓글인지 확인
+    let sendData = new SignatureCommentEntity();
+
+    const check = await SignatureCommentEntity.find({
+      where: {
+        signature: { id: signatureId },
+        parentComment: {id: lastComment.parentComment.id},
+        id:  MoreThan(lastComment.id)
       },
       order: {
         parentComment: { id: "ASC" as any,},
       },
     });
 
-    // 2. 댓글 response dto에 담기
+    // -1) 있는 경우
+    if(!!check) {
+      sendData = check[0];
+
+      const [commentEntities, totalNumber] = await SignatureCommentEntity.findAndCount({
+        take: cursorPageOptionsDto.take,
+        where: {
+          signature: { id: signatureId },
+          id: MoreThan(sendData.id),
+        },
+        relations: {
+          user: { profileImage: true },
+          parentComment: true,
+          signature:{
+            user: true,
+          }
+        },
+        order: {
+          parentComment: { id: "ASC" as any,},
+        },
+      });
+      comments = commentEntities;
+      total = totalNumber;
+    }
+
+    else {
+      // -2) 없는 경우
+      // 'cursorId' 부터 오름차순 정렬된 댓글 'take' 만큼 가져오기
+      const [commentEntities, totalNumber] = await SignatureCommentEntity.findAndCount({
+        take: cursorPageOptionsDto.take,
+        where: {
+          signature: { id: signatureId },
+          parentComment: { id: cursorPageOptionsDto.cursorId ? MoreThan(cursorPageOptionsDto.cursorId) : null },
+        },
+        relations: {
+          user: { profileImage: true },
+          parentComment: true,
+          signature:{
+            user: true,
+          }
+        },
+        order: {
+          parentComment: { id: "ASC" as any,},
+        },
+      });
+      comments = commentEntities;
+      total = totalNumber;
+    }
+
+    // 2. 댓글 response dto 에 담기
     const result = await Promise.all(comments.map(async (comment) => {
       const writerProfile = new GetCommentWriterDto();
       const getCommentDto = new GetSignatureCommentDto();
@@ -169,8 +225,6 @@ export class SignatureCommentService{
       { cursorPageOptionsDto, total, hasNextData, cursor });
 
     return new CursorPageDto( result, cursorPageMetaDto );
-
-
   }
 
   async patchSignatureComment(  // 댓글 수정하기
