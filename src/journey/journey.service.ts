@@ -118,10 +118,15 @@ export class JourneyService {
     if (!diary) {
       return; // 일지가 없으면 삭제할 필요 없음
     }
+    // 일지 삭제
+    await DiaryEntity.deleteDiary(diary);
+
+    // 연결된 이미지 찾기
     const diaryImg = await DiaryImageEntity.findExistImgUrl(diary);
 
-    await DiaryImageEntity.deleteDiaryImg(diaryImg);
-
-    await DiaryEntity.deleteDiary(diary);
+    // 이미지 삭제
+    if (diaryImg) {
+      await DiaryImageEntity.deleteDiaryImg(diaryImg);
+    }
   }
 }
