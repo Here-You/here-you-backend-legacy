@@ -48,6 +48,7 @@ export class NotificationService {
             action: notification.notificationAction,
           },
           itemId: notification.notificationTargetId,
+          itemDesc: notification.notificationTargetDesc,
           isRead: notification.notificationRead,
           created: notification.created,
         })),
