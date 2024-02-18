@@ -40,6 +40,7 @@ export class SignatureCommentService {
     const user = await UserEntity.findOneOrFail({ where: { id: userId } });
     const signature = await SignatureEntity.findOneOrFail({
       where: { id: signatureId },
+      relations: { user: true },
     });
 
     if (!user || !signature) {
@@ -58,6 +59,7 @@ export class SignatureCommentService {
 
         const parentComment = await SignatureCommentEntity.findOneOrFail({
           where: { id: parentCommentId },
+          relations: { user: true },
         });
 
         if (!parentComment) throw new NotFoundException('404 Not Found');
