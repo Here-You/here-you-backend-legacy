@@ -9,12 +9,9 @@ import { SignatureCommentEntity } from './domain/signature.comment.entity';
 import { UserEntity } from '../user/user.entity';
 import { SignatureEntity } from './domain/signature.entity';
 import { CursorPageOptionsDto } from '../rule/dto/cursor-page.options.dto';
-import { CommentEntity } from '../comment/domain/comment.entity';
-import { MoreThan } from 'typeorm';
-import { GetCommentDto } from '../rule/dto/get-comment.dto';
+import { MoreThan, Not, Raw } from 'typeorm';
 import { GetSignatureCommentDto } from './dto/comment/get-signature-comment.dto';
 import { GetCommentWriterDto } from './dto/comment/get-comment-writer.dto';
-import * as querystring from 'querystring';
 import { CursorPageMetaDto } from '../mate/cursor-page/cursor-page.meta.dto';
 import { CursorPageDto } from '../mate/cursor-page/cursor-page.dto';
 
@@ -77,98 +74,131 @@ export class SignatureCommentService{
     userId: number,
     signatureId: number,
   ) {
+    try{
 
-    // 1. 'cursorId'부터 오름차순 정렬된 댓글 'take'만큼 가져오기
-    const [comments, total] = await SignatureCommentEntity.findAndCount({
-      take: cursorPageOptionsDto.take,
-      where: {
-        signature: { id: signatureId },
-        parentComment: { id: MoreThan(cursorPageOptionsDto.cursorId) },
-      },
-      relations: {
-        user: { profileImage: true },
-        parentComment: true,
-        signature:{ user: true, }
-      },
-      order: {
-        parentComment: { id: "ASC" as any,},
-        created: 'ASC'
-      },
-    });
+      // 1. 'cursorId'부터 오름차순 정렬된 댓글 'take'만큼 가져오기
+      const [comments, total] = await SignatureCommentEntity.findAndCount({
+        take: cursorPageOptionsDto.take,
+        where: {
+          id: MoreThan(cursorPageOptionsDto.cursorId),
+          signature: { id: signatureId },
+          parentComment: { id: Raw("SignatureCommentEntity.id") },      // 부모 댓글이 자기 자신인 댓글들만 가져오기
+        },
+        relations: {
+          user: { profileImage: true },
+          parentComment: true,
+          signature:{ user: true, }
+        },
+        order: {
+          parentComment: { id: "ASC" as any,},
+          created: 'ASC'
+        },
+      });
 
-    // 2. 댓글 response dto에 담기
-    const result = await Promise.all(comments.map(async (comment) => {
 
-      const writerProfile = new GetCommentWriterDto();
-      const getCommentDto = new GetSignatureCommentDto();
+      const result: GetSignatureCommentDto[] = [];
 
-      // 2-[1] 댓글 작성자 정보 담기
-      writerProfile._id = comment.user.id;
-      writerProfile.name = comment.user.nickname;
+      // 2. 각 부모 댓글의 답글들 찾아오기
+      for(const comment of comments){
+        console.log(comment);
+        result.push(await this.createSignatureCommentDto(comment,userId));
 
-      // 로그인한 사용자가 댓글 작성자인지 확인
-      if( userId == comment.user.id ) writerProfile.is_writer = true;
+        const childrenComments = await SignatureCommentEntity.find({ // 답글 찾아오기
+          where: {
+            parentComment: { id: comment.id },
+            id: Not(Raw("SignatureCommentEntity.parentComment.id"))
+          },
+          relations: {
+            user: { profileImage: true },
+            parentComment: true,
+            signature:{ user: true, }
+          },
+          order: {
+            created: 'ASC'
+          },
+        });
 
-      else writerProfile.is_writer = false;
-
-      // 작성자 프로필 이미지
-      const image = comment.user.profileImage;
-      if(image == null) writerProfile.image = null;
-      else {
-        const userImageKey = image.imageKey;
-        writerProfile.image = await this.s3Service.getImageUrl(userImageKey);
-      }
-
-      // 2-[2] 댓글 정보 담기
-      getCommentDto._id = comment.id;
-      getCommentDto.content = comment.content;
-      getCommentDto.parentId = comment.parentComment.id;
-      getCommentDto.writer = writerProfile;
-      getCommentDto.date = comment.updated;
-
-      // 댓글 수정 여부 구하기
-      const createdTime = comment.created.getTime();
-      const updatedTime = comment.updated.getTime();
-
-      if (Math.abs(createdTime - updatedTime) <= 2000) {  // 두 시간 차가 2초 이하면 수정 안함
-        getCommentDto.is_edited = false;
-      } else {
-        getCommentDto.is_edited = true;
-      }
-
-      // 로그인한 사용자가 시그니처 작성하면 can_delete = true
-      let can_delete = false;
-      if(comment.signature.user){ // 시그니처 작성자가 존재할 경우
-        if(comment.signature.user.id == userId){  // 로그인한 사용자가 시그니처 작성자일 경우 댓글 삭제 가능
-          can_delete = true;
+        for(const childComment of childrenComments){
+          console.log(childComment);
+          result.push(await this.createSignatureCommentDto(childComment,userId))
         }
       }
-      getCommentDto.can_delete = can_delete;
 
-      return getCommentDto;
+      // 3. 스크롤 설정
+      let hasNextData = true;
+      let cursor: number;
 
-    }));
+      const takePerScroll = cursorPageOptionsDto.take;
+      const isLastScroll = total <= takePerScroll;
+      const lastDataPerScroll = comments[comments.length - 1];
 
-    // 3. 스크롤 설정
-    let hasNextData = true;
-    let cursor: number;
+      if (isLastScroll) {
+        hasNextData = false;
+        cursor = null;
+      } else {
+        cursor = lastDataPerScroll.id;
+      }
 
-    const takePerScroll = cursorPageOptionsDto.take;
-    const isLastScroll = total <= takePerScroll;
-    const lastDataPerScroll = comments[comments.length - 1];
+      const cursorPageMetaDto = new CursorPageMetaDto(
+        { cursorPageOptionsDto, total, hasNextData, cursor });
 
-    if (isLastScroll) {
-      hasNextData = false;
-      cursor = null;
-    } else {
-      cursor = lastDataPerScroll.parentComment.id - 1;
+      return new CursorPageDto( result, cursorPageMetaDto );
+
+    }
+    catch(e){
+      console.log("Error on GetSignature: ",e);
+      throw e;
+    }
+  }
+
+  async createSignatureCommentDto(comment: SignatureCommentEntity, userId: number){ // 댓글 DTO 만들기
+    const writerProfile = new GetCommentWriterDto();
+    const getCommentDto = new GetSignatureCommentDto();
+
+    // 2-[1] 댓글 작성자 정보 담기
+    writerProfile._id = comment.user.id;
+    writerProfile.name = comment.user.nickname;
+
+    // 로그인한 사용자가 댓글 작성자인지 확인
+    if( userId == comment.user.id ) writerProfile.is_writer = true;
+
+    else writerProfile.is_writer = false;
+
+    // 작성자 프로필 이미지
+    const image = comment.user.profileImage;
+    if(image == null) writerProfile.image = null;
+    else {
+      const userImageKey = image.imageKey;
+      writerProfile.image = await this.s3Service.getImageUrl(userImageKey);
     }
 
-    const cursorPageMetaDto = new CursorPageMetaDto(
-      { cursorPageOptionsDto, total, hasNextData, cursor });
+    // 2-[2] 댓글 정보 담기
+    getCommentDto._id = comment.id;
+    getCommentDto.content = comment.content;
+    getCommentDto.parentId = comment.parentComment.id;
+    getCommentDto.writer = writerProfile;
+    getCommentDto.date = comment.updated;
 
-    return new CursorPageDto( result, cursorPageMetaDto );
+    // 댓글 수정 여부 구하기
+    const createdTime = comment.created.getTime();
+    const updatedTime = comment.updated.getTime();
 
+    if (Math.abs(createdTime - updatedTime) <= 2000) {  // 두 시간 차가 2초 이하면 수정 안함
+      getCommentDto.is_edited = false;
+    } else {
+      getCommentDto.is_edited = true;
+    }
+
+    // 로그인한 사용자가 시그니처 작성하면 can_delete = true
+    let can_delete = false;
+    if(comment.signature.user){ // 시그니처 작성자가 존재할 경우
+      if(comment.signature.user.id == userId){  // 로그인한 사용자가 시그니처 작성자일 경우 댓글 삭제 가능
+        can_delete = true;
+      }
+    }
+    getCommentDto.can_delete = can_delete;
+
+    return getCommentDto;
 
   }
 
