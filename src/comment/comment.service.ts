@@ -37,10 +37,10 @@ export class CommentService {
 
         const notification = new NotificationEntity();
         notification.notificationReceiver = invitation.member;
-        notification.notificationType = 'COMMENT';
-        notification.notificationContent =
-          NotificationService.createNotificationContent('LIKE', user.nickname);
-        notification.notificationItemId = rule.id;
+        notification.notificationSender = user;
+        notification.notificationTargetType = 'RULE';
+        notification.notificationTargetId = rule.id;
+        notification.notificationAction = 'COMMENT';
         await notification.save();
       }
     }

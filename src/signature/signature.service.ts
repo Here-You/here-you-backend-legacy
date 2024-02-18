@@ -274,10 +274,10 @@ export class SignatureService {
     // Todo: 좋아요를 했다가 해제한 경우에 알림을 어떻게 처리할 것인가?
     const notification = new NotificationEntity();
     notification.notificationReceiver = signature.user;
-    notification.notificationType = 'LIKE';
-    notification.notificationContent =
-      NotificationService.createNotificationContent('LIKE', loginUser.nickname);
-    notification.notificationItemId = signature.id;
+    notification.notificationSender = loginUser;
+    notification.notificationTargetType = 'SIGNATURE';
+    notification.notificationTargetId = signature.id;
+    notification.notificationAction = 'LIKE';
     await notification.save();
 
     return signature;
