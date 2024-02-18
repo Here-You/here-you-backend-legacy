@@ -7,12 +7,6 @@ import { ResponseCode } from '../response/response-code.enum';
 export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
 
-  static createNotificationContent(type: 'LIKE' | 'COMMENT', nickname: string) {
-    return `${nickname}님이 내 시그니처에 ${
-      type === 'LIKE' ? '좋아요' : '댓글'
-    }을 남겼습니다.`;
-  }
-
   async listNotifications(userId: number) {
     try {
       const notifications = await NotificationEntity.find({
@@ -20,6 +14,9 @@ export class NotificationService {
           notificationReceiver: {
             id: userId,
           },
+        },
+        relations: {
+          notificationSender: true,
         },
         order: {
           created: 'DESC',
@@ -45,9 +42,12 @@ export class NotificationService {
         '알림 조회 성공',
         notifications.map((notification) => ({
           id: notification.id,
-          type: notification.notificationType,
-          content: notification.notificationContent,
-          itemId: notification.notificationItemId,
+          content: {
+            actionUserNickname: notification.notificationSender.nickname,
+            type: notification.notificationTargetType,
+            action: notification.notificationAction,
+          },
+          itemId: notification.notificationTargetId,
           isRead: notification.notificationRead,
           created: notification.created,
         })),

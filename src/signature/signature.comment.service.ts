@@ -14,6 +14,7 @@ import { GetSignatureCommentDto } from './dto/comment/get-signature-comment.dto'
 import { GetCommentWriterDto } from './dto/comment/get-comment-writer.dto';
 import { CursorPageMetaDto } from '../mate/cursor-page/cursor-page.meta.dto';
 import { CursorPageDto } from '../mate/cursor-page/cursor-page.dto';
+import { NotificationEntity } from '../notification/notification.entity';
 
 @Injectable()
 export class SignatureCommentService{
@@ -45,6 +46,9 @@ export class SignatureCommentService{
       comment.signature = signature;
       comment.content = createCommentDto.content;
 
+      // 알림 생성
+      const notification = new NotificationEntity();
+
       // parentCommentId가 존재할 경우 -> 답글 / 존재하지 않을 경우 -> 댓글
       if(parentCommentId){  // 대댓글: parentId는 파라미터로 받은 parentCommentId로 설정
 
@@ -58,12 +62,21 @@ export class SignatureCommentService{
           await comment.save();
         }
 
+        notification.notificationReceiver = parentComment.user;
       }
       else{  // 댓글: parentId는 본인으로 설정
         const savedComment = await comment.save();
         savedComment.parentComment = savedComment;
         await savedComment.save();
+
+        notification.notificationReceiver = signature.user;
       }
+
+      notification.notificationSender = user;
+      notification.notificationTargetType = 'SIGNATURE';
+      notification.notificationTargetId = signature.id;
+      notification.notificationAction = 'COMMENT';
+      await notification.save();
 
       return comment.id;
     }
