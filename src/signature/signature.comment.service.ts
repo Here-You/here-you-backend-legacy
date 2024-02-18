@@ -161,7 +161,7 @@ export class SignatureCommentService{
       hasNextData = false;
       cursor = null;
     } else {
-      cursor = lastDataPerScroll.id;
+      cursor = lastDataPerScroll.parentComment.id;
     }
 
     const cursorPageMetaDto = new CursorPageMetaDto(
