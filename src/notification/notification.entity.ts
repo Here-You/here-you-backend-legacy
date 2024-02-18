@@ -20,14 +20,18 @@ export class NotificationEntity extends BaseEntity {
   @ManyToOne(() => UserEntity)
   notificationReceiver: UserEntity;
 
+  @JoinColumn()
+  @ManyToOne(() => UserEntity)
+  notificationSender: UserEntity;
+
+  @Column({ type: 'enum', enum: ['SIGNATURE', 'RULE'] })
+  notificationTargetType: 'SIGNATURE' | 'RULE';
+
+  @Column()
+  notificationTargetId: number;
+
   @Column({ type: 'enum', enum: ['LIKE', 'COMMENT'] })
-  notificationType: 'LIKE' | 'COMMENT';
-
-  @Column()
-  notificationContent: string;
-
-  @Column()
-  notificationItemId: number;
+  notificationAction: 'LIKE' | 'COMMENT';
 
   @Column({ default: false })
   notificationRead: boolean;
