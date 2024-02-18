@@ -16,7 +16,6 @@ import { CommentModule } from './comment/comment.module';
 import { DetailScheduleModule } from './detail-schedule/detail-schedule.module';
 import { S3Module } from './utils/S3.module';
 import { FollowModule } from './follow/follow.module';
-import { MemberModule } from './member/member.module';
 import { SearchModule } from './search/search.module';
 import { MapModule } from './map/map.module';
 import { MateModule } from './mate/mate.module';
@@ -40,7 +39,6 @@ import { NotificationModule } from './notification/notification.module';
     CommentModule,
     S3Module,
     FollowModule,
-    MemberModule,
     SearchModule,
     MapModule,
     MateModule,

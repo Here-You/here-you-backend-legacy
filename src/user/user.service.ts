@@ -10,6 +10,7 @@ import { ResponseCode } from '../response/response-code.enum';
 import { UserFollowingEntity } from './user.following.entity';
 import { LessThan } from 'typeorm';
 import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
+import * as md5 from 'md5';
 import { DiaryEntity } from '../diary/models/diary.entity';
 import { S3UtilService } from '../utils/S3.service';
 
@@ -74,6 +75,25 @@ export class UserService {
     );
 
     return await response.json();
+  }
+
+  private async getGoogleInformation(accessToken: string) {
+    const response = await fetch(
+      'https://www.googleapis.com/oauth2/v3/userinfo',
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    return await response.json();
+  }
+
+  private async downloadImage(url: string) {
+    const response = await fetch(url);
+
+    return await response.buffer();
   }
 
   async Login(email: string, password: string) {
@@ -148,7 +168,35 @@ export class UserService {
       userEntity.password = '';
       userEntity.nickname = userProfile?.nickname;
 
-      // Todo: 프로필 이미지 저장하기
+      if (userProfile?.profile_image_url) {
+        const urlHash = md5(userProfile.profile_image_url);
+        const extension = userProfile.profile_image_url.split('.').pop();
+        const profileFilename = `profile/kakao_${urlHash}.${extension}`;
+
+        if (
+          !userEntity.profileImage ||
+          userEntity.profileImage.imageKey !== profileFilename
+        ) {
+          const profileImageEntity = new UserProfileImageEntity();
+          profileImageEntity.imageKey = urlHash;
+
+          const profileImageFile = await this.downloadImage(
+            userProfile.profile_image_url,
+          );
+          await this.s3Service.putObject(profileFilename, profileImageFile);
+
+          profileImageEntity.imageKey = profileFilename;
+          if (userEntity.profileImage) {
+            userEntity.profileImage = null;
+            await userEntity.save();
+          }
+
+          await profileImageEntity.save();
+
+          userEntity.profileImage = profileImageEntity;
+        }
+      }
+
       await userEntity.save();
 
       return {
@@ -161,7 +209,77 @@ export class UserService {
         register_required: isNewUser,
       };
     } else if (type === 'GOOGLE') {
-      // Todo
+      // 사용자 정보 받기
+      const googleInfo = await this.getGoogleInformation(code);
+
+      const userId = googleInfo.sub;
+      const userEmail = googleInfo.email;
+
+      // 사용자 정보로 DB 조회
+      let userEntity = await UserEntity.findOne({
+        where: {
+          oauthType: 'GOOGLE',
+          oauthToken: userId.toString(),
+        },
+        relations: {
+          profileImage: true,
+        },
+      });
+
+      let isNewUser = false;
+      if (!userEntity) {
+        isNewUser = true;
+        userEntity = new UserEntity();
+        userEntity.oauthType = 'GOOGLE';
+        userEntity.oauthToken = userId.toString();
+
+        userEntity.introduction = '';
+        userEntity.visibility = 'PUBLIC';
+        userEntity.name = '';
+        userEntity.age = 0;
+      }
+
+      userEntity.email = userEmail;
+      userEntity.password = '';
+      userEntity.nickname = googleInfo.name;
+
+      if (googleInfo.picture) {
+        const urlHash = md5(googleInfo.picture);
+        const profileFilename = `profile/google_${urlHash}`;
+
+        if (
+          !userEntity.profileImage ||
+          userEntity.profileImage.imageKey !== profileFilename
+        ) {
+          const profileImageEntity = new UserProfileImageEntity();
+          profileImageEntity.imageKey = urlHash;
+
+          const profileImageFile = await this.downloadImage(googleInfo.picture);
+          await this.s3Service.putObject(profileFilename, profileImageFile);
+
+          profileImageEntity.imageKey = profileFilename;
+          if (userEntity.profileImage) {
+            userEntity.profileImage = null;
+            await userEntity.save();
+          }
+
+          await profileImageEntity.save();
+
+          userEntity.profileImage = profileImageEntity;
+        }
+      }
+
+      await userEntity.save();
+
+      return {
+        status: 200,
+        success: true,
+        message: '로그인 성공',
+        token: this._generateToken({
+          id: userEntity.id,
+        }),
+        register_required: isNewUser,
+      };
     } else {
       return new ResponseDto(
         ResponseCode.INTERNAL_SERVEr_ERROR,
@@ -495,6 +613,41 @@ export class UserService {
               : null,
           })),
         ),
+      },
+    );
+  }
+
+  async GetUserProfile(userId: number) {
+    const user = await UserEntity.findOne({
+      where: {
+        id: userId,
+      },
+      relations: {
+        profileImage: true,
+        follower: true,
+        following: true,
+      },
+    });
+
+    const profileImage = user.profileImage
+      ? await this.s3Service.getImageUrl(user.profileImage.imageKey)
+      : null;
+
+    return new ResponseDto(
+      ResponseCode.GET_USER_PROFILE_SUCCESS,
+      true,
+      '유저 프로필 조회 성공',
+      {
+        user: {
+          id: user.id,
+          email: user.email,
+          nickname: user.nickname,
+          introduction: user.introduction,
+          visibility: user.visibility,
+          profileImage: profileImage,
+          followers: user.follower.length,
+          followings: user.following.length,
+        },
       },
     );
   }

@@ -45,9 +45,11 @@ export class RuleController {
 
   // [2] 여행 규칙 멤버 리스트 조회
   @Get('/detail/member/:ruleId')
-  async getMemberList(@Param('ruleId') ruleId : number) : Promise<ResponseDto<any>> {
+  @UseGuards(UserGuard)
+  async getMemberList(@Req() req: Request,
+                      @Param('ruleId') ruleId : number) : Promise<ResponseDto<any>> {
     try {
-      const memberList = await this.ruleService.getMemberList(ruleId);
+      const memberList = await this.ruleService.getMemberList(req.user.id, ruleId);
       return new ResponseDto(
           ResponseCode.GET_MEMBER_LIST_SUCCESS,
           true,
@@ -119,7 +121,8 @@ export class RuleController {
   // [4] 여행 규칙 상세 페이지 조회 (게시글)
   @Get('/detail/:ruleId')
   @UseGuards(UserGuard)
-  async getDetail(@Req() req: Request, @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
+  async getDetail(@Req() req: Request,
+                  @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
 
     const result = await this.ruleService.getDetail(req.user.id, ruleId);
 
@@ -144,7 +147,9 @@ export class RuleController {
   // [5] 여행 규칙 수정
   @Patch('/detail/:ruleId')
   @UseGuards(UserGuard)
-  async updateRule(@Body() updateRuleDto: UpdateRuleDto, @Req() req: Request, @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
+  async updateRule(@Body() updateRuleDto: UpdateRuleDto,
+                   @Req() req: Request,
+                   @Param('ruleId') ruleId: number): Promise<ResponseDto<any>> {
 
     try {
       const result = await this.ruleService.updateRule(updateRuleDto, req.user.id, ruleId);
@@ -167,7 +172,8 @@ export class RuleController {
   // [6] 여행 규칙 생성
   @Post('/detail')
   @UseGuards(UserGuard)
-  async createRule(@Req() req: Request, @Body() createRuleDto: CreateRuleDto): Promise<ResponseDto<any>> {
+  async createRule(@Req() req: Request,
+                   @Body() createRuleDto: CreateRuleDto): Promise<ResponseDto<any>> {
     try {
       const result = await this.ruleService.createRule(createRuleDto, req.user.id);
       return new ResponseDto(
@@ -189,7 +195,8 @@ export class RuleController {
   // [7] 여행 규칙 나가기
   @Delete('/:ruleId')
   @UseGuards(UserGuard)
-  async deleteInvitation(@Req() req: Request, @Param('ruleId') ruleId: number){
+  async deleteInvitation(@Req() req: Request,
+                         @Param('ruleId') ruleId: number){
     try {
       await this.ruleService.deleteInvitation(ruleId, req.user.id);
       return new ResponseDto(

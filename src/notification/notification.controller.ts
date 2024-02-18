@@ -12,4 +12,10 @@ export class NotificationController {
   ListNotification(@Req() req: Request) {
     return this.notificationService.listNotifications(req.user.id);
   }
+
+  @Get('/unread')
+  @UseGuards(UserGuard)
+  CountUnreadNotification(@Req() req: Request) {
+    return this.notificationService.countUnreadNotification(req.user.id);
+  }
 }
