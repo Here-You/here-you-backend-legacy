@@ -78,27 +78,27 @@ export class SignatureCommentService{
     signatureId: number,
   ) {
 
-    // 1. 'cursorId'부터 오름차순 정령된 댓글 'take'만큼 가져오기
+    // 1. 'cursorId'부터 오름차순 정렬된 댓글 'take'만큼 가져오기
     const [comments, total] = await SignatureCommentEntity.findAndCount({
       take: cursorPageOptionsDto.take,
       where: {
         signature: { id: signatureId },
-        parentComment: { id: cursorPageOptionsDto.cursorId ? MoreThan(cursorPageOptionsDto.cursorId) : null },
+        parentComment: { id: MoreThan(cursorPageOptionsDto.cursorId) },
       },
       relations: {
         user: { profileImage: true },
         parentComment: true,
-        signature:{
-          user: true,
-        }
+        signature:{ user: true, }
       },
       order: {
         parentComment: { id: "ASC" as any,},
+        created: 'ASC'
       },
     });
 
     // 2. 댓글 response dto에 담기
     const result = await Promise.all(comments.map(async (comment) => {
+
       const writerProfile = new GetCommentWriterDto();
       const getCommentDto = new GetSignatureCommentDto();
 
@@ -106,8 +106,7 @@ export class SignatureCommentService{
       writerProfile._id = comment.user.id;
       writerProfile.name = comment.user.nickname;
 
-      // 로그인한 사용자가 댓글 작성자(혹은 시그니처 작성자-> 보류)인지 확인
-      //if( userId == comment.user.id || userId == comment.signature.user.id ) writerProfile.is_writer = true;
+      // 로그인한 사용자가 댓글 작성자인지 확인
       if( userId == comment.user.id ) writerProfile.is_writer = true;
 
       else writerProfile.is_writer = false;
