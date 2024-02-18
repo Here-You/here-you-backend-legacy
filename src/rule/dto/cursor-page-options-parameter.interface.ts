@@ -1,8 +1,8 @@
-import { CursorPageOptionsDto } from "./cursor-page.options.dto";
+import { CursorPageOptionsDto } from './cursor-page.options.dto';
 
 export interface CursorPageMetaDtoParameters {
-    cursorPageOptionsDto: CursorPageOptionsDto;
-    total: number;
-    hasNextData: boolean;
-    cursor: number;
+  cursorPageOptionsDto: CursorPageOptionsDto;
+  total: number;
+  hasNextData: boolean;
+  cursor: number;
 }

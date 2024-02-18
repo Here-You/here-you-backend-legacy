@@ -37,8 +37,8 @@ export class OptionalUserGuard implements CanActivate {
       } catch (error) {
         return false;
       }
-    }
-    else{ // 토큰이 없는 경우
+    } else {
+      // 토큰이 없는 경우
       request.user = null;
     }
 

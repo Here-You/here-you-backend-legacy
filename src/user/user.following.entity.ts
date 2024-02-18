@@ -1,9 +1,12 @@
 import {
-  BaseEntity, CreateDateColumn, DeleteDateColumn,
+  BaseEntity,
+  CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
-  PrimaryGeneratedColumn, UpdateDateColumn,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 

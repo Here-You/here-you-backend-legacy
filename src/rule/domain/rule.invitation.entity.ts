@@ -1,26 +1,27 @@
-import { BaseEntity, 
-  Entity, 
-  ManyToOne, 
-  PrimaryGeneratedColumn, 
+import {
+  BaseEntity,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  DeleteDateColumn, 
+  DeleteDateColumn,
 } from 'typeorm';
 import { UserEntity } from 'src/user/user.entity';
-import { RuleMainEntity } from './rule.main.entity'
+import { RuleMainEntity } from './rule.main.entity';
 
 @Entity()
 export class RuleInvitationEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => RuleMainEntity, ruleMain => ruleMain.invitations)
-  @JoinColumn({name: 'rule_id'})
+  @ManyToOne(() => RuleMainEntity, (ruleMain) => ruleMain.invitations)
+  @JoinColumn({ name: 'rule_id' })
   rule: RuleMainEntity;
 
-  @ManyToOne(() => UserEntity, user => user.ruleParticipate)
-  @JoinColumn({name: 'member_id'})
+  @ManyToOne(() => UserEntity, (user) => user.ruleParticipate)
+  @JoinColumn({ name: 'member_id' })
   member: UserEntity;
 
   @CreateDateColumn()
@@ -32,9 +33,11 @@ export class RuleInvitationEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
-  static async findNameById(inviterId: number): Promise<{ memberId : number, name : string }> {
-    const userEntity : UserEntity = await UserEntity.findOne({
-      where: { id: inviterId }
+  static async findNameById(
+    inviterId: number,
+  ): Promise<{ memberId: number; name: string }> {
+    const userEntity: UserEntity = await UserEntity.findOne({
+      where: { id: inviterId },
     });
     const memberId = inviterId;
     const name = userEntity.name;
@@ -42,11 +45,13 @@ export class RuleInvitationEntity extends BaseEntity {
     return { memberId, name };
   }
 
-  static async findInvitationByRuleId(ruleId: number): Promise<RuleInvitationEntity[]> {
+  static async findInvitationByRuleId(
+    ruleId: number,
+  ): Promise<RuleInvitationEntity[]> {
     try {
       const invitation = await RuleInvitationEntity.find({
-        where: {rule: {id : ruleId}},
-        relations: {member:true},
+        where: { rule: { id: ruleId } },
+        relations: { member: true },
       });
       console.log('invitation 조회 결과 : ', invitation);
       return invitation;
@@ -56,11 +61,13 @@ export class RuleInvitationEntity extends BaseEntity {
     }
   }
 
-  static async findInvitationByRuleAndUser(ruleId: number, userId: number) : Promise<RuleInvitationEntity> {
+  static async findInvitationByRuleAndUser(
+    ruleId: number,
+    userId: number,
+  ): Promise<RuleInvitationEntity> {
     try {
       const invitation = await RuleInvitationEntity.findOne({
-        where: [{rule: {id : ruleId}},
-          {member: {id : userId}}]
+        where: [{ rule: { id: ruleId } }, { member: { id: userId } }],
       });
       console.log('invitation 조회 결과 : ', invitation);
       return invitation;
@@ -71,10 +78,13 @@ export class RuleInvitationEntity extends BaseEntity {
   }
 
   // [member] 멤버인지 확인
-  static async isAlreadyMember(ruleId: number, targetUserId: number) :Promise<boolean> {
+  static async isAlreadyMember(
+    ruleId: number,
+    targetUserId: number,
+  ): Promise<boolean> {
     const isAlreadyMember = await RuleInvitationEntity.findOne({
-      where : {member: {id : targetUserId}, rule: {id : ruleId}}
-    })
+      where: { member: { id: targetUserId }, rule: { id: ruleId } },
+    });
     console.log(isAlreadyMember);
 
     if (!!isAlreadyMember) return true;

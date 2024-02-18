@@ -5,20 +5,29 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity, EntitySubscriberInterface, EventSubscriber, InsertEvent, JoinColumn, ManyToOne, MoreThan,
+  Entity,
+  EntitySubscriberInterface,
+  EventSubscriber,
+  InsertEvent,
+  JoinColumn,
+  ManyToOne,
+  MoreThan,
   OneToMany,
-  PrimaryGeneratedColumn, RemoveEvent,
+  PrimaryGeneratedColumn,
+  RemoveEvent,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from 'src/user/user.entity';
-import { HomeSignatureDto } from '../dto/signature/home-signature.dto';
 import { CreateSignatureDto } from '../dto/signature/create-signature.dto';
 import { SignaturePageEntity } from './signature.page.entity';
 import { SignatureLikeEntity } from './signature.like.entity';
 import { SignatureCommentEntity } from './signature.comment.entity';
 @Entity()
 @EventSubscriber()
-export class SignatureEntity extends BaseEntity implements EntitySubscriberInterface<SignatureLikeEntity>{
+export class SignatureEntity
+  extends BaseEntity
+  implements EntitySubscriberInterface<SignatureLikeEntity>
+{
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -28,20 +37,26 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
   @Column({ default: 0 })
   liked: number;
 
-  @ManyToOne(() => UserEntity,
-    (user) => user.signatures)
+  @ManyToOne(() => UserEntity, (user) => user.signatures)
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @OneToMany(() => SignaturePageEntity, (signaturePage) => signaturePage.signature)
+  @OneToMany(
+    () => SignaturePageEntity,
+    (signaturePage) => signaturePage.signature,
+  )
   signaturePages: SignaturePageEntity[];
 
-  @OneToMany(() => SignatureLikeEntity,
-    (signatureLike) => signatureLike.signature)
+  @OneToMany(
+    () => SignatureLikeEntity,
+    (signatureLike) => signatureLike.signature,
+  )
   likes: SignatureLikeEntity[];
 
-  @OneToMany(() => SignatureCommentEntity,
-    (signatureComment) => signatureComment.signature)
+  @OneToMany(
+    () => SignatureCommentEntity,
+    (signatureComment) => signatureComment.signature,
+  )
   comments: SignatureCommentEntity[];
 
   listenTo() {
@@ -64,7 +79,6 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
     this.save(); // 업데이트된 liked 카운트를 데이터베이스에 저장
   }
 
-
   @CreateDateColumn()
   created: Date;
 
@@ -83,25 +97,24 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
   }
 
   static async createSignature(
-    createSignatureDto: CreateSignatureDto, userId: number
+    createSignatureDto: CreateSignatureDto,
+    userId: number,
   ): Promise<SignatureEntity> {
     try {
       const signature: SignatureEntity = new SignatureEntity();
       signature.title = createSignatureDto.title;
 
       const user: UserEntity = await UserEntity.findOne({
-        where: { id: userId}
+        where: { id: userId },
       });
 
-      if(!user){
+      if (!user) {
         throw new Error('User not found');
-      }
-      else{
-        console.log("user name: "+ user.name);
+      } else {
+        console.log('user name: ' + user.name);
         signature.user = user;
 
         return await signature.save();
-
       }
     } catch (error) {
       console.error('Error creating Signature:', error);
@@ -109,31 +122,30 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
     }
   }
 
-
-
-  static async findSignatureById(signatureId: number): Promise<SignatureEntity> {
-    const signature:SignatureEntity = await SignatureEntity.findOne({
+  static async findSignatureById(
+    signatureId: number,
+  ): Promise<SignatureEntity> {
+    const signature: SignatureEntity = await SignatureEntity.findOne({
       where: { id: signatureId },
-      relations: ['user'] // user 포함
+      relations: ['user'], // user 포함
     });
 
     return signature;
   }
 
   static async findRecentSignatures(): Promise<SignatureEntity[]> {
-
     // [1] 기준이 되는 일주일 전 날짜
     const sevenDaysAgo: Date = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     console.log(sevenDaysAgo);
 
     // [2] 오늘로부터 일주일 안으로 쓰여진 시그니처 가져오기
     const recentSignatures = await SignatureEntity.find({
-      where:{
+      where: {
         created: MoreThan(sevenDaysAgo),
-        user: { isQuit: false },            // 탈퇴한 사용자의 시그니처는 추천에서 제외
+        user: { isQuit: false }, // 탈퇴한 사용자의 시그니처는 추천에서 제외
       },
-      relations: ['user'] // user 포함
+      relations: ['user'], // user 포함
     });
 
     return recentSignatures;
@@ -142,14 +154,14 @@ export class SignatureEntity extends BaseEntity implements EntitySubscriberInter
   static async findNewSignaturesByUser(userId: number) {
     // [1] 기준이 되는 20일 전 날짜
     const twentyDaysAgo: Date = new Date();
-    twentyDaysAgo.setDate(twentyDaysAgo.getDate()-20);
+    twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20);
     console.log(twentyDaysAgo);
 
     // [2] 20일 전에 쓰인 메이트의 최신 시그니처 가져오기
     const signatures = await SignatureEntity.find({
-      where:{user:{id: userId}, created: MoreThan(twentyDaysAgo)},
-      relations: ['user'] // user 포함
-    })
+      where: { user: { id: userId }, created: MoreThan(twentyDaysAgo) },
+      relations: ['user'], // user 포함
+    });
     return signatures;
   }
 }

@@ -13,7 +13,6 @@ import { RuleInvitationEntity } from '../rule/domain/rule.invitation.entity';
 import * as md5 from 'md5';
 import { DiaryEntity } from '../diary/models/diary.entity';
 import { S3UtilService } from '../utils/S3.service';
-import {CommentEntity} from "../comment/domain/comment.entity";
 
 @Injectable()
 export class UserService {
@@ -451,7 +450,7 @@ export class UserService {
     try {
       return await UserFollowingEntity.find({
         where: {
-          followUser: { id: userId, isQuit: false  },
+          followUser: { id: userId, isQuit: false },
           user: { isQuit: false },
         },
         relations: { user: { profileImage: true } },
@@ -516,22 +515,19 @@ export class UserService {
       await user.save();
 
       const followings = await UserFollowingEntity.find({
-        where: [
-          {user: {id: userId}},
-          {followUser: {id: userId}}
-        ]
+        where: [{ user: { id: userId } }, { followUser: { id: userId } }],
       });
 
-      for(const following of followings) {
+      for (const following of followings) {
         console.log('삭제될 팔로잉 테이블 ID : ', following.id);
         await following.softRemove();
       }
 
       const ruleInvitations = await RuleInvitationEntity.find({
-        where: {member: {id: userId}}
+        where: { member: { id: userId } },
       });
 
-      for(const invitation of ruleInvitations) {
+      for (const invitation of ruleInvitations) {
         console.log('삭제될 규칙 초대 테이블 ID : ', invitation.id);
         await invitation.softRemove();
       }
@@ -563,7 +559,7 @@ export class UserService {
       const followingMates = await UserEntity.find({
         where: {
           follower: { user: { id: userId } },
-          isQuit: false,                          // 탈퇴한 메이트는 팔로잉 목록에서 제외
+          isQuit: false, // 탈퇴한 메이트는 팔로잉 목록에서 제외
         },
       });
       return followingMates;

@@ -1,9 +1,5 @@
 // journey.service.ts
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { addDays, isAfter, isEqual } from 'date-fns';
 import { JourneyEntity } from './model/journey.entity';
 import { errResponse, response } from 'src/response/response';
@@ -34,7 +30,7 @@ export class JourneyService {
     const startDate = new Date(createJourneyDto.startDate);
     const endDate = new Date(createJourneyDto.endDate);
 
-    const schedules = await this.createSchedules(journey, startDate, endDate);
+    await this.createSchedules(journey, startDate, endDate);
 
     return errResponse(BaseResponse.JOURNEY_CREATED);
   }
@@ -43,7 +39,6 @@ export class JourneyService {
     startDate: Date,
     endDate: Date,
   ) {
-    let currentDate = startDate;
     const schedules = [];
 
     // startDate와 endDate가 같은 경우 하나의 schedule 생성
@@ -78,10 +73,10 @@ export class JourneyService {
       return errResponse(BaseResponse.JOURNEY_NOT_FOUND);
     }
     if (title === null) {
-      const updateJourney = await JourneyEntity.updateJourney(journey, '');
+      await JourneyEntity.updateJourney(journey, '');
       return response(BaseResponse.UPDATE_JOURNEY_TITLE_SUCCESS);
     }
-    const updateJourney = await JourneyEntity.updateJourney(journey, title);
+    await JourneyEntity.updateJourney(journey, title);
     return response(BaseResponse.UPDATE_JOURNEY_TITLE_SUCCESS);
   }
 
@@ -96,7 +91,7 @@ export class JourneyService {
       await this.deleteScheduleRelations(schedule);
     }
 
-    const deleteJourney = await JourneyEntity.deleteJourney(journey);
+    await JourneyEntity.deleteJourney(journey);
     return response(BaseResponse.DELETE_JOURNEY_SUCCESS);
   }
   async deleteScheduleRelations(schedule) {

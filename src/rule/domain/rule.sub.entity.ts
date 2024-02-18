@@ -1,8 +1,9 @@
-import { BaseEntity, 
-  Column, 
-  Entity, 
-  ManyToOne, 
-  PrimaryGeneratedColumn, 
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
@@ -21,8 +22,8 @@ export class RuleSubEntity extends BaseEntity {
   @Column({ type: 'text' })
   ruleDetail: string;
 
-  @ManyToOne(() => RuleMainEntity, ruleMain => ruleMain.rules)
-  @JoinColumn({ name: 'rule_id'})
+  @ManyToOne(() => RuleMainEntity, (ruleMain) => ruleMain.rules)
+  @JoinColumn({ name: 'rule_id' })
   main: RuleMainEntity;
 
   @CreateDateColumn()
@@ -37,7 +38,7 @@ export class RuleSubEntity extends BaseEntity {
   static async findSubById(ruleId: number): Promise<RuleSubEntity[]> {
     try {
       const rule: RuleSubEntity[] = await RuleSubEntity.find({
-        where: {main: {id : ruleId}},
+        where: { main: { id: ruleId } },
       });
       return rule;
     } catch (error) {

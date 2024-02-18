@@ -14,11 +14,10 @@ import {
   LessThanOrEqual,
   MoreThanOrEqual,
 } from 'typeorm';
-import { startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { isWithinInterval } from 'date-fns';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { MonthInfoDto } from 'src/map/month-info.dto';
-import { CreateJourneyDto } from '../dtos/create-journey.dto';
 
 @Entity()
 export class JourneyEntity extends BaseEntity {

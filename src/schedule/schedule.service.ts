@@ -1,11 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { response } from 'src/response/response';
 import { BaseResponse } from 'src/response/response.status';
 import { LocationEntity } from 'src/location/location.entity';
 import { ScheduleEntity } from './schedule.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { UpdateScheduleDto } from './dtos/update-schedule-dto';
-import { JourneyEntity } from 'src/journey/model/journey.entity';
 
 @Injectable()
 export class ScheduleService {
@@ -45,7 +44,7 @@ export class ScheduleService {
   }
 
   async resetSchedule(user, scheduleId) {
-    const existUser = await UserEntity.findExistUser(user.id);
+    await UserEntity.findExistUser(user.id);
     const schedule = await ScheduleEntity.findExistSchedule(scheduleId);
 
     // 스케줄이 위치를 가지고 있는지 확인

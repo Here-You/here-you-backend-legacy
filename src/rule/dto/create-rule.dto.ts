@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsNumber, IsString, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 class RulePairDto {
   @IsNotEmpty()

@@ -1,6 +1,10 @@
 // signature.comment.service.ts
 
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { S3UtilService } from '../utils/S3.service';
 import { SignatureService } from './signature.service';
@@ -17,31 +21,30 @@ import { CursorPageDto } from '../mate/cursor-page/cursor-page.dto';
 import { NotificationEntity } from '../notification/notification.entity';
 
 @Injectable()
-export class SignatureCommentService{
-
+export class SignatureCommentService {
   constructor(
     private readonly signatureService: SignatureService,
     private readonly userService: UserService,
     private readonly s3Service: S3UtilService,
   ) {}
 
-  async createSignatureComment( // 댓글, 답글 생성하기
+  async createSignatureComment(
+    // 댓글, 답글 생성하기
     createCommentDto: CreateCommentDto,
     userId: number,
     signatureId: number,
-    parentCommentId?: number){
-
+    parentCommentId?: number,
+  ) {
     const comment = new SignatureCommentEntity();
 
-    const user = await UserEntity.findOneOrFail({ where: { id: userId }});
-    const signature = await SignatureEntity.findOneOrFail( { where: { id: signatureId }});
+    const user = await UserEntity.findOneOrFail({ where: { id: userId } });
+    const signature = await SignatureEntity.findOneOrFail({
+      where: { id: signatureId },
+    });
 
-
-    if( !user || !signature ) {
+    if (!user || !signature) {
       throw new NotFoundException('404 Not Found');
-    }
-    else {
-
+    } else {
       comment.user = user;
       comment.signature = signature;
       comment.content = createCommentDto.content;
@@ -50,21 +53,22 @@ export class SignatureCommentService{
       const notification = new NotificationEntity();
 
       // parentCommentId가 존재할 경우 -> 답글 / 존재하지 않을 경우 -> 댓글
-      if(parentCommentId){  // 대댓글: parentId는 파라미터로 받은 parentCommentId로 설정
+      if (parentCommentId) {
+        // 대댓글: parentId는 파라미터로 받은 parentCommentId로 설정
 
-        const parentComment = await SignatureCommentEntity.findOneOrFail( {
-          where:{ id: parentCommentId
-          }});
+        const parentComment = await SignatureCommentEntity.findOneOrFail({
+          where: { id: parentCommentId },
+        });
 
-        if( !parentComment ) throw new NotFoundException('404 Not Found');
+        if (!parentComment) throw new NotFoundException('404 Not Found');
         else {
           comment.parentComment = parentComment;
           await comment.save();
         }
 
         notification.notificationReceiver = parentComment.user;
-      }
-      else{  // 댓글: parentId는 본인으로 설정
+      } else {
+        // 댓글: parentId는 본인으로 설정
         const savedComment = await comment.save();
         savedComment.parentComment = savedComment;
         await savedComment.save();
@@ -82,58 +86,60 @@ export class SignatureCommentService{
     }
   }
 
-  async getSignatureComment(  // 댓글 가져오기
+  async getSignatureComment(
+    // 댓글 가져오기
     cursorPageOptionsDto: CursorPageOptionsDto,
     userId: number,
     signatureId: number,
   ) {
-    try{
-
+    try {
       // 1. 'cursorId'부터 오름차순 정렬된 댓글 'take'만큼 가져오기
       const [comments, total] = await SignatureCommentEntity.findAndCount({
         take: cursorPageOptionsDto.take,
         where: {
           id: MoreThan(cursorPageOptionsDto.cursorId),
           signature: { id: signatureId },
-          parentComment: { id: Raw("SignatureCommentEntity.id") },      // 부모 댓글이 자기 자신인 댓글들만 가져오기
+          parentComment: { id: Raw('SignatureCommentEntity.id') }, // 부모 댓글이 자기 자신인 댓글들만 가져오기
         },
         relations: {
           user: { profileImage: true },
           parentComment: true,
-          signature:{ user: true, }
+          signature: { user: true },
         },
         order: {
-          parentComment: { id: "ASC" as any,},
-          created: 'ASC'
+          parentComment: { id: 'ASC' as any },
+          created: 'ASC',
         },
       });
-
 
       const result: GetSignatureCommentDto[] = [];
 
       // 2. 각 부모 댓글의 답글들 찾아오기
-      for(const comment of comments){
+      for (const comment of comments) {
         console.log(comment);
-        result.push(await this.createSignatureCommentDto(comment,userId));
+        result.push(await this.createSignatureCommentDto(comment, userId));
 
-        const childrenComments = await SignatureCommentEntity.find({ // 답글 찾아오기
+        const childrenComments = await SignatureCommentEntity.find({
+          // 답글 찾아오기
           where: {
             parentComment: { id: comment.id },
-            id: Not(Raw("SignatureCommentEntity.parentComment.id"))
+            id: Not(Raw('SignatureCommentEntity.parentComment.id')),
           },
           relations: {
             user: { profileImage: true },
             parentComment: true,
-            signature:{ user: true, }
+            signature: { user: true },
           },
           order: {
-            created: 'ASC'
+            created: 'ASC',
           },
         });
 
-        for(const childComment of childrenComments){
+        for (const childComment of childrenComments) {
           console.log(childComment);
-          result.push(await this.createSignatureCommentDto(childComment,userId))
+          result.push(
+            await this.createSignatureCommentDto(childComment, userId),
+          );
         }
       }
 
@@ -152,19 +158,25 @@ export class SignatureCommentService{
         cursor = lastDataPerScroll.id;
       }
 
-      const cursorPageMetaDto = new CursorPageMetaDto(
-        { cursorPageOptionsDto, total, hasNextData, cursor });
+      const cursorPageMetaDto = new CursorPageMetaDto({
+        cursorPageOptionsDto,
+        total,
+        hasNextData,
+        cursor,
+      });
 
-      return new CursorPageDto( result, cursorPageMetaDto );
-
-    }
-    catch(e){
-      console.log("Error on GetSignature: ",e);
+      return new CursorPageDto(result, cursorPageMetaDto);
+    } catch (e) {
+      console.log('Error on GetSignature: ', e);
       throw e;
     }
   }
 
-  async createSignatureCommentDto(comment: SignatureCommentEntity, userId: number){ // 댓글 DTO 만들기
+  async createSignatureCommentDto(
+    comment: SignatureCommentEntity,
+    userId: number,
+  ) {
+    // 댓글 DTO 만들기
     const writerProfile = new GetCommentWriterDto();
     const getCommentDto = new GetSignatureCommentDto();
 
@@ -173,13 +185,12 @@ export class SignatureCommentService{
     writerProfile.name = comment.user.nickname;
 
     // 로그인한 사용자가 댓글 작성자인지 확인
-    if( userId == comment.user.id ) writerProfile.is_writer = true;
-
+    if (userId == comment.user.id) writerProfile.is_writer = true;
     else writerProfile.is_writer = false;
 
     // 작성자 프로필 이미지
     const image = comment.user.profileImage;
-    if(image == null) writerProfile.image = null;
+    if (image == null) writerProfile.image = null;
     else {
       const userImageKey = image.imageKey;
       writerProfile.image = await this.s3Service.getImageUrl(userImageKey);
@@ -196,7 +207,8 @@ export class SignatureCommentService{
     const createdTime = comment.created.getTime();
     const updatedTime = comment.updated.getTime();
 
-    if (Math.abs(createdTime - updatedTime) <= 2000) {  // 두 시간 차가 2초 이하면 수정 안함
+    if (Math.abs(createdTime - updatedTime) <= 2000) {
+      // 두 시간 차가 2초 이하면 수정 안함
       getCommentDto.is_edited = false;
     } else {
       getCommentDto.is_edited = true;
@@ -204,97 +216,103 @@ export class SignatureCommentService{
 
     // 로그인한 사용자가 시그니처 작성하면 can_delete = true
     let can_delete = false;
-    if(comment.signature.user){ // 시그니처 작성자가 존재할 경우
-      if(comment.signature.user.id == userId){  // 로그인한 사용자가 시그니처 작성자일 경우 댓글 삭제 가능
+    if (comment.signature.user) {
+      // 시그니처 작성자가 존재할 경우
+      if (comment.signature.user.id == userId) {
+        // 로그인한 사용자가 시그니처 작성자일 경우 댓글 삭제 가능
         can_delete = true;
       }
     }
     getCommentDto.can_delete = can_delete;
 
     return getCommentDto;
-
   }
 
-  async patchSignatureComment(  // 댓글 수정하기
+  async patchSignatureComment(
+    // 댓글 수정하기
     userId: number,
     signatureId: number,
     commentId: number,
-    patchedComment: CreateCommentDto) {
-
+    patchedComment: CreateCommentDto,
+  ) {
     // 시그니처 유효한지 확인
     const signature = await SignatureEntity.findOne({
-      where:{ id: signatureId },
-      relations: { user: true }
+      where: { id: signatureId },
+      relations: { user: true },
     });
-    if(!signature) throw new NotFoundException('존재하지 않는 시그니처입니다');
+    if (!signature) throw new NotFoundException('존재하지 않는 시그니처입니다');
 
     // 댓글 데이터 유효한지 확인
     const comment = await SignatureCommentEntity.findOne({
-        where:{ id: commentId },
-        relations: { user: true }
-      },
-    );
-    if(!comment) throw new NotFoundException('존재하지 않는 댓글입니다');
-
+      where: { id: commentId },
+      relations: { user: true },
+    });
+    if (!comment) throw new NotFoundException('존재하지 않는 댓글입니다');
 
     let forbiddenUser = true;
     // 댓글 작성자가 로그인한 사용자 본인 혹은 시그니처 작성자가 맞는지 확인
-    if(signature.user){ // 시그니처 작성자가 존재한다면 시그니처 작성자와 로그인한 사용자가 일치하는지 확인
-      if( signature.user.id == userId ) forbiddenUser = false;
+    if (signature.user) {
+      // 시그니처 작성자가 존재한다면 시그니처 작성자와 로그인한 사용자가 일치하는지 확인
+      if (signature.user.id == userId) forbiddenUser = false;
     }
 
-    if(comment.user.id){ // 댓글 작성자가 존재한다면 댓글 작성자와 로그인한 사용자가 일치하는지 확인
-      if(comment.user.id == userId ) forbiddenUser = false;
+    if (comment.user.id) {
+      // 댓글 작성자가 존재한다면 댓글 작성자와 로그인한 사용자가 일치하는지 확인
+      if (comment.user.id == userId) forbiddenUser = false;
     }
 
-    if(forbiddenUser) throw new ForbiddenException('댓글 수정 권한이 없습니다');
-
+    if (forbiddenUser)
+      throw new ForbiddenException('댓글 수정 권한이 없습니다');
 
     // 댓글 수정하기
     comment.content = patchedComment.content;
     await comment.save();
     return comment.id;
-
   }
 
-  async deleteSignatureComment(userId: number, signatureId: number, commentId: number) {
+  async deleteSignatureComment(
+    userId: number,
+    signatureId: number,
+    commentId: number,
+  ) {
     try {
       // 시그니처 유효한지 확인
       const signature = await SignatureEntity.findOne({
         where: { id: signatureId },
-        relations: { user: true }
+        relations: { user: true },
       });
-      if (!signature) throw new NotFoundException('존재하지 않는 시그니처입니다');
+      if (!signature)
+        throw new NotFoundException('존재하지 않는 시그니처입니다');
 
       // 댓글 데이터 유효한지 확인
       const comment = await SignatureCommentEntity.findOne({
-          where: { id: commentId },
-          relations: ['user', 'parentComment', 'signature']
-        },
-      );
+        where: { id: commentId },
+        relations: ['user', 'parentComment', 'signature'],
+      });
       if (!comment) throw new NotFoundException('존재하지 않는 댓글입니다');
-
 
       let forbiddenUser = true;
       // 댓글 작성자가 로그인한 사용자 본인 혹은 시그니처 작성자가 맞는지 확인
-      if(signature.user){ // 시그니처 작성자가 존재한다면 시그니처 작성자와 로그인한 사용자가 일치하는지 확인
-        if( signature.user.id == userId ) forbiddenUser = false;
+      if (signature.user) {
+        // 시그니처 작성자가 존재한다면 시그니처 작성자와 로그인한 사용자가 일치하는지 확인
+        if (signature.user.id == userId) forbiddenUser = false;
       }
 
-      if(comment.user.id){ // 댓글 작성자가 존재한다면 댓글 작성자와 로그인한 사용자가 일치하는지 확인
-        if(comment.user.id == userId ) forbiddenUser = false;
+      if (comment.user.id) {
+        // 댓글 작성자가 존재한다면 댓글 작성자와 로그인한 사용자가 일치하는지 확인
+        if (comment.user.id == userId) forbiddenUser = false;
       }
 
-      if(forbiddenUser) throw new ForbiddenException('댓글 삭제 권한이 없습니다');
-
+      if (forbiddenUser)
+        throw new ForbiddenException('댓글 삭제 권한이 없습니다');
 
       // 해당 댓글이 부모 댓글인 경우 자식 댓글 모두 삭제
       if (commentId == comment.parentComment.id) {
-
         // 자식 댓글 모두 찾아오기
-        const replyComments: SignatureCommentEntity[] = await SignatureCommentEntity.find({
-          where: { parentComment: { id: commentId } }
-        });
+        const replyComments: SignatureCommentEntity[] =
+          await SignatureCommentEntity.find({
+            where: { parentComment: { id: commentId } },
+          });
 
         // 자식 댓글 모두 삭제
         for (const reply of replyComments) {
@@ -303,14 +321,12 @@ export class SignatureCommentService{
 
         // 자식 모두 삭제했으면 부모 댓글 삭제
         await comment.softRemove();
-
-      }
-      else{ // 자식 댓글 없는 경우 본인만 삭제
+      } else {
+        // 자식 댓글 없는 경우 본인만 삭제
         await comment.softRemove();
       }
 
       return commentId;
-
     } catch (error) {
       console.log(error);
       throw error;

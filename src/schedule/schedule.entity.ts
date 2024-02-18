@@ -12,7 +12,6 @@ import {
   Between,
 } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
-import { startOfMonth, endOfMonth } from 'date-fns';
 import { BaseResponse } from 'src/response/response.status';
 import { DetailScheduleEntity } from '../detail-schedule/detail-schedule.entity';
 import { LocationEntity } from 'src/location/location.entity';
@@ -138,9 +137,6 @@ export class ScheduleEntity extends BaseEntity {
     return schedules;
   }
 
-  static async findExistScheduleByOptions(journeyId, scheduleId) {
-    const schedule = await ScheduleEntity.find({});
-  }
   // 월별 일정 조회하기
   static async findMonthlySchedule(
     journeyId,

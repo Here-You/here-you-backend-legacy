@@ -6,7 +6,6 @@ import { UserEntity } from 'src/user/user.entity';
 import { DiaryEntity } from 'src/diary/models/diary.entity';
 import { ScheduleEntity } from 'src/schedule/schedule.entity';
 import { MonthInfoDto } from './month-info.dto';
-import { LocationEntity } from 'src/location/location.entity';
 import { DiaryImageEntity } from 'src/diary/models/diary.image.entity';
 import { DetailScheduleEntity } from 'src/detail-schedule/detail-schedule.entity';
 import { CursorBasedPaginationRequestDto } from './cursor-based-pagination-request.dto.ts';

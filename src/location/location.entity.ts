@@ -83,11 +83,4 @@ export class LocationEntity extends BaseEntity {
     });
     return location;
   }
-
-  static async findExistLocationById(schedule) {
-    const existLocation = await LocationEntity.findOne({
-      where: { schedules: {} },
-    });
-    return existLocation;
-  }
 }

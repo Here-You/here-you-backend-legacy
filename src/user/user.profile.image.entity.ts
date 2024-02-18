@@ -10,7 +10,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
-import { User } from 'aws-sdk/clients/budgets';
 
 @Entity()
 export class UserProfileImageEntity extends BaseEntity {
@@ -34,7 +33,10 @@ export class UserProfileImageEntity extends BaseEntity {
   deleted: Date;
 
   static async findImageKey(userEntity): Promise<string> {
-    const imageEntity : UserProfileImageEntity = await UserProfileImageEntity.findOneOrFail({ where: { user : userEntity } });
+    const imageEntity: UserProfileImageEntity =
+      await UserProfileImageEntity.findOneOrFail({
+        where: { user: userEntity },
+      });
     const imageKey = imageEntity.imageKey;
 
     return imageKey;

@@ -11,10 +11,7 @@ export class DetailScheduleService {
   async createDetailSchedule(scheduleId: number, content: DetailContentDto) {
     const schedule = await ScheduleEntity.findExistSchedule(scheduleId);
     console.log(schedule.id);
-    const detailSchedule = await DetailScheduleEntity.createDetailSchedule(
-      schedule,
-      content,
-    );
+    await DetailScheduleEntity.createDetailSchedule(schedule, content);
     return response(BaseResponse.DETAIL_SCHEDULE_CREATED);
   }
 
@@ -45,8 +42,7 @@ export class DetailScheduleService {
   //세부일정 삭제하기
   async deleteDetailSchedule(detailId: number) {
     const detailSchedule = await DetailScheduleEntity.findExistDetail(detailId);
-    const deleteDetailSchedule =
-      await DetailScheduleEntity.deleteDetailSchedule(detailSchedule);
+    await DetailScheduleEntity.deleteDetailSchedule(detailSchedule);
     return response(BaseResponse.DELETE_DETAIL_SCHEDULE_SUCCESS);
   }
 }

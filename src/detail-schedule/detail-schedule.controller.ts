@@ -12,10 +12,7 @@ import {
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { Request } from 'express';
 import { DetailScheduleService } from './detail-schedule.service';
-import {
-  DetailContentDto,
-  DetailScheduleInfoDto,
-} from './detail-schedule-info.dto';
+import { DetailContentDto } from './detail-schedule-info.dto';
 import { UserGuard } from 'src/user/user.guard';
 
 @Controller('detail-schedule')

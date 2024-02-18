@@ -1,27 +1,33 @@
-import {IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString} from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class FollowDto {
-    @IsNotEmpty()
-    @IsNumber()
-    mateId: number;
+  @IsNotEmpty()
+  @IsNumber()
+  mateId: number;
 
-    @IsNotEmpty()
-    @IsString()
-    nickName: string;
+  @IsNotEmpty()
+  @IsString()
+  nickName: string;
 
-    @IsNotEmpty()
-    @IsString()
-    email: string;
+  @IsNotEmpty()
+  @IsString()
+  email: string;
 
-    @IsOptional()
-    @IsString()
-    image: string;
+  @IsOptional()
+  @IsString()
+  image: string;
 
-    @IsOptional()
-    @IsString()
-    introduction: string;
+  @IsOptional()
+  @IsString()
+  introduction: string;
 
-    @IsNotEmpty()
-    @IsBoolean()
-    isFollowing: boolean;
+  @IsNotEmpty()
+  @IsBoolean()
+  isFollowing: boolean;
 }

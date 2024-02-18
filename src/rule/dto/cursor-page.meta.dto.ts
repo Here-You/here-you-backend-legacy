@@ -1,16 +1,20 @@
-import { CursorPageMetaDtoParameters } from "./cursor-page-options-parameter.interface";
+import { CursorPageMetaDtoParameters } from './cursor-page-options-parameter.interface';
 
 export class CursorPageMetaDto {
+  readonly total: number;
+  readonly take: number;
+  readonly hasNextData: boolean;
+  readonly cursor: number;
 
-    readonly total: number;
-    readonly take: number;
-    readonly hasNextData: boolean;
-    readonly cursor: number;
-
-    constructor({cursorPageOptionsDto, total, hasNextData, cursor}: CursorPageMetaDtoParameters) {
-        this.take = cursorPageOptionsDto.take;
-        this.total = total;
-        this.hasNextData = hasNextData;
-        this.cursor = cursor;
-    }
+  constructor({
+    cursorPageOptionsDto,
+    total,
+    hasNextData,
+    cursor,
+  }: CursorPageMetaDtoParameters) {
+    this.take = cursorPageOptionsDto.take;
+    this.total = total;
+    this.hasNextData = hasNextData;
+    this.cursor = cursor;
+  }
 }

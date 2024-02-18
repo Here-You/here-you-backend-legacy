@@ -4,7 +4,6 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -12,10 +11,7 @@ import {
 import { NotFoundException } from '@nestjs/common';
 import { BaseResponse } from 'src/response/response.status';
 import { ScheduleEntity } from '../schedule/schedule.entity';
-import {
-  DetailContentDto,
-  DetailScheduleInfoDto,
-} from './detail-schedule-info.dto';
+import { DetailContentDto } from './detail-schedule-info.dto';
 
 @Entity()
 export class DetailScheduleEntity extends BaseEntity {

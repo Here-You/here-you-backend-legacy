@@ -1,14 +1,15 @@
-import { BaseEntity, 
-  Column, 
-  Entity, 
-  PrimaryGeneratedColumn, 
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
-  DeleteDateColumn, 
+  DeleteDateColumn,
 } from 'typeorm';
 import { RuleSubEntity } from './rule.sub.entity';
-import { RuleInvitationEntity } from './rule.invitation.entity'
+import { RuleInvitationEntity } from './rule.invitation.entity';
 import { CommentEntity } from 'src/comment/domain/comment.entity';
 
 @Entity()
@@ -28,19 +29,22 @@ export class RuleMainEntity extends BaseEntity {
   @DeleteDateColumn()
   deleted: Date;
 
-  @OneToMany(() => RuleSubEntity, ruleSub => ruleSub.main)
+  @OneToMany(() => RuleSubEntity, (ruleSub) => ruleSub.main)
   rules: RuleSubEntity[];
 
-  @OneToMany(() => RuleInvitationEntity, ruleInvitation => ruleInvitation.rule)
+  @OneToMany(
+    () => RuleInvitationEntity,
+    (ruleInvitation) => ruleInvitation.rule,
+  )
   invitations: RuleInvitationEntity[];
 
-  @OneToMany(() => CommentEntity, comment => comment.rule)
+  @OneToMany(() => CommentEntity, (comment) => comment.rule)
   comments: CommentEntity[];
 
   static async findMainById(ruleId: number): Promise<RuleMainEntity> {
-    const ruleMain : RuleMainEntity = await RuleMainEntity.findOne({
+    const ruleMain: RuleMainEntity = await RuleMainEntity.findOne({
       where: { id: ruleId },
-      relations: ['rules', 'invitations', 'comments']
+      relations: ['rules', 'invitations', 'comments'],
     });
 
     return ruleMain;

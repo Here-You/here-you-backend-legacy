@@ -7,7 +7,7 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  DeleteDateColumn
+  DeleteDateColumn,
 } from 'typeorm';
 import { RuleMainEntity } from 'src/rule/domain/rule.main.entity';
 import { UserEntity } from 'src/user/user.entity';
@@ -20,12 +20,12 @@ export class CommentEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 200 })
   content: string;
 
-  @ManyToOne(() => RuleMainEntity, ruleMain => ruleMain.comments)
-  @JoinColumn({ name: 'rule_id'})
+  @ManyToOne(() => RuleMainEntity, (ruleMain) => ruleMain.comments)
+  @JoinColumn({ name: 'rule_id' })
   rule: RuleMainEntity;
 
-  @ManyToOne(() => UserEntity, user => user.comments)
-  @JoinColumn({ name: 'user_id'})
+  @ManyToOne(() => UserEntity, (user) => user.comments)
+  @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
   @CreateDateColumn()

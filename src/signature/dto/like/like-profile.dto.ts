@@ -1,6 +1,6 @@
 // like-profile.dto.ts
 
-export class LikeProfileDto{
+export class LikeProfileDto {
   _id: number;
   nickname: string;
   introduction: string;

@@ -62,11 +62,12 @@ export class S3UtilService {
   }
 
   public async GetPresignedUrlForSignature(): Promise<S3PresignedUrlDto> {
-
-    const s3PresignedUrlDto:S3PresignedUrlDto= new S3PresignedUrlDto();
+    const s3PresignedUrlDto: S3PresignedUrlDto = new S3PresignedUrlDto();
 
     // 이미지 키 생성: 프론트에서는 업로드 후 백엔드에 키값을 보내줘야함
-    s3PresignedUrlDto.key = `signature/${this.generateRandomImageKey('signature.png')}`;
+    s3PresignedUrlDto.key = `signature/${this.generateRandomImageKey(
+      'signature.png',
+    )}`;
 
     // 프론트에서 이미지를 업로드할 presignedUrl
     s3PresignedUrlDto.url = await this.getPresignedUrl(s3PresignedUrlDto.key);

@@ -1,10 +1,14 @@
 // signature.comment.entity.ts
 
 import {
-  BaseEntity, Column,
+  BaseEntity,
+  Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity, JoinColumn, ManyToOne, OneToMany,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -16,23 +20,25 @@ export class SignatureCommentEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => SignatureEntity,
-    (signature) => signature.comments)
+  @ManyToOne(() => SignatureEntity, (signature) => signature.comments)
   @JoinColumn()
   signature: SignatureEntity;
 
-  @ManyToOne(() => UserEntity,
-    (user) => user.signatureComments)
+  @ManyToOne(() => UserEntity, (user) => user.signatureComments)
   @JoinColumn()
   user: UserEntity;
 
-  @OneToMany(() => SignatureCommentEntity,
-    (childComment) => childComment.parentComment)
+  @OneToMany(
+    () => SignatureCommentEntity,
+    (childComment) => childComment.parentComment,
+  )
   @JoinColumn()
   childComments: SignatureCommentEntity[];
 
-  @ManyToOne(() => SignatureCommentEntity,
-    (parentComment) => parentComment.childComments)
+  @ManyToOne(
+    () => SignatureCommentEntity,
+    (parentComment) => parentComment.childComments,
+  )
   @JoinColumn()
   parentComment: SignatureCommentEntity;
 

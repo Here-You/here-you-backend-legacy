@@ -6,5 +6,5 @@ export class PageSignatureDto {
   content: string;
   location: string;
   //image: Buffer;  // form-data 형식
-  image: string     // base-64 형식
+  image: string; // base-64 형식
 }

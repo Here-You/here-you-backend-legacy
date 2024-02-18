@@ -2,6 +2,6 @@
 
 import { SignatureCoverDto } from './signature-cover.dto';
 
-export class GetSearchMainDto{
+export class GetSearchMainDto {
   covers: SignatureCoverDto[];
 }

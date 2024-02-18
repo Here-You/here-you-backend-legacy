@@ -22,7 +22,6 @@ import { LikeProfileDto } from './dto/like/like-profile.dto';
 import { S3UtilService } from '../utils/S3.service';
 import { ResponsePageSignatureDto } from './dto/signature/response-page-signature.dto';
 import { NotificationEntity } from '../notification/notification.entity';
-import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class SignatureService {
@@ -94,10 +93,7 @@ export class SignatureService {
   async homeSignature(userId: number): Promise<HomeSignatureDto[]> {
     try {
       console.log('userId; ', userId);
-      return this.findMySignature(
-        userId,
-      );
-
+      return this.findMySignature(userId);
     } catch (error) {
       // 예외 처리
       console.error('Error on HomeSignature: ', error);
@@ -109,7 +105,7 @@ export class SignatureService {
     const mySignatureList: HomeSignatureDto[] = [];
     const signatures = await SignatureEntity.find({
       where: { user: { id: user_id } },
-      order: { created: 'DESC' }          // 내가 작성한 시그니처 최신 순으로 보여주도록
+      order: { created: 'DESC' }, // 내가 작성한 시그니처 최신 순으로 보여주도록
     });
 
     for (const signature of signatures) {
@@ -160,7 +156,8 @@ export class SignatureService {
       // [2] 시그니처 작성자 정보 가져오기
       const authorDto: AuthorSignatureDto = new AuthorSignatureDto();
 
-      if (!signature.user.isQuit) { // 유저가 탈퇴하지 않았다면
+      if (!signature.user.isQuit) {
+        // 유저가 탈퇴하지 않았다면
         authorDto._id = signature.user.id;
         authorDto.name = signature.user.nickname;
 
@@ -289,14 +286,14 @@ export class SignatureService {
     signatureId: number,
   ) {
     // [1] 해당 좋아요 기록 삭제
-    const deleted_like = await SignatureLikeEntity.softRemove(signatureLike);
+    await SignatureLikeEntity.softRemove(signatureLike);
 
     // [2] 시그니처 좋아요 개수 -1
     const signature: SignatureEntity = await SignatureEntity.findSignatureById(
       signatureId,
     );
     signature.liked--;
-    const newSignature = await SignatureEntity.save(signature);
+    await SignatureEntity.save(signature);
 
     return signature;
   }
@@ -374,10 +371,7 @@ export class SignatureService {
             )}`;
 
             // Base64 이미지 업로드
-            const uploadedImage = await this.s3Service.putObjectFromBase64(
-              key,
-              patchedPage.image,
-            );
+            await this.s3Service.putObjectFromBase64(key, patchedPage.image);
 
             // 이미지 키 저장
             originalPage.image = key;

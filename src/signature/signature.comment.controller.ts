@@ -2,7 +2,8 @@
 
 import {
   Body,
-  Controller, Delete,
+  Controller,
+  Delete,
   ForbiddenException,
   Get,
   NotFoundException,
@@ -22,166 +23,186 @@ import { ResponseCode } from '../response/response-code.enum';
 import { CursorPageOptionsDto } from '../rule/dto/cursor-page.options.dto';
 
 @Controller('signature/:signatureId/comment')
-export class SignatureCommentController{
-  constructor(private readonly signatureCommentService: SignatureCommentService) {}
+export class SignatureCommentController {
+  constructor(
+    private readonly signatureCommentService: SignatureCommentService,
+  ) {}
 
   @Post('/')
   @UseGuards(UserGuard)
-  async createSignatureComment( // 시그니처 댓글 생성하기
+  async createSignatureComment(
+    // 시그니처 댓글 생성하기
     @Req() req: Request,
     @Param('signatureId') signatureId: number,
     @Body() newComment: CreateCommentDto,
-  ){
-    try{
-      const result = await this.signatureCommentService.createSignatureComment(newComment, req.user.id, signatureId)
+  ) {
+    try {
+      const result = await this.signatureCommentService.createSignatureComment(
+        newComment,
+        req.user.id,
+        signatureId,
+      );
 
       return new ResponseDto(
         ResponseCode.CREATE_SIGNATURE_COMMENT_SUCCESS,
         true,
-        "시그니처 댓글 생성 성공",
-        result
+        '시그니처 댓글 생성 성공',
+        result,
       );
-
-    }
-    catch(error){
-      console.log('Error on createSigComment: ',error);
+    } catch (error) {
+      console.log('Error on createSigComment: ', error);
       return new ResponseDto(
         ResponseCode.COMMENT_CREATION_FAIL,
         false,
-        "시그니처 댓글 생성 실패",
-        null
+        '시그니처 댓글 생성 실패',
+        null,
       );
     }
   }
 
   @Post('/:parentId')
   @UseGuards(UserGuard)
-  async createSignatureReplyComment(  // 시그니처 답글 생성하기
+  async createSignatureReplyComment(
+    // 시그니처 답글 생성하기
     @Req() req: Request,
     @Param('signatureId') signatureId: number,
     @Param('parentId') parentId: number,
     @Body() newComment: CreateCommentDto,
-  ){
-    try{
-      const result = await this.signatureCommentService.createSignatureComment(newComment, req.user.id, signatureId, parentId)
+  ) {
+    try {
+      const result = await this.signatureCommentService.createSignatureComment(
+        newComment,
+        req.user.id,
+        signatureId,
+        parentId,
+      );
 
       return new ResponseDto(
         ResponseCode.CREATE_SIGNATURE_COMMENT_SUCCESS,
         true,
-        "시그니처 답글 생성 성공",
-        result
+        '시그니처 답글 생성 성공',
+        result,
       );
-
-    }
-    catch(error){
-      console.log('Error on createSigComment: ',error);
+    } catch (error) {
+      console.log('Error on createSigComment: ', error);
       return new ResponseDto(
         ResponseCode.COMMENT_CREATION_FAIL,
         false,
-        "시그니처 답글 생성 실패",
-        null
+        '시그니처 답글 생성 실패',
+        null,
       );
     }
   }
 
   @Get('/')
   @UseGuards(UserGuard)
-  async getSignatureComment(  // 시그니처 댓글 조회하기 (무한 스크롤)
+  async getSignatureComment(
+    // 시그니처 댓글 조회하기 (무한 스크롤)
     @Req() req: Request,
     @Param('signatureId') signatureId: number,
     @Query() cursorPageOptionsDto: CursorPageOptionsDto,
-  ){
-    try{
-      const result = await this.signatureCommentService.getSignatureComment(cursorPageOptionsDto, req.user.id, signatureId);
+  ) {
+    try {
+      const result = await this.signatureCommentService.getSignatureComment(
+        cursorPageOptionsDto,
+        req.user.id,
+        signatureId,
+      );
 
       return new ResponseDto(
         ResponseCode.GET_COMMENT_DETAIL_SUCCESS,
         true,
-        "시그니처 댓글 가져오기 성공",
-        result
+        '시그니처 댓글 가져오기 성공',
+        result,
       );
-    }
-    catch(error){
-      console.log('Error on createSigChildComment: ',error);
+    } catch (error) {
+      console.log('Error on createSigChildComment: ', error);
       return new ResponseDto(
         ResponseCode.GET_COMMENT_DETAIL_FAIL,
         false,
-        "시그니처 댓글 가져오기 실패",
-        null
+        '시그니처 댓글 가져오기 실패',
+        null,
       );
     }
   }
 
   @Patch('/:commentId')
   @UseGuards(UserGuard)
-  async patchSignatureComment(  // 시그니처 수정하기
+  async patchSignatureComment(
+    // 시그니처 수정하기
     @Param('signatureId') signatureId: number,
     @Param('commentId') commentId: number,
     @Body() patchedComment: CreateCommentDto,
     @Req() req: Request,
-  ){
-    try{
-      const result = await this.signatureCommentService.patchSignatureComment(req.user.id,signatureId,commentId,patchedComment);
+  ) {
+    try {
+      const result = await this.signatureCommentService.patchSignatureComment(
+        req.user.id,
+        signatureId,
+        commentId,
+        patchedComment,
+      );
 
       return new ResponseDto(
         ResponseCode.COMMENT_UPDATE_SUCCESS,
         true,
-        "시그니처 댓글 수정하기 성공",
-        result
+        '시그니처 댓글 수정하기 성공',
+        result,
       );
-    }
-    catch(error){
-      console.log("Err on PatchSigComment: "+ error);
-      let errorMessage = "";
+    } catch (error) {
+      console.log('Err on PatchSigComment: ' + error);
+      let errorMessage = '';
 
-      if(error instanceof NotFoundException)  errorMessage = error.message;
-      else if(error instanceof ForbiddenException) errorMessage = error.message;
-      else errorMessage = "시그니처 댓글 수정하기 실패";
+      if (error instanceof NotFoundException) errorMessage = error.message;
+      else if (error instanceof ForbiddenException)
+        errorMessage = error.message;
+      else errorMessage = '시그니처 댓글 수정하기 실패';
 
       return new ResponseDto(
         ResponseCode.COMMENT_UPDATE_FAIL,
         false,
         errorMessage,
-        null
+        null,
       );
     }
   }
 
-
   @Delete('/:commentId')
   @UseGuards(UserGuard)
-  async deleteSignatureComment(  // 시그니처 수정하기
+  async deleteSignatureComment(
+    // 시그니처 수정하기
     @Param('signatureId') signatureId: number,
     @Param('commentId') commentId: number,
     @Req() req: Request,
-  ){
-    try{
-      const result = await this.signatureCommentService.deleteSignatureComment(req.user.id,signatureId,commentId);
+  ) {
+    try {
+      const result = await this.signatureCommentService.deleteSignatureComment(
+        req.user.id,
+        signatureId,
+        commentId,
+      );
 
       return new ResponseDto(
         ResponseCode.COMMENT_DELETE_SUCCESS,
         true,
-        "시그니처 댓글 삭제하기 성공",
-        result
+        '시그니처 댓글 삭제하기 성공',
+        result,
       );
-    }
-    catch(error){
-      console.log("Err on DeleteSigComment: "+ error);
-      let errorMessage = "";
+    } catch (error) {
+      console.log('Err on DeleteSigComment: ' + error);
+      let errorMessage = '';
 
-      if(error instanceof NotFoundException)  errorMessage = error.message;
-      else if(error instanceof ForbiddenException) errorMessage = error.message;
-      else errorMessage = "시그니처 댓글 삭제하기 실패";
+      if (error instanceof NotFoundException) errorMessage = error.message;
+      else if (error instanceof ForbiddenException)
+        errorMessage = error.message;
+      else errorMessage = '시그니처 댓글 삭제하기 실패';
 
       return new ResponseDto(
         ResponseCode.COMMENT_DELETE_FAIL,
         false,
         errorMessage,
-        null
+        null,
       );
-
     }
   }
-
-
 }

@@ -72,10 +72,7 @@ export class JourneyController {
   })
   @UseGuards(UserGuard)
   @Delete('delete/:journeyId')
-  async deleteJourney(
-    @Param('journeyId') journeyId: number,
-    @Req() req: Request,
-  ) {
+  async deleteJourney(@Param('journeyId') journeyId: number) {
     const result = await this.journeyService.deleteJourney(journeyId);
     return result;
   }
