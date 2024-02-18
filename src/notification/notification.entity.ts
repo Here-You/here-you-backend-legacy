@@ -30,6 +30,9 @@ export class NotificationEntity extends BaseEntity {
   @Column()
   notificationTargetId: number;
 
+  @Column({ type: 'text' })
+  notificationTargetDesc: string;
+
   @Column({ type: 'enum', enum: ['LIKE', 'COMMENT'] })
   notificationAction: 'LIKE' | 'COMMENT';
 

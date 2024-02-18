@@ -69,6 +69,7 @@ export class SignatureCommentService {
         }
 
         notification.notificationReceiver = parentComment.user;
+        notification.notificationTargetDesc = parentComment.content;
       } else {
         // 댓글: parentId는 본인으로 설정
         const savedComment = await comment.save();
@@ -76,6 +77,7 @@ export class SignatureCommentService {
         await savedComment.save();
 
         notification.notificationReceiver = signature.user;
+        notification.notificationTargetDesc = signature.title;
       }
 
       notification.notificationSender = user;

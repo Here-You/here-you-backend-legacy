@@ -275,6 +275,7 @@ export class SignatureService {
     notification.notificationSender = loginUser;
     notification.notificationTargetType = 'SIGNATURE';
     notification.notificationTargetId = signature.id;
+    notification.notificationTargetDesc = signature.title;
     notification.notificationAction = 'LIKE';
     await notification.save();
 

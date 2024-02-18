@@ -43,6 +43,7 @@ export class CommentService {
         notification.notificationSender = user;
         notification.notificationTargetType = 'RULE';
         notification.notificationTargetId = rule.id;
+        notification.notificationTargetDesc = rule.mainTitle;
         notification.notificationAction = 'COMMENT';
         await notification.save();
       }
