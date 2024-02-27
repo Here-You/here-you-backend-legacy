@@ -1,8 +1,11 @@
 import {
-  BaseEntity, Column,
+  BaseEntity,
+  Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity, JoinColumn, ManyToOne,
+  Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -14,7 +17,7 @@ export class PlaceTagEntity extends BaseEntity {
   id: number;
 
   @JoinColumn()
-  @ManyToOne(() => PlaceEntity, place => place.tags)
+  @ManyToOne(() => PlaceEntity, (place) => place.tags)
   place: PlaceEntity;
 
   @Column()

@@ -1,8 +1,11 @@
 import {
-  BaseEntity, Column,
+  BaseEntity,
+  Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity, JoinColumn, OneToOne,
+  Entity,
+  JoinColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -14,7 +17,7 @@ export class UserProfileImageEntity extends BaseEntity {
   id: number;
 
   @JoinColumn()
-  @OneToOne(() => UserEntity, user => user.profileImage)
+  @OneToOne(() => UserEntity, (user) => user.profileImage)
   user: UserEntity;
 
   @Column()
@@ -28,4 +31,14 @@ export class UserProfileImageEntity extends BaseEntity {
 
   @DeleteDateColumn()
   deleted: Date;
+
+  static async findImageKey(userEntity): Promise<string> {
+    const imageEntity: UserProfileImageEntity =
+      await UserProfileImageEntity.findOneOrFail({
+        where: { user: userEntity },
+      });
+    const imageKey = imageEntity.imageKey;
+
+    return imageKey;
+  }
 }
