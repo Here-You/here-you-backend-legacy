@@ -19,13 +19,10 @@
 ## 🌏 Hereyou Backend Crew
 |               [써니](https://github.com/JangYouJung)               |               [엔](https://github.com/runasy-koonta)               |               [예니](https://github.com/yewonahn)               |                [예닝](https://github.com/moonyaeyoon)                |
 | :---------------------------------------------------------------: | :--------------------------------------------------------------: | :-------------------------------------------------------------: | :-----------------------------------------------------------: |
-| <img width="600" alt="써니" src="https://github.com/JangYouJung/HereYou-Backend/assets/80906691/1e2fb8b2-2861-4521-9d15-a5b4c35fb13a)"> | <img width="600" alt="엔" src=""> | <img width="600" alt="예니" src="https://github.com/JangYouJung/HereYou-Backend/assets/80906691/528c816c-44dd-4603-9724-f87fbedf9073"> | <img width="600" alt="예닝" src="https://github.com/JangYouJung/HereYou-Backend/assets/80906691/625fc80e-a27e-4fbf-9920-6ae92f550ba1">  | 
+| <img width="600" alt="써니" src="https://github.com/JangYouJung/HereYou-Backend/assets/80906691/1e2fb8b2-2861-4521-9d15-a5b4c35fb13a)"> | <img width="600" alt="엔" src="https://github.com/JangYouJung/HereYou-Backend/assets/80906691/504e4c7f-0280-4994-b9db-f9486e2e3caf"> | <img width="600" alt="예니" src="https://github.com/JangYouJung/HereYou-Backend/assets/80906691/528c816c-44dd-4603-9724-f87fbedf9073"> | <img width="600" alt="예닝" src="https://github.com/JangYouJung/HereYou-Backend/assets/80906691/625fc80e-a27e-4fbf-9920-6ae92f550ba1">  | 
 |                  <p align = "center">`시그니처`                  |                 <p align = "center">`Auth`                  |                 <p align = "center">`메이트`                 |                <p align = "center">`여행 일지`                |
 
-<!--   -->
-<!--   -->
 
- 
 ### [🔗 API Document](https://www.notion.so/sally626/f2e30752971646989e319f40199c51c0?v=35d85b23c35d4ede85cb3a762365d75e)
 <br></br>
 
