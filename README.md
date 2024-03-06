@@ -23,7 +23,7 @@
 |                  <p align = "center">`시그니처`                  |                 <p align = "center">`Auth`                  |                 <p align = "center">`메이트`                 |                <p align = "center">`여행 일지`                |
 
 
-### [🔗 API Document](https://sally626.notion.site/f2e30752971646989e319f40199c51c0?v=35d85b23c35d4ede85cb3a762365d75e&pvs=4)
+### [🔗 API Document](https://sally626.notion.site/Here-You-API-82ea908d839f4f8e90e9611160ab469a)
 <br></br>
 
 ## 🌏 여행의 이유 기능 소개
